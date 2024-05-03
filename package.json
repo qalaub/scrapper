@@ -1,0 +1,23 @@
+{
+  "name": "scrapper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.17.0",
+    "axios": "^1.6.8",
+    "compromise": "^14.13.0",
+    "fast-levenshtein": "^3.0.0",
+    "fs": "^0.0.1-security",
+    "natural": "^7.0.5",
+    "openai": "^4.36.0",
+    "playwright": "^1.42.1",
+    "spacy": "^0.0.4"
+  }
+}
