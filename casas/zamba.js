@@ -60,6 +60,8 @@ const permit1 = [
 
 ];
 
+let url = '';
+
 async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser('https://www.zamba.co/deportes', 'zamba' + n);
     if (page) {
@@ -73,10 +75,12 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             await page.waitForTimeout(3000);
+            url = await page.url();
             let betZamba = {
                 nombre: 'zamba',
                 title: match,
-                bets: []
+                bets: [],
+                url
             }
             await iframe.locator('//button[contains( @data-test-id, "markets-filter-tab-All")]').click();
             await page.waitForTimeout(2000);

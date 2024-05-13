@@ -60,6 +60,8 @@ const permit2 = [
     '2ª Mitad',
 ];
 
+let url = '';
+
 async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser('https://megapuesta.co/es/sport', 'megapuesta' + n);
     if (page) {
@@ -69,10 +71,12 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
+            url = await page.url();
             let betMegapuesta = {
                 nombre: 'megapuesta',
                 title: match,
-                bets: []
+                bets: [],
+                url
             }
             await page.waitForTimeout(1000);
             await page.locator('.tabellaQuoteSquadre svg').first().click();

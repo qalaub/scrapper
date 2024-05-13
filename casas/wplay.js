@@ -4,7 +4,8 @@ const {
     initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    matchnames
+    matchnames,
+    scrollToBottom
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -54,12 +55,26 @@ const permit1 = [
     'Tiros de esquina más/Menos de (9.5)',
     'Equipo con más Tiros de Esquina',
     'Total de Tarjetas (3.5)'
-]
+];
 
 const permit2 = [
     'Se clasificará',
     'Se anotarán goles en ambas mitades',
-]
+];
+
+const permit3 = [
+    'Lineas del Juego',
+    '1er Mitad',
+    '2da Mitad',
+    '1er Cuarto',
+    '2do Cuarto',
+    '3er Cuarto',
+    '4to Cuarto',
+];
+
+let url = '';
+
+
 
 async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser('https://apuestas.wplay.co/es/', 'wplay' + n);
@@ -68,12 +83,15 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
+            url = await page.url();
             let betWplay = {
                 nombre: 'wplay',
                 title: match,
-                bets: []
+                bets: [],
+                url
             };
             await page.waitForTimeout(3000);
+            await scrollToBottom(page);
             page.setDefaultTimeout(timeouts.bet);
             for (const betType of betTypes) {
                 try {
@@ -99,18 +117,26 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
                     }
                     let bets = await parent.locator('td').all();
                     if (permit1.includes(betType.type)) bets = await page.locator('(//span[normalize-space(text()) = "' + betType.type + '"]/parent::*)[1]/parent::div//li').all();
-                    if (betType.type == 'Lineas del Juego') bets = await page.locator('(//span[normalize-space(text()) = "' + betType.type + '"]/parent::*)[1]/parent::div//td[last()]').all();
                     if (permit2.includes(betType.type)) bets = await page.locator('(//span[normalize-space(text()) = "' + betType.type + '"]/parent::*)[1]/parent::div//td').all();
+                    if (permit3.includes(betType.type)) bets = await page.locator('(//span[normalize-space(text()) = "' + betType.type + '"]/parent::*)[1]/parent::div//td[last()]').all();
                     if (bets.length > 1) {
+                        let n = 1;
                         for (const bet of bets) {
-                            // await bet.scrollIntoViewIfNeeded();
-                            let name = await bet.locator('.seln-label').textContent();
+                            let name = await bet.locator('.seln-label')
+                            if (permit3.includes(betType.type)) name = await page.locator(`((//span[normalize-space(text()) = "${betType.type}"]/parent::*)[1]/parent::div//td[last()]/parent::*/td[contains(@class, "event-name")])[${n}]`);
+                            name = await name.textContent();
                             const quote = await bet.locator('.price.dec').textContent();
                             name = name.replace(/\n+/g, ' ').trim();
                             betTemp.bets.push({
                                 name,
                                 quote
                             });
+                            n++;
+                        }
+                        if (betType.type == 'Lineas del Juego') {
+                            let temp = betTemp.bets[0];
+                            betTemp.bets[0] = betTemp.bets[1];
+                            betTemp.bets[1] = temp;
                         }
                     }
                     betWplay.bets.push(betTemp);

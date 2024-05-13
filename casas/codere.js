@@ -1,3 +1,4 @@
+const { groupByType } = require("../logic/constantes");
 const { groupAndReduceBetsByType } = require("../logic/surebets");
 const { buscar, excludes, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
@@ -192,6 +193,8 @@ function removeDuplicates(bets) {
     return Array.from(uniqueBets.values());
 }
 
+let url = '';
+
 async function getCodereApi(name, types) {
     try {
         const link = await buscarApi(name);
@@ -200,27 +203,30 @@ async function getCodereApi(name, types) {
             const res1 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=99`);
             const res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=60`);
             const res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=55`);
+            const res4 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=50`);
             let filter = getBets(res1, tiposPermitidos, types);
             filter = filter.concat(getBets(res2, tiposPermitidos, types));
             filter = filter.concat(getBets(res3, tiposPermitidos, types));
+            filter = filter.concat(getBets(res4, tiposPermitidos, types));
             if (filter.length > 0) {
-                filter = agruparApuestas(filter, types[1].type || '');
-                filter = agruparApuestas(filter, types[10]?.type || '');
-                filter = agruparApuestas(filter, types[6]?.type || '');
-                filter = agruparApuestas(filter, types[13]?.type || '');
-                filter = agruparApuestas(filter, types[15]?.type) || '';
-                filter = groupAndReduceBetsByType(filter, types[1].type, 1);
+                filter = agruparApuestas(filter, types[groupByType.total].type || '');
+                filter = agruparApuestas(filter, types[groupByType.total2]?.type || '');
+                filter = agruparApuestas(filter, types[groupByType.total1]?.type || '');
+                filter = agruparApuestas(filter, types[groupByType.esquinas]?.type || '');
+                filter = agruparApuestas(filter, types[groupByType.tarjetas]?.type || '');
+                filter = agruparApuestas(filter, types[groupByType.handicap]?.type || '');
+                filter = groupAndReduceBetsByType(filter, types[groupByType.total].type, 1);
                 filter.forEach(item => {
                     item.bets = removeDuplicates(item.bets);
                 });
                 console.log('//////////////////// CODERE //////////////////')
-                // console.log(filter.map(f => f.bets))
                 console.log('//////////////////// CODERE //////////////////')
             }
             return {
                 nombre: 'codere',
                 title: name,
-                bets: filter
+                bets: filter,
+                url,
             }
         }
     } catch (error) {

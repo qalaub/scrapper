@@ -1181,9 +1181,9 @@ function calculateTotalGol(quotes, data, url, type) {
     const uniqueVariants = new Set();
     quotes.forEach(quote => {
         quote.cuotas.forEach(cuota => {
-            const match = cuota.name.match(/(\d+(\.\d+)?)/); // Regex para extraer números, incluidos decimales
+            const match = cuota.name.match(/\b\d+\.[05]\b/); // Regex ajustado para extraer números terminados en .0 o .5
             if (match) {
-                uniqueVariants.add(match[1]);
+                uniqueVariants.add(match[0]);
             }
         });
     });
@@ -1206,6 +1206,7 @@ function calculateTotalGol(quotes, data, url, type) {
     }
     return results;
 }
+
 
 function getByGol(casa, n) {
     if (casa.cuotas) {
@@ -1251,24 +1252,27 @@ async function getUrlsTeams(team1, team2, n) {
         const { page, context } = await initBrowser('https://www.google.com/?hl=es', 'google' + n);
         pageT = page;
         contextT = context;
-        page.setDefaultTimeout(2000);
+        page.setDefaultTimeout(5000);
         const search = page.locator('*[name = "q"]');
-        await search.fill(team1);
+        await search.fill(team1 + ' FC');
         await search.press('Enter');
+        await page.getByText('Imágenes').first().waitFor();
         await page.getByText('Imágenes').first().click();
         let img;
         if (await page.locator('(//a/div/img)[1]').isVisible()) img = page.locator('(//a/div/img)[1]');
-        else img = page.locator('(//a/div/div/div/g-img/img)[1]')
-        await img.click();
-        const link = page.locator('(//a[@rel]/img)[1]');
-        const url1 = await link.getAttribute('src');
-        await search.first().fill(team2);
+        else if (await page.locator('(//a/div/div/div/g-img/img)[1]').isVisible()) img = page.locator('(//a/div/div/div/g-img/img)[1]');
+        else img = page.locator('body > div:nth-child(4) > table > tbody > tr:nth-child(1) > td:nth-child(1) > div > div > div > div > table > tbody > tr:nth-child(1) > td > a > div > img');
+        // await img.click();
+        // const link = page.locator('(//a[@rel]/img)[1]');
+        const url1 = await img.getAttribute('src');
+        await search.first().fill(team2 + ' FC');
         await search.first().press('Enter');
-        await img.click();
-        const url2 = await link.getAttribute('src');
+        const url2 = await img.getAttribute('src');
+        // const url2 = await link.getAttribute('src');
+        // console.log(url1, url2)
         return [url1, url2];
     } catch (error) {
-        if (pageT) await pageT.close();
+        // if (pageT) await pageT.close();
         console.log(error);
         return ['', ''];
     }
@@ -1279,5 +1283,5 @@ module.exports = {
     calculateTotalGol,
     getBetTypes,
     groupAndReduceBetsByType,
-    getUrlsTeams
+    getUrlsTeams,
 }

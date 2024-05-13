@@ -10,17 +10,28 @@ const { getUnibetApi } = require("./unibet");
 const { getLuckiaApi } = require("./luckia");
 const { getResultsMegapuesta } = require("./megapuesta");
 const { getResultsSportium } = require("./sportium");
-const { createJSON, evaluateSurebets, getResponse, closeBrowser, generarCombinacionesDeCasas3, initBrowser, closeContext, generarCombinacionesDeCasas2, dividirArregloEnDosSubarreglos, matchnames, tienenPalabrasEnComunDinamico } = require("./utils");
+const {
+    createJSON,
+    getResponse,
+    closeBrowser,
+    dividirArregloEnDosSubarreglos,
+    matchnames, 
+    categoryActual} = require("./utils");
 const { getResultsWonder } = require("./wonderbet");
 const { getResultsWPlay } = require("./wplay");
 const { getResultsYaJuegos } = require("./yajuegos");
 const { getResultsZamba } = require("./zamba");
 const { getResultsBetboro } = require("./betboro");
-const { betTypesFootball, categories, betTypesBaketball, idsFootball, idsBasketball } = require("../logic/constantes");
+const {
+    betTypesFootball,
+    categories,
+    betTypesBaketball,
+    idsFootball,
+    idsBasketball,
+} = require("../logic/constantes");
 const { QuoteManager } = require("../logic/utils/QuoteManage");
 
-// Crear una instancia de QuoteManager
-const quoteManager = new QuoteManager();
+
 
 const types = {
     football: {
@@ -36,11 +47,14 @@ const types = {
 
 async function execute() {
     const inicio = new Date();
+    // console.log(await tienenPalabrasEnComunDinamico('1. FC Kaiserslautern 1. FC Magdeburg', '1. FC Kaiserslautern Bayer Leverkusen'))
     const calculatePerPair = async (eventOdd, n, category) => {
+        const quoteManager = new QuoteManager();
         let surebets = [];
         let cont = 0;
         for (const event of eventOdd) {
-
+            await getResultsBetwinner('Cleveland Cavaliers - Boston Celtics', betTypes['1xbet'], n, '1xbet');
+            break;
             console.log('///////////////// ejecucion pair ' + n);
             // Fecha y hora en formato UTC
             const fechaUTC = new Date(event.event.start);
@@ -59,21 +73,21 @@ async function execute() {
                 getResultsWPlay(name, betTypes.wplay, n),
                 getResultsBetsson(name, betTypes.betsson, n),
                 getResultsBetwinner(name, betTypes['1xbet'], n),
-                getResults1xbet(name, betTypes['1xbet'], n),
-                getCodereApi(name, betTypes.codere, n),
+                getResultsBetboro(name, betTypes.betboro, n),
             ]);
 
             const results3 = await Promise.all([
+                getResultsBetwinner(name, betTypes['1xbet'], n, '1xbet'),
+                getCodereApi(name, betTypes.codere, n),
                 getLuckiaApi(name, betTypes.luckia, n),
                 getResultsSportium(name, betTypes.sportium, n),
                 getResultsZamba(name, betTypes.zamba, n),
-                getResultsWonder(name, betTypes.wonderbet, n),
             ]);
 
             const results2 = await Promise.all([
+                getResultsWonder(name, betTypes.wonderbet, n),
                 getResultsMegapuesta(name, betTypes.megapuesta, n),
                 getFullretoApi(name, betTypes.fullreto, n),
-                getResultsBetboro(name, betTypes.betboro, n),
                 getUnibetApi(event.event, betTypes.betplay, n),
             ]);
 
@@ -87,9 +101,9 @@ async function execute() {
             quoteManager.addQuotes(results2, types[category].types);
             quoteManager.addQuotes(results3, types[category].types);
 
-            const surebet = quoteManager.processSurebets(data, url,  types[category].ids);
-            console.log(surebet);
+            const surebet = await quoteManager.processSurebets(data, url, types[category].ids);
             surebets.push(surebet);
+            console.log(surebet)
             quoteManager.clearQuotes();
             if (cont % 20 == 0 && cont != 0) {
                 await createJSON('surebet_' + category + n + '_' + cont, surebets);
@@ -103,16 +117,16 @@ async function execute() {
     }
 
     for (const category of categories) {
+        categoryActual.current = category;
         const res = await getResponse(category);
         betTypes = getBetTypes(types[category].types, category);
-        // await getResultsBetwinner('Borussia Dortmund - París SG', betTypes['1xbet'], 1);
         let events = res.events;
         events = events.filter(({ event }) => !event.name.includes('Esports'));
         console.log(events.length);
         let pairs = dividirArregloEnDosSubarreglos(events, 2);
         await Promise.all([
             calculatePerPair(pairs[0], 1, category),
-            calculatePerPair(pairs[1], 2, category),
+            // calculatePerPair(pairs[1], 2, category),
         ]);
         await closeBrowser();
     }
@@ -127,4 +141,3 @@ module.exports = {
     execute,
     getResultsYaJuegos,
 };
-

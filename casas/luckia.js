@@ -21,7 +21,7 @@ async function buscarApi(match) {
             for (const q of res) {
                 if (q.Name.indexOf('-') > 0) {
                     const p = await tienenPalabrasEnComunDinamico(match, q.Name);
-                    console.log((match, q.Name))
+                    // console.log((match, q.Name))
                     if (p.pass) optPass.push({ opcion: q, similarity: p.similarity });
                 }
             }
@@ -41,21 +41,30 @@ async function buscarApi(match) {
 
 const cleanText = text => text.replace(/\s+/g, ' ').trim();
 
-async function extractGoalOptions(page) {
+async function extractGoalOptions(page, type) {
     const goalTexts = await page.evaluate(() => {
         const elements = Array.from(document.querySelectorAll('.lp-offer__heading-title'));
         return elements
-            .filter(el => el.textContent.trim().startsWith("Menos/más") || el.textContent.trim().startsWith("Menos/Más"))
+            .filter(el => {
+                const text = el.textContent.trim();
+                if (text.includes("1X2 - Hándicap")) return text.includes("1X2 - Hándicap")
+                return text.includes("Menos/más") ||
+                    text.includes("Menos/Más")
+            })
             .map(el => el.textContent);
     });
     const uniqueNumbers = new Set();
     goalTexts.forEach(text => {
-        const matches = text.match(/\d+(\.\d+)?/g); // Captura números, incluyendo decimales
+        let matches;
+        if (type === '1X2 - Hándicap') {
+            matches = text.match(/\d+:\d+/g); // Captura formatos como "0:3"
+        } else {
+            matches = text.match(/\d+(\.\d+)?/g); // Captura números, incluyendo decimales
+        }
         if (matches) {
             matches.forEach(match => uniqueNumbers.add(match));
         }
     });
-
     return Array.from(uniqueNumbers); // Retorna un arreglo de números únicos encontrados
 }
 function buildXPathsFromNumbers(numbers, bet) {
@@ -79,6 +88,9 @@ function buildXPathsFromNumbers(numbers, bet) {
         case 'Menos/Más corners':
             goalXpath = numbers.map(n => `normalize-space(text()) = 'Menos/Más ${n} corners'`).join(' or ');
             break;
+        case '1X2 - Hándicap':
+            goalXpath = numbers.map(n => `normalize-space(text()) = '1X2 - Hándicap ${n}'`).join(' or ');
+            break;
         default:
             // Opcionalmente manejar casos no esperados o un valor por defecto
             console.log('Tipo de apuesta no reconocida.');
@@ -98,8 +110,11 @@ const permit1 = [
     '2ª mitad - Menos/Más',
     'Menos/Más tarjetas (jugadores en juego)',
     'Menos/Más corners',
-    '2º Mitad - total'
+    '2º Mitad - total',
+    '1X2 - Hándicap'
 ];
+
+let url = '';
 
 async function getLuckiaApi(name, types, n) {
     try {
@@ -109,12 +124,13 @@ async function getLuckiaApi(name, types, n) {
         let bets = [];
         page.setDefaultTimeout(timeouts.bet);
         let scroll = 600;
+        url = await page.url();
         for (const type of types) {
             try {
                 let title = '';
                 await page.mouse.wheel(0, scroll);
                 if (permit1.includes(type.type)) {
-                    const numbers = await extractGoalOptions(page); // Asume que 'page' es una instancia de Page de Playwright
+                    const numbers = await extractGoalOptions(page, type.type); // Asume que 'page' es una instancia de Page de Playwright
                     const { titlesXPath, buttonsXPath } = buildXPathsFromNumbers(numbers, type.type);
                     let titles = await page.locator(titlesXPath).all();
                     let btns = await page.locator(buttonsXPath).all();
@@ -122,19 +138,39 @@ async function getLuckiaApi(name, types, n) {
                     for (let i = 0; i < titles.length / 2; i++) {
                         let text = await btns[i].textContent();
                         text = text.split('\n').map(linea => linea.trim()).filter(linea => linea !== '');
-                        betTemp.push({
-                            name: text[2],
-                            quote: text[3].replace(',', '.'),
-                        });
-                        betTemp.push({
-                            name: text[0],
-                            quote: text[1].replace(',', '.'),
-                        });
+                        if (type.type == "1X2 - Hándicap") {
+                            let t = await titles[i].textContent();
+                            t = t.trim();
+                            t = t.substring(t.length - 3);
+                            betTemp.push({
+                                name: text[0] + ' ' + t,
+                                quote: text[1].replace(',', '.'),
+                            });
+                            betTemp.push({
+                                name: text[2] + ' ' + t,
+                                quote: text[3].replace(',', '.'),
+                            });
+                            betTemp.push({
+                                name: text[4] + ' ' + t,
+                                quote: text[5].replace(',', '.'),
+                            });
+                        } else {
+                            betTemp.push({
+                                name: text[2],
+                                quote: text[3].replace(',', '.'),
+                            });
+                            betTemp.push({
+                                name: text[0],
+                                quote: text[1].replace(',', '.'),
+                            });
+                        }
+
                     }
                     bets.push({
                         id: Object.keys(type)[0],
                         type: cleanText(type.type),
                         bets: betTemp,
+                        url,
                     });
                 }
                 else {

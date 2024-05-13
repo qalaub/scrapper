@@ -246,6 +246,8 @@ const corners = {
 }
 
 const typeMappings = {
+    'Hándicap': 27,
+    27: 'Hándicap',
     'Total': 17,
     '1x2': 1,
     17: 'Total',
@@ -261,52 +263,6 @@ const typeMappings = {
     'Se clasificará': 100,
     100: 'Se clasificará',
 };
-
-async function getResults1xbet(match, betTypes = ['1x2'], n) {
-    const { page, context } = await initBrowser('https://betwinner-792777.top/es', '1xbet', n);
-    if (page) {
-        try {
-            const matchTemp = match.replace(/\b(Club|Atletico)\b/gi, "").replace(/\s{2,}/g, ' ').trim();
-            const encontrado = await buscar(page, matchTemp, buscarQ, intentarEncontrarOpcion);
-            if (encontrado == 'no hay resultados') return;
-            let ids = [];
-            let type = '';
-            page.on('request', request => {
-                let url = request.url();
-                if (url.includes('Zip') && url.includes('id=')) {
-                    let temp = url.substring(url.indexOf('id=') + 3);
-                    ids.push({
-                        id: temp.substring(0, temp.indexOf('&lng')),
-                        type
-                    });
-                }
-            });
-            await page.waitForTimeout(3000);
-            page.setDefaultTimeout(1000);
-            await page.locator('div').filter({ hasText: /^Tiempo reglamentario$/ }).nth(3).click();
-            if (await page.getByRole('button', { name: '1 Mitad', exact: true }).isVisible()) {
-                type = "1 Mitad"
-                await page.getByRole('button', { name: '1 Mitad', exact: true }).click();
-                await page.locator('#game_toolbar').getByText('Mitad').click();
-            }
-            type = "2 Mitad";
-            await page.getByRole('button', { name: '2 Mitad', exact: true }).click();
-            await page.locator('#game_toolbar span').filter({ hasText: 'Mitad' }).nth(1).click();
-            type = "Saques de esquina";
-            await page.getByRole('button', { name: 'Saques de esquina', exact: true }).click();
-            await page.getByText('Saques de esquina').click();
-            type = "Tarjetas amarillas";
-            await page.getByRole('button', { name: 'Tarjetas amarillas', exact: true }).click();
-            await page.getByText('Tarjetas amarillas').click();
-            type = "Tiempo reglamentario";
-            await page.getByRole('button', { name: 'Tiempo reglamentario' }).click();
-            await page.close();
-            await getBetwinnerApi(match, betTypes, ids);
-        } catch (error) {
-            // console.log(error);
-        }
-    }
-}
 
 const permit1 = [
     'Total',
@@ -387,5 +343,4 @@ async function getBetwinnerApi(name, types, ids) {
 module.exports = {
     get1xBetApi,
     getType1xbet,
-    getResults1xbet
 }

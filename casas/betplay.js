@@ -1,11 +1,21 @@
+const { groupByType, groupByTypeBasketball } = require("../logic/constantes");
 const { getBetType, calculateTotalGol, groupAndReduceBetsByType } = require("../logic/surebets");
 const { buscar } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
 const { getResults1xBet } = require("./1xbet");
 const { getResultsBetsson } = require("./betsson");
-const { createJSON, initBrowser, obtenerCombinacionesCotizaciones, calculateSureBet, evaluateSurebets, extraerCotizaciones, generarCombinacionesDeCasas, quitarTildes, tienenPalabrasEnComunDinamico, generarCombinacionesDeCasas2, generarCombinacionesDeCasas3, obtenerObjetoPorTipo, agruparApuestas } = require("./utils");
+const {
+    createJSON,
+    initBrowser,
+    evaluateSurebets,
+    quitarTildes,
+    tienenPalabrasEnComunDinamico,
+    generarCombinacionesDeCasas3,
+    obtenerObjetoPorTipo,
+    agruparApuestas,
+    categoryActual
+} = require("./utils");
 const { getResultsWPlay } = require("./wplay");
-const { getResultsYaJuegos } = require("./yajuegos");
 
 async function getResults1x2(betTypes = ['Total de goles']) {
     const { page, context } = await initBrowser('https://betplay.com.co/', 'betplay');
@@ -548,8 +558,10 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
     filter = filter.map(f => {
         const name = f.criterion.label;
         let bets = f.outcomes.map(bet => {
+            const result = parseInt(bet.line);
+            const formatted = isNaN(result) ? '' : (result / 1000).toFixed(1);
             return {
-                name: bet.label + ((parseInt(bet.line) / 1000).toFixed(1) || ''),
+                name: bet.label + formatted,
                 quote: (parseInt(bet.odds) / 1000).toFixed(2)
             }
         });
@@ -561,13 +573,23 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
         }
     });
     // Agrupar las apuestas de 'Total de goles' y eliminar las múltiples entradas
-    let reducedBetsArray = agruparApuestas(filter, type[1].type);
-    reducedBetsArray = agruparApuestas(reducedBetsArray, type[6]?.type || '');
-    reducedBetsArray = agruparApuestas(reducedBetsArray, type[10]?.type || '');
-    reducedBetsArray = agruparApuestas(reducedBetsArray, type[13]?.type || '');
-    reducedBetsArray = agruparApuestas(reducedBetsArray, type[15]?.type || '');
+    let reducedBetsArray = agruparApuestas(filter, type[groupByType.total].type);
+    if (categoryActual.current == 'football') {
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByType.total2]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByType.total1]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByType.esquinas]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByType.tarjetas]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByType.handicap]?.type || '');
+    } else if (categoryActual.current == 'basketball') {
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.total1]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.total2]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto1]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto2]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto3]?.type || '');
+        reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto4]?.type || '');
+    }
+
     console.log(`//////////////////// ${name} //////////////////`)
-    // console.log(reducedBetsArray)
     console.log(`//////////////////// ${name} //////////////////`)
     return reducedBetsArray;
 }
@@ -575,11 +597,14 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
 async function getBetPlayApi(event, betTypes) {
     const res = await
         initRequest(`https://na-offering-api.kambicdn.net/offering/v2018/betplay/betoffer/event/${event.id}.json?lang=es_CO&market=CO&client_id=2&channel_id=1&includeParticipants=true`);
-    if (res.betOffers) {
-        return {
-            nombre: 'betplay',
-            title: event.name,
-            bets: getBetForBetplay(res.betOffers, betTypes)
+    if (res) {
+        if (res?.betOffers) {
+            return {
+                nombre: 'betplay',
+                title: event.name,
+                bets: getBetForBetplay(res.betOffers, betTypes),
+                url: `https://betplay.com.co/apuestas#event/${event.id}`
+            }
         }
     }
 

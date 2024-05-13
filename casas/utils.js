@@ -3,22 +3,25 @@ const fs = require('fs').promises; // Importa la versión promisificada de fs
 const { postFormData, initRequest } = require("../logic/utils/request");
 const levenshtein = require('fast-levenshtein');
 const { timeouts } = require("../const/timeouts");
+
+let categoryActual = {};
 let matchnames = [];
 let surebetcont = 0;
 
 const userAgents = [
     // Windows
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.212 Safari/537.36',
     'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) Chrome/0.2.149.27',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0',
+
     // Linux
     'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0',
-    'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36',
-    // Edge
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.818.62 Safari/537.36 Edg/90.0.818.56',
-    // Opera
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36 OPR/60.0.3255.170',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/123.0.0.0 Safari/537.36'
+    'Mozilla/5.0 (X11; Linux x86_64) Chrome/90.0.4430.212 Safari/537.36',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0',
+    'Mozilla/5.0 (X11; Linux x86_64) Ubuntu Chromium/65.0.3325.181 Chrome/65.0.3325.181 Safari/537.36',
+    'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:54.0) Gecko/20100101 Firefox/54.0',
 ];
 
 let pages = {
@@ -39,14 +42,15 @@ async function initBrowser(url, name, timeout = 5000) {
     const tryCreate = async () => {
         if (!browserInstance) {
             // Si no existe una instancia del navegador, crea una nueva
-            const browser = await firefox.launch({
-                headless: true,
+            const browser = await chromium.launch({
+                headless: false,
                 viewport: { width: 550, height: 680 },
                 args: ['--no-sandbox'],
             });
             const context = await browser.newContext({
                 userAgent: randomUserAgent,
-                ignoreHTTPSErrors: false
+                ignoreHTTPSErrors: false,
+                locale: 'es-ES',
             });
             browserInstance = { browser, context }; // Almacena referencia al navegador y al contexto
         }
@@ -125,7 +129,7 @@ async function closeContext() {
 }
 
 async function getResponse(type) {
-    let noLive = `https://na-offering-api.kambicdn.net/offering/v2018/betplay/listView/${type}/all/all/all/starting-within.json?lang=es_CO&market=CO&client_id=2&channel_id=1&useCombined=true&useCombinedLive=true&${generateFormattedDateRange(24)}`;
+    let noLive = `https://na-offering-api.kambicdn.net/offering/v2018/betplay/listView/${type}/all/all/all/starting-within.json?lang=es_CO&market=CO&client_id=2&channel_id=1&useCombined=true&useCombinedLive=true&${generateFormattedDateRange(48)}`;
     let live = 'https://na-offering-api.kambicdn.net/offering/v2018/betplay/listView/football/all/all/all/in-play.json?lang=es_CO&market=CO&client_id=2&channel_id=1&useCombined=true&useCombinedLive=true';
     let re = await fetch(noLive);
     let res = await re.json();
@@ -274,58 +278,46 @@ function quitarTildes(cadena) {
     return cadena.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 
-function aplicarSinonimos(palabras, sinonimos) {
-    return palabras.map(palabra => {
-        palabra = normalizar(palabra);
-        for (let key in sinonimos) {
-            const sinonimosNormalizados = sinonimos[key].map(s => normalizar(s));
-            if (sinonimosNormalizados.includes(palabra)) {
-                return key;  // Retorna el término canónico si encuentra un sinónimo
-            }
-        }
-        return palabra;  // Retorna la palabra original si no se encuentra un sinónimo
-    });
-}
-
-function generarNGramas(palabras, n = 2) {
-    let ngramas = [];
-    for (let i = 0; i <= palabras.length - n; i++) {
-        ngramas.push(palabras.slice(i, i + n).join(' '));
-    }
-    return ngramas;
-}
-
 function normalizar(palabra) {
     palabra = quitarTildes(palabra);
-    return palabra.toLowerCase()
+    return palabra
         .replace(/\b(sub-20|u20|under 20|sub 20|subtwenty)\b/g, 'sub20')
-        .replace(/\b(femenino|female|women|w|f)\b/g, 'femenino')
+        .replace(/\b(femenino|female|women|w|f|fem|\(f\)|\(fem\)|\(w\))\b/g, 'femenino') // Incluye (F) y (Fem)
         .replace(/\b(90 min)\b/g, '')
-        .replace(/[\(\)]/g, '')  // Elimina paréntesis
+        .replace(/[\(\)]/g, '')  // Elimina paréntesis restantes
         .replace(/[-.']/g, ' ')
         .replace(/\b(vs\.|v\.|vs|v)\b/g, ' ')
         .replace(/\s+/g, ' ')  // Sustituye múltiples espacios en blanco por un solo espacio
+        .replace(/-|\./g, '')
+        .toLowerCase()
         .trim();
 }
 
-function evaluarCoincidencias(palabras1, palabras2, sinonimos) {
-    palabras1 = aplicarSinonimos(palabras1, sinonimos);
-    palabras2 = aplicarSinonimos(palabras2, sinonimos);
-
-    // Comparar cada palabra con flexibilidad
-    const set1 = new Set(palabras1);
-    const set2 = new Set(palabras2);
-    const interseccion = new Set([...set1].filter(x => set2.has(x)));
-    const puntuacion = (interseccion.size / Math.min(set1.size, set2.size)) * 100;
-    // console.log(puntuacion)
-    return puntuacion >= 65;  // Considera ajustar este umbral según tus necesidades
+function distanciaLevenshtein(a, b) {
+    const matriz = [];
+    for (let i = 0; i <= a.length; i++) {
+        matriz[i] = [i];
+    }
+    for (let j = 0; j <= b.length; j++) {
+        matriz[0][j] = j;
+    }
+    for (let i = 1; i <= a.length; i++) {
+        for (let j = 1; j <= b.length; j++) {
+            const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+            matriz[i][j] = Math.min(matriz[i - 1][j] + 1, matriz[i][j - 1] + 1, matriz[i - 1][j - 1] + cost);
+        }
+    }
+    return matriz[a.length][b.length];
 }
 
+function equiposIguales(equipo1, equipo2) {
+    const umbral = 3;  // Ajustar según la necesidad
+    return distanciaLevenshtein(equipo1, equipo2) <= umbral;
+}
 
-function tienenPalabrasEnComunDinamicoT(cadena1, cadena2, porcentajeUmbral = 65) {
-    if (cadena1 == 'Locales Visitantes' || cadena2 == 'Locales Visitantes') return false;
-    porcentajeUmbral = 50;
-    const sinonimos = {
+function obtenerSinonimos() {
+    return {
+        'maceio': ['crb maceio', 'maceio', 'crb_al'],
         'psg': ['psg', 'paris sg', 'paris saint-germain', 'paris saint germain'],
         'paris': ['psg', 'paris sg', 'paris saint-germain', 'paris saint germain'],
         'criciuma': ['criciuma', 'cricluma'],
@@ -400,15 +392,81 @@ function tienenPalabrasEnComunDinamicoT(cadena1, cadena2, porcentajeUmbral = 65)
         "nacional": ["atlético nacional", "atletico nacional", "nacional", "atl nacional"]
         // Continúa expandiendo según necesidad
     };
+}
 
-    const normalizada1 = normalizar(cadena1);
-    const normalizada2 = normalizar(cadena2);
-    if (normalizada1 === normalizada2) {
+function obtenerTerminosEspeciales() {
+    return ['II', '2'];
+}
+
+function aplicarSinonimos(palabras, sinonimos) {
+    return palabras.map(palabra => {
+        for (let key in sinonimos) {
+            if (sinonimos[key].includes(palabra)) {
+                return key;  // Retorna el término canónico si encuentra un sinónimo
+            }
+        }
+        return palabra;  // Retorna la palabra original si no se encuentra un sinónimo
+    });
+}
+
+function contieneTerminosEspeciales(palabras, terminosEspeciales) {
+    return palabras.some(palabra => terminosEspeciales.includes(palabra));
+}
+
+function obtenerDistanciaLevenshtein(str1, str2) {
+    return levenshtein.get(str1, str2);
+}
+
+function obtenerSimilitudJaccard(set1, set2) {
+    const interseccion = new Set([...set1].filter(item => set2.has(item)));
+    const union = new Set([...set1, ...set2]);
+    return interseccion.size / union.size;
+}
+
+function evaluarCoincidencias(palabras1, palabras2) {
+    const set1 = new Set(palabras1);
+    const set2 = new Set(palabras2);
+
+    const sinonimos = obtenerSinonimos();
+    palabras1 = aplicarSinonimos(palabras1, sinonimos);
+    palabras2 = aplicarSinonimos(palabras2, sinonimos);
+
+    const terminosEspeciales = obtenerTerminosEspeciales();
+    const especial1 = contieneTerminosEspeciales(palabras1, terminosEspeciales);
+    const especial2 = contieneTerminosEspeciales(palabras2, terminosEspeciales);
+
+    // Si uno contiene términos especiales y el otro no, retorna false.
+    if (especial1 !== especial2) {
+        return false;
+    }
+
+    const jaccard = obtenerSimilitudJaccard(set1, set2);
+    const distanciaLevenshtein = obtenerDistanciaLevenshtein(palabras1.join(' '), palabras2.join(' '));
+    const esJaccardSuficiente = jaccard >= 0.6; // Ajusta este umbral según tus necesidades.
+    const esLevenshteinAceptable = distanciaLevenshtein <= 4.5; // Ajusta este umbral según tus necesidades.
+
+    return esJaccardSuficiente && esLevenshteinAceptable;
+}
+
+function tienenPalabrasEnComunDinamicoT(cadena1, cadena2) {
+    if (cadena1 === 'Locales Visitantes' || cadena2 === 'Locales Visitantes') {
+        return false;
+    }
+
+    const equipo1 = normalizar(cadena1);
+    const equipo2 = normalizar(cadena2);
+
+    if (equiposIguales(equipo1, equipo2)) {
         return true;
     }
-    let palabras1 = normalizada1.split(' ');
-    let palabras2 = normalizada2.split(' ');
-    return evaluarCoincidencias(palabras1, palabras2, sinonimos, porcentajeUmbral);
+
+    // Expresión regular para dividir la cadena en palabras, teniendo en cuenta guiones bajos
+    const palabrasRegex = /[^_\W]+(?:_[^_\W]+)*/g;
+
+    let palabras1 = cadena1.match(palabrasRegex) || []; // Divide la cadena en palabras
+    let palabras2 = cadena2.match(palabrasRegex) || [];
+
+    return evaluarCoincidencias(palabras1, palabras2);
 }
 
 async function tienenPalabrasEnComunDinamico(cadena1, cadena2, porcentajeUmbral = 65) {
@@ -424,7 +482,7 @@ async function tienenPalabrasEnComunDinamico(cadena1, cadena2, porcentajeUmbral 
     }, 'application/json');
     console.log(cadena1, cadena2)
     console.log(res)
-    if (res) return { similarity: res.similarity, pass: res.similarity > 0.76 };
+    if (res) return { similarity: res.similarity, pass: res.similarity > 0.70 };
     return { similarity: '', pass: false };
 }
 
@@ -444,8 +502,8 @@ function generarCombinacionesDeCasas2(casas) {
                 for (let b = 0; b < casas[j].cuotas.length; b++) {
                     if (a !== b) { // Asegurar que se usen cuotas diferentes para la combinación
                         combinaciones.push([
-                            { casa: casas[i].nombre, team: casas[i].cuotas[a].name, quote: casas[i].cuotas[a].quote },
-                            { casa: casas[j].nombre, team: casas[j].cuotas[b].name, quote: casas[j].cuotas[b].quote }
+                            { casa: casas[i].nombre, team: casas[i].cuotas[a].name, quote: casas[i].cuotas[a].quote, url: casas[i].url || '' },
+                            { casa: casas[j].nombre, team: casas[j].cuotas[b].name, quote: casas[j].cuotas[b].quote, url: casas[j].url || '' }
                         ]);
                     }
                 }
@@ -476,9 +534,9 @@ function generarCombinacionesDeCasas3(casas) {
                             // Asegurar que se usen cuotas diferentes para la combinación
                             if (a !== b && b !== c && a !== c) {
                                 combinaciones.push([
-                                    { casa: casas[i].nombre, team: casas[i].cuotas[a].name, quote: casas[i].cuotas[a].quote },
-                                    { casa: casas[j].nombre, team: casas[j].cuotas[b].name, quote: casas[j].cuotas[b].quote },
-                                    { casa: casas[k].nombre, team: casas[k].cuotas[c].name, quote: casas[k].cuotas[c].quote }
+                                    { casa: casas[i].nombre, team: casas[i].cuotas[a].name, quote: casas[i].cuotas[a].quote, url: casas[i].url || '' },
+                                    { casa: casas[j].nombre, team: casas[j].cuotas[b].name, quote: casas[j].cuotas[b].quote, url: casas[j].url || '' },
+                                    { casa: casas[k].nombre, team: casas[k].cuotas[c].name, quote: casas[k].cuotas[c].quote, url: casas[k].url || '' }
                                 ]);
                             }
                         }
@@ -503,13 +561,16 @@ function evaluateSurebets(combinations, totalInvestment, data, url, type) {
         console.log(results[0].investments)
         let fecha = new Date(data.start);
         let fechaISO = fecha.toISOString();
+        const category = getCategoryByMatch(type)
         results.forEach(async result => {
+            console.log(result.investments)
             postFormData('https://lafija.qalaub.com/v1/api/surebet/', {
                 surebet: JSON.stringify(
                     {
                         surebet: result.investments,
                         ...data,
                         type,
+                        event: category,
                     }
                 ),
                 team1: url.team1.toString(),
@@ -554,6 +615,7 @@ function calculateSureBetForCombination(combination, totalInvestment, type) {
             type,
             casa: combination[index].casa,
             team: combination[index].team,
+            url: combination[index].url,
             odd: odd,
             investment: parseFloat(investment)
         });
@@ -702,6 +764,52 @@ function agruparApuestas(apuestas, tipoDeseado) {
     return otrosTipos;
 }
 
+function getCategoryByMatch(type) {
+    const categories = {
+        "Principal": [
+            'Tiempo reglamentario',
+            'Ambos Equipos Marcarán',
+            'Se clasifica para la siguiente ronda',
+            'Doble Oportunidad',
+        ],
+        "Goles": [
+            'Total de goles',
+            'Ambos Equipos Marcarán',
+            'Gol en ambas mitades',
+        ],
+        "1 Mitad": [
+            'Total de goles - 1.ª parte',
+            'Ambos Equipos Marcarán - 1.ª parte',
+            'Doble Oportunidad - 1.ª parte',
+            'Hándicap asiático - 1.ª parte',
+            'Total asiático - 1.ª parte',
+        ],
+        "2 Mitad": [
+            'Total de goles - 2.ª parte',
+            'Ambos Equipos Marcarán - 2.ª parte',
+            'Doble Oportunidad - 2.ª parte',
+            '2.ª parte',
+        ],
+        "Tarjetas": [
+            'Total de tarjetas',
+            'Tarjeta Roja mostrada',
+            'Más Tarjetas',
+        ],
+        "Esquinas": [
+            'Total de Tiros de Esquina',
+            'Más Tiros de Esquina',
+            'Total de Tiros de Esquina - 1.ª parte',
+        ],
+    };
+
+    for (const category in categories) {
+        if (categories[category].includes(type)) {
+            return category;
+        }
+    }
+    return "Categoría Desconocida";
+}
+
 
 
 module.exports = {
@@ -729,5 +837,6 @@ module.exports = {
     matchnames,
     surebetcont,
     scrollToBottom,
-    agruparApuestas
+    agruparApuestas,
+    categoryActual
 }

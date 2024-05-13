@@ -72,25 +72,21 @@ const intentarEncontrarOpcion = async (page, match) => {
     return false;
 };
 
+let url = '';
+
 async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
     const { page, context } = await initBrowser('https://www.betsson.co/apuestas-deportivas', 'betsson' + n);
     if (page) {
         try {
             page.setDefaultTimeout(timeouts.search);
-            const ignore = await page.getByText('Ignore');
-            if (await ignore.first().isVisible()) await ignore.first().click();
+            const ignore = await page.getByText('Ignorar');
+            if (await ignore.first().isVisible({ timeout: 10000 })) await ignore.first().click();
+            // const updateBrowser = await page.getByText('Actualizar navegador');
+            // if (await updateBrowser.first().isVisible()) await updateBrowser.first().click();
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
-            let betsson = {
-                nombre: 'betsson',
-                title: match,
-                bets: []
-            }
             await page.waitForLoadState('networkidle');
             let cont = 1;
-            // const container = await page.locator('(//ng-scrollbar[@thumbclass= "main-section"])[2]'); // Utilizando ancestor para subir en la jerarquía DOM 6 veces
-            // await container.waitFor({ state: 'visible' });
-            // await container.scrollIntoViewIfNeeded();
             await page.locator('(//span[@test-id= "event-page.resize"])[1]').click();
             await page.waitForTimeout(700);
             await page.waitForTimeout(700);
@@ -99,11 +95,21 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
             await page.waitForTimeout(700);
             page.setDefaultTimeout(timeouts.bet);
             let scroll = 400;
+            const container = page.locator('//*[@test-id = "event.market-tabs"]');
+            const size = await container.boundingBox();
+            if (size.height < 3000) scroll = 0;
+            url = await page.url();
+            let betsson = {
+                nombre: 'betsson',
+                title: match,
+                bets: [],
+                url
+            }
             for (const betType of betTypes) {
                 try {
                     await page.mouse.wheel(0, scroll / 2);
-                    if (cont == 6) scroll = 600;
-                    if (cont == 8) scroll = 800;
+                    if (cont == 6 && size.height > 3000) scroll = 600;
+                    if (cont == 8 && size.height > 3000) scroll = 850;
                     // if (betType.type == 'resultado del 2do tiempo') await page.getByText('Tiempos', { exact: true }).click();
                     let type = await page.locator('xpath=(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]').first();
                     await type.waitFor({ state: 'visible' });
@@ -111,7 +117,8 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                     let betTemp = {
                         id: Object.keys(betType)[0],
                         type: betType.type,
-                        bets: []
+                        bets: [],
+                        url,
                     }
                     const parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*');
                     const cl = await parent.getAttribute('class');

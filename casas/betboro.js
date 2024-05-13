@@ -53,8 +53,9 @@ const permit1 = [
     'Córneres: Total',
     'Total de Goles de la 1ra mitad',
     '2da mitad Total de  goles',
+    ' Hándicap 3 opciones',
 ];
-
+let url = '';
 async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser('https://m.betboro.com/es/sports/pre-match/event-view/Soccer', 'betboro' + n);
     if (page) {
@@ -62,23 +63,25 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
             await page.locator('#root > div.layout-content-holder-bc > div.filter-sports-bc > div.sport-search-bc > div').click();
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
+            url = await page.url();
             let betBoro = {
                 nombre: 'betboro',
                 title: match,
-                bets: []
+                bets: [],
+                url
             }
             await page.locator('.ss-icon-holder-bc').click();
             const input = await page.locator('.ss-input-bc');
             for (const betType of betTypes) {
                 try {
                     let names, bets;
-                    page.setDefaultTimeout(1000);
+                    page.setDefaultTimeout(1300);
                     await input.fill(betType.type);
-                    await page.waitForTimeout(1000);
+                    await page.waitForTimeout(1200);
                     page.setDefaultTimeout(timeouts.bet);
                     if (permit1.includes(betType.type)) {
                         bets = await page.locator('//p[text()= "' + betType.type + '"]/parent::*/parent::*/parent::*//div[contains(@class, "market-bc")]').all();
-                        bets = bets.slice(2);
+                        bets = bets.slice(betType.type == ' Hándicap 3 opciones' ? 3 : 2);
                     } else {
                         bets = await page.locator('//p[text()= "' + betType.type + '"]/parent::*/parent::*/parent::*//div[contains(@class, "market-bc")]').all();
                     }
@@ -100,10 +103,11 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
                             });
                         }
                     }
+                    // if (type == ' Hándicap 3 opciones') console.log(betTemp)
                     betBoro.bets.push(betTemp);
                     console.log('//////// BETBORO LENGTH ', betBoro.bets.length)
                 } catch (error) {
-                    // console.log(error)
+                    //  console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
 

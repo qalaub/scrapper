@@ -70,7 +70,7 @@ const filterData = (filter, types) => {
         bets = f.Items.map(e => {
             return {
                 name: e.Name,
-                quote: e.Price.toFixed(2)
+                quote: truncatePrice(e.Price)
             }
         });
         if (permit1.includes(f.Name)) bets.sort((a, b) => {
@@ -87,6 +87,27 @@ const filterData = (filter, types) => {
             // Orden principal por el número
             return numberA - numberB;
         });
+        if (f.Name == 'Hándicap 1x2') {
+            // Primero, extraer los handicaps únicos y su orden de aparición
+            const handicaps = [...new Set(bets.map(bet => bet.name.match(/\(([^)]+)\)/)[1]))];
+
+            // Orden de los equipos basado en su primera aparición
+            const teamOrder = [...new Set(bets.map(bet => bet.name.split(' ')[0]))];
+
+            bets.sort((a, b) => {
+                const handicapA = a.name.match(/\(([^)]+)\)/)[1];
+                const handicapB = b.name.match(/\(([^)]+)\)/)[1];
+                const teamA = teamOrder.indexOf(a.name.split(' ')[0]);
+                const teamB = teamOrder.indexOf(b.name.split(' ')[0]);
+
+                // Primero ordenar por handicap
+                if (handicapA !== handicapB) {
+                    return handicaps.indexOf(handicapA) - handicaps.indexOf(handicapB);
+                }
+                // Si el handicap es el mismo, ordenar por el orden de aparición del equipo
+                return teamA - teamB;
+            });
+        }
         return {
             id: Object.keys(obtenerObjetoPorTipo(types, f.Name))[0],
             type: f.Name,
@@ -94,6 +115,8 @@ const filterData = (filter, types) => {
         }
     });
 }
+
+let url = '';
 
 async function getFullretoApi(name, types) {
     try {
@@ -110,11 +133,13 @@ async function getFullretoApi(name, types) {
             }
             let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
             console.log('//////////////////// FULLRETO //////////////////')
+            // console.log(reducedBetsArray.map(r => { if (r.id == '6') console.log(r.bets) }))
             console.log('//////////////////// FULLRETO //////////////////')
             return {
                 nombre: 'fullreto',
                 title: name,
-                bets: reducedBetsArray
+                bets: reducedBetsArray,
+                url
             }
         }
     } catch (error) {
@@ -122,6 +147,10 @@ async function getFullretoApi(name, types) {
         console.log(error)
         // }
     }
+}
+
+function truncatePrice(price) {
+    return Math.floor(price * 100) / 100;
 }
 
 module.exports = {

@@ -110,6 +110,8 @@ const permit1 = [
     'Total de tarjetas en el partido',
 ];
 
+let url = '';
+
 async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser('https://www.wonderbet.co/apuestas/#/', 'wonder' + n);
     if (page) {
@@ -117,15 +119,18 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
+            url = await page.url();
             let betWonder = {
                 nombre: 'wonder',
                 title: match,
-                bets: []
+                bets: [],
+                url
             }
             await page.getByText('Todos los mercados').click();
             await page.waitForTimeout(1000);
             // Usar la función
             await scrollToBottom(page);
+            await page.waitForTimeout(1000);
             page.setDefaultTimeout(timeouts.bet);
             for (const betType of betTypes) {
                 try {
@@ -169,7 +174,9 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                                 return numberA - numberB;
                             });
                         }
+                        if (betType.type == 'Handicap Europeo') betTemp.bets = sortHandicap(betTemp.bets);
                     }
+                    if (betType.type == 'Handicap Europeo') console.log(betTemp)
                     betWonder.bets.push(betTemp);
                     console.log('//////// WONDER LENGTH', betWonder.bets.length)
                 } catch (error) {
@@ -187,6 +194,33 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
             // await page.close();
         }
     }
+}
+
+function sortHandicap(bets) {
+    // Extraer las entradas con '1', 'X', y '2'
+    let bets1 = bets.filter(bet => bet.name.startsWith('1'));
+    let betsX = bets.filter(bet => bet.name.startsWith('X'));
+    let bets2 = bets.filter(bet => bet.name.startsWith('2'));
+
+    // Ordenar los grupos para asegurarnos de que estén en orden según el handicap
+    const sortByHandicap = (a, b) => {
+        let numA = parseInt(a.name.match(/-?\d+/)[0], 10);
+        let numB = parseInt(b.name.match(/-?\d+/)[0], 10);
+        return numA - numB;
+    };
+
+    bets1.sort(sortByHandicap);
+    betsX.sort(sortByHandicap);
+    bets2.sort(sortByHandicap);
+
+    // Crear el nuevo arreglo intercalando 'X' entre '1' y '2'
+    let sortedBets = [];
+    for (let i = 0; i < bets1.length; i++) {
+        sortedBets.push(bets1[i]);  // Añadir apuesta de '1'
+        sortedBets.push(betsX[i]);  // Añadir apuesta de 'X' correspondiente
+        sortedBets.push(bets2[i]);  // Añadir apuesta de '2'
+    }
+    return sortedBets;
 }
 
 module.exports = {
