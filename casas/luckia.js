@@ -1,7 +1,7 @@
 const { timeouts } = require("../const/timeouts");
 const { excludes, selectMoreOption } = require("../logic/utils/buscar");
 const { postFormData, postUrlEncoded, initRequest } = require("../logic/utils/request");
-const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames } = require("./utils");
+const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, categoryActual } = require("./utils");
 
 async function buscarApi(match) {
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
@@ -48,6 +48,8 @@ async function extractGoalOptions(page, type) {
             .filter(el => {
                 const text = el.textContent.trim();
                 if (text.includes("1X2 - Hándicap")) return text.includes("1X2 - Hándicap")
+                if (text.includes("Cuarto 1 - Total"))
+                    return text.includes("Cuarto 1 - Total")
                 return text.includes("Menos/más") ||
                     text.includes("Menos/Más")
             })
@@ -80,7 +82,7 @@ function buildXPathsFromNumbers(numbers, bet) {
             goalXpath = numbers.map(n => `normalize-space(text()) = '2ª mitad - Menos/Más ${n} goles'`).join(' or ');
             break;
         case '1ª mitad - Menos/Más':
-            goalXpath = numbers.map(n => `normalize-space(text()) = '1ª mitad - Menos/Más ${n} goles'`).join(' or ');
+            goalXpath = numbers.map(n => `normalize-space(text()) = '1ª mitad - Menos/Más ${n} ${categoryActual.current == 'football' ? 'goles' : 'puntos'}'`).join(' or ');
             break;
         case 'Menos/Más tarjetas (jugadores en juego)':
             goalXpath = numbers.map(n => `normalize-space(text()) = 'Menos/Más ${n} tarjetas (jugadores en juego)'`).join(' or ');
@@ -90,6 +92,21 @@ function buildXPathsFromNumbers(numbers, bet) {
             break;
         case '1X2 - Hándicap':
             goalXpath = numbers.map(n => `normalize-space(text()) = '1X2 - Hándicap ${n}'`).join(' or ');
+            break;
+        case '2ª mitad - Total':
+            goalXpath = numbers.map(n => `normalize-space(text()) = '2ª mitad - Total ${n} puntos (incl. prórroga)'`).join(' or ');
+            break;
+        case 'Cuarto 1 - Total':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Cuarto 1 - Total ${n} puntos'`).join(' or ');
+            break;
+        case 'Cuarto 2 - Total':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Cuarto 2 - Total ${n} puntos'`).join(' or ');
+            break;
+        case 'Cuarto 3 - Total':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Cuarto 3 - Total ${n} puntos'`).join(' or ');
+            break;
+        case 'Cuarto 4 - Total':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Cuarto 4 - Total ${n} puntos'`).join(' or ');
             break;
         default:
             // Opcionalmente manejar casos no esperados o un valor por defecto
@@ -111,12 +128,17 @@ const permit1 = [
     'Menos/Más tarjetas (jugadores en juego)',
     'Menos/Más corners',
     '2º Mitad - total',
-    '1X2 - Hándicap'
+    '1X2 - Hándicap',
+    'Cuarto 1 - Total',
+    'Cuarto 3 - Total',
+    'Cuarto 4 - Total',
+    'Cuarto 2 - Total',
+    '1ª mitad - Menos/Más',
+    '2ª mitad - Total',
 ];
 
-let url = '';
-
 async function getLuckiaApi(name, types, n) {
+    let url = 'https://www.luckia.co/';
     try {
         const link = await buscarApi(name);
         if (!link) return null;
@@ -172,6 +194,7 @@ async function getLuckiaApi(name, types, n) {
                         bets: betTemp,
                         url,
                     });
+                    // console.log(betTemp)
                 }
                 else {
                     title = await
@@ -180,6 +203,7 @@ async function getLuckiaApi(name, types, n) {
                     title = await title.textContent();
                     const btns = await page.locator('(//*[contains(@class , "lp-offer__heading-title") and normalize-space(text()) = "' + type.type + '"])[1]/parent::*/parent::*/div[contains(@class, "lp-offer__content")]/div/div').all();
                     let betTemp = [];
+                    let cont = 0;
                     for (const btn of btns) {
                         let name = await btn.locator('.pick-title').textContent();
                         let quote = await btn.locator('.pick-value').textContent();
@@ -189,6 +213,7 @@ async function getLuckiaApi(name, types, n) {
                             name,
                             quote: quote.replace(',', '.')
                         });
+                        cont++;
                     }
                     bets.push({
                         id: Object.keys(type)[0],
@@ -197,6 +222,7 @@ async function getLuckiaApi(name, types, n) {
                     })
                     console.log('//////// LUCKIAA LENGTH ', bets.length)
                 }
+
             } catch (error) {
                 // console.log(error)
                 console.log('ERROR AL ENCONTRAR APUESTA')
@@ -207,7 +233,8 @@ async function getLuckiaApi(name, types, n) {
         return {
             nombre: 'luckia',
             title: name,
-            bets
+            bets,
+            url
         }
     } catch (error) {
         console.log(error)

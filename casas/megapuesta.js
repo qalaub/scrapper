@@ -54,6 +54,11 @@ const permit1 = [
     'Total Tarjetas',
     '1ª M Total Goles',
     '2ª M Total Goles',
+    'Total Puntos en el Mitad 1',
+    'Total Puntos Cuarto 1',
+    'Total Puntos Cuarto 2',
+    'Total Puntos Cuarto 3',
+    'Total Puntos Cuarto 4',
 ];
 
 const permit2 = [
@@ -166,6 +171,7 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
                     }
 
                     betMegapuesta.bets.push(betTemp);
+                    // console.log(betTemp)
                     console.log('//////// MEGAPUESTA LENGTH ', betMegapuesta.bets.length)
                 } catch (error) {
                     // console.log(error)

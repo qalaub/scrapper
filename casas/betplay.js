@@ -529,8 +529,8 @@ const orderBetMoreLess = bets => {
     return bets.sort((a, b) => {
         const numberA = extractNumber(a.name);
         const numberB = extractNumber(b.name);
-        const typeA = a.name.includes('Más');
-        const typeB = b.name.includes('Más');
+        const typeA = a.name.includes('Más') || a.name.includes('más');
+        const typeB = b.name.includes('Más') || b.name.includes('más');
 
         if (numberA === numberB) {
             // Si los números son iguales, ordenar por tipo
@@ -565,7 +565,14 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
                 quote: (parseInt(bet.odds) / 1000).toFixed(2)
             }
         });
+        if (name == 'Cuarto 2' && bets[0].name == 'X') {
+            let temp = [bets[0], bets[1], bets[2]]
+            bets[0] = temp[2];
+            bets[1] = temp[0];
+            bets[2] = temp[1];
+        }
         if (permit1.includes(name)) bets = orderBetMoreLess(bets);
+
         return {
             id: Object.keys(obtenerObjetoPorTipo(type, name))[0],
             type: name,

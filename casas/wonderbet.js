@@ -108,6 +108,10 @@ const permit1 = [
     '1° Tiempo - Más de/Menos de',
     'Total tiros de esquina',
     'Total de tarjetas en el partido',
+    '4° Cuarto - Total Puntos - Más / Menos',
+    '3° Cuarto - Más / Menos',
+    '2° Cuarto - Más / Menos',
+    '1° Cuarto - Más / Menos',
 ];
 
 let url = '';
@@ -176,7 +180,14 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                         }
                         if (betType.type == 'Handicap Europeo') betTemp.bets = sortHandicap(betTemp.bets);
                     }
-                    if (betType.type == 'Handicap Europeo') console.log(betTemp)
+                    let temp = betTemp.bets;
+                    if (temp.length == 3) {
+                        if (temp[2].name == 'X') {
+                            let t = temp[2];
+                            temp[2] = temp[1];
+                            temp[1] = t;
+                        }
+                    }
                     betWonder.bets.push(betTemp);
                     console.log('//////// WONDER LENGTH', betWonder.bets.length)
                 } catch (error) {

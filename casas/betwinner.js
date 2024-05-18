@@ -2,7 +2,7 @@ const { timeouts } = require("../const/timeouts");
 const { groupAndReduceBetsByType } = require("../logic/surebets");
 const { excludes, buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
-const { getType1xbet } = require("./1xbet");
+const { getType1xbet, getType1xbetBasketball } = require("./1xbet");
 const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
@@ -95,7 +95,7 @@ async function getResultsBetwinner(match, betTypes = ['1x2'], n, name = 'betwinn
     if (page) {
         let url = '';
         try {
-            let type = { type: ''};
+            let type = { type: '' };
             await page.waitForTimeout(2000);
             await page.getByText('Registro Betwinner').click();
             await page.getByText('Deportes').first().click();
@@ -139,12 +139,15 @@ const permit1 = [
     'Total. Tarjetas amarillas',
     'Total. Saques de esquina',
     'Hándicap',
+    'Total. 1 Cuarto',
+    'Total. 2 Cuarto',
+    'Total. 3 Cuarto',
+    'Total. 4 Cuarto',
 ];
 
 async function getBetwinnerApi(name, types, ids, house, url) {
     try {
         const res = [];
-        console.log(ids)
         if (ids.length > 0) {
             for (const id of ids) {
                 res.push({
@@ -155,11 +158,17 @@ async function getBetwinnerApi(name, types, ids, house, url) {
             if (res.length > 0) {
                 let filter = [];
                 for (const r of res) {
-                    const tiposPermitidos = types.map(t => getType1xbet(t.type, r.type));
+                    let tiposPermitidos = types.map(t => getType1xbet(t.type, r.type));
+                    if (categoryActual.current == 'basketball')
+                        tiposPermitidos = types.map(t => getType1xbetBasketball(t.type, r.type));
+
                     if (r.res && r.res.Value?.GE) {
                         let temFilter = r.res.Value.GE.filter(item => tiposPermitidos.includes(item.G));
                         temFilter = temFilter.map(f => {
-                            const type = getType1xbet(f.G, r.type);
+                            let type = getType1xbet(f.G, r.type);
+                            if (categoryActual.current == 'basketball')
+                                type = getType1xbetBasketball(f.G, r.type);
+
                             let bets = [];
                             if (!permit1.includes(type)) {
                                 bets = f.E.map(e => {
@@ -215,7 +224,6 @@ async function getBetwinnerApi(name, types, ids, house, url) {
                     urlObject.hostname = '1xbet.com';
                     url = urlObject.href;
                 }
-                console.log(url)
                 return {
                     nombre: house,
                     title: name,

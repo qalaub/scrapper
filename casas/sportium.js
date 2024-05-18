@@ -4,7 +4,8 @@ const {
     initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    matchnames
+    matchnames,
+    categoryActual
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -90,12 +91,22 @@ function buildXPathsFromNumbers(numbers, bet) {
 let url = '';
 
 const betTypeActions = {
-    'Ambos marcan ambas partes': 'Goles (',
-    '2ª Mitad - Total de Goles': '2ª Mitad (',
-    '1ª Mitad - Total de Goles': '1ª Mitad (',
-    'Total de córners': 'Córners (',
-    'Total de tarjetas': 'Tarjetas (',
-    '1X2 Handicap': 'Hándicap ('
+    football: {
+        'Ambos marcan ambas partes': 'Goles (',
+        '2ª Mitad - Total de Goles': '2ª Mitad (',
+        '1ª Mitad - Total de Goles': '1ª Mitad (',
+        'Total de córners': 'Córners (',
+        'Total de tarjetas': 'Tarjetas (',
+        '1X2 Handicap': 'Hándicap (',
+    },
+    basketball: {
+        'Resultado 2ª Mitad': '2ª Mitad (',
+        '1X2 1ª Mitad': '1ª Mitad (',
+        '1º Cuarto -  Resultado': '1º Cuarto (',
+        '2º Cuarto - Resultado': '2º Cuarto (',
+        '3º Cuarto - Resultado': '3º Cuarto (',
+        '4º Cuarto - Resultado': '4º Cuarto (',
+    }
 };
 
 async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'], n) {
@@ -123,15 +134,15 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                         type: cleanText(betType.type),
                         bets: []
                     };
-                    if (betType.type in betTypeActions) {
-                        const selector = `//div[@class="ta-FlexPane"]/div/div[contains(text(), "${betTypeActions[betType.type]}")]`;
+                    const temp = betTypeActions[categoryActual.current];
+                    if (betType.type in temp) {
+                        const selector = `//div[@class="ta-FlexPane"]/div/div[contains(text(), "${temp[betType.type]}")]`;
                         await page.locator(selector).click();
-                        await page.waitForTimeout(500); // Espera para asegurar que la acción se complete antes de continuar
+                        await page.waitForTimeout(700); // Espera para asegurar que la acción se complete antes de continuar
                     }
                     let type = await page.locator('(//*[text() = "' + betType.type + '"])[1]');
                     if (betType.type == '1X2 Handicap') {
                         const numbers = await extractGoalOptions(page, betType.type);
-                        console.log(numbers)
                         const { titlesXPath, buttonsXPath } = buildXPathsFromNumbers(numbers, betType.type);
                         type = await page.locator(titlesXPath).all();
                         let btns = await page.locator(buttonsXPath).all();
@@ -147,7 +158,7 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                         page.setDefaultTimeout(1000);
                         await type.waitFor();
                         await type.textContent();
-                        console.log(await type.textContent());
+                        // console.log(await type.textContent());
                         page.setDefaultTimeout(timeouts.bet);
                         if (betType.type == 'Handicap de Juegos') {
                             const names = await page.locator('(//*[text() = "Handicap de Juegos"])[1]/parent::*/parent::*/parent::*//*[contains(@class, "ta-participantName")]').all();
@@ -172,6 +183,8 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                                 for (const bet of bets) {
                                     let name = await bet.locator('//div/div').first().textContent();
                                     const quote = await bet.locator('//div/div').last().textContent();
+                                    if(name.includes('Más') || name.includes('más')) name = name.slice(0, 3) + " " + name.slice(3);
+                                    if(name.includes('Menos') || name.includes('menos')) name = name.slice(0, 5) + " " + name.slice(5);
                                     betTemp.bets.push({
                                         name,
                                         quote
@@ -181,12 +194,14 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                         }
                     }
                     betRivalo.bets.push(betTemp);
+                    // console.log(betTemp)
                     console.log('//////// SPORTIUM LENGTH', betRivalo.bets.length)
                 } catch (error) {
                     // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
             }
+            
             console.log('//////////////////// SPORTIUM //////////////////')
             console.log('//////////////////// SPORTIUM //////////////////')
             return betRivalo;

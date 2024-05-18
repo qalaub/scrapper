@@ -52,7 +52,11 @@ const permit1 = [
     'Total tarjetas',
     'Total Tiros De Esquina',
     '2ª Mitad - total',
-    '1ª Mitad - total'
+    '1ª Mitad - total',
+    'Cuarto segundo - total',
+    'Cuarto primer - total',
+    'Cuarto tercer - total',
+    'Cuarto cuarto - total',
 ];
 
 const permit2 = [
@@ -61,6 +65,10 @@ const permit2 = [
     '1ª mitad',
     'Tiros esquina',
     'Tarjetas',
+    '1er Cuarto',
+    '2do Cuarto',
+    '3er Cuarto',
+    '4to Cuarto',
 ];
 
 const filterData = (filter, types) => {
@@ -116,7 +124,7 @@ const filterData = (filter, types) => {
     });
 }
 
-let url = '';
+let url = 'https://www.fullreto.co/Sport#/prelive';
 
 async function getFullretoApi(name, types) {
     try {
@@ -125,7 +133,10 @@ async function getFullretoApi(name, types) {
         const res = await initRequest(`https://sb2frontend-altenar2.biahosted.com/api/Sportsbook/GetEventDetails?timezoneOffset=300&langId=4&skinName=fullreto&configId=12&culture=es-ES&countryCode=CO&deviceType=Desktop&numformat=en&integration=fullreto&eventId=${link}&sportId=66`, 2);
         if (res) {
             const typeTemp = types.map(t => t.type);
-            const principal = res.Result.MarketGroups.filter(m => permit2.includes(m.Name));
+            const principal = res.Result.MarketGroups.filter(m => {
+                // console.log(m.Name)
+                return permit2.includes(m.Name);
+            });
             let filter = [];
             for (const p of principal) {
                 let t = filterData(p.Items.filter(i => typeTemp.includes(i.Name)), types);
@@ -133,7 +144,7 @@ async function getFullretoApi(name, types) {
             }
             let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
             console.log('//////////////////// FULLRETO //////////////////')
-            // console.log(reducedBetsArray.map(r => { if (r.id == '6') console.log(r.bets) }))
+            // console.log(reducedBetsArray)
             console.log('//////////////////// FULLRETO //////////////////')
             return {
                 nombre: 'fullreto',

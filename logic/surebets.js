@@ -1,4 +1,4 @@
-const { evaluateSurebets, generarCombinacionesDeCasas2, initBrowser } = require("../casas/utils");
+const { evaluateSurebets, generarCombinacionesDeCasas2, initBrowser, categoryActual } = require("../casas/utils");
 const { idsFootball, idsBasketball, betDescriptionsFootball, betDescriptionsBasketball } = require("./constantes");
 
 const categories = {
@@ -22,6 +22,11 @@ function getBetTypes(bets, category) {
         betplay: [],
         fullreto: [],
         betboro: [],
+        pinnacle: [],
+        dafabet: [],
+        cashwin: [],
+        bwin: [],
+        lsbet: [],
     };
 
     for (const tempBet of tempBets) {
@@ -38,6 +43,11 @@ function getBetTypes(bets, category) {
         newBet.betplay.push(tempBet.betplay);
         newBet.fullreto.push(tempBet.fullreto);
         newBet.betboro.push(tempBet.betboro);
+        newBet.pinnacle.push(tempBet.pinnacle);
+        newBet.dafabet.push(tempBet.dafabet);
+        newBet.cashwin.push(tempBet.cashwin);
+        newBet.bwin.push(tempBet.bwin);
+        newBet.lsbet.push(tempBet.lsbet);
     }
 
     // Función para eliminar elementos undefined
@@ -59,6 +69,11 @@ function getBetTypes(bets, category) {
         megapuesta: newBet.megapuesta,
         fullreto: newBet.fullreto,
         betboro: newBet.betboro,
+        pinnacle: newBet.pinnacle,
+        dafabet: newBet.dafabet,
+        cashwin: newBet.cashwin,
+        bwin: newBet.bwin,
+        lsbet: newBet.lsbet,
     }
     // Eliminar elementos undefined de cada arreglo
     Object.keys(data).forEach(key => {
@@ -1161,6 +1176,11 @@ function getBetTypeInfo(typeId, description) {
         megapuesta: { [typeId]: description['betplay'], type: description['megapuesta'] },
         fullreto: { [typeId]: description['betplay'], type: description['fullreto'] },
         betboro: { [typeId]: description['betplay'], type: description['betboro'] },
+        pinnacle: { [typeId]: description['betplay'], type: description['pinnacle'] },
+        dafabet: { [typeId]: description['betplay'], type: description['dafabet'] },
+        cashwin: { [typeId]: description['betplay'], type: description['cashwin'] },
+        bwin: { [typeId]: description['betplay'], type: description['bwin'] },
+        lsbet: { [typeId]: description['betplay'], type: description['lsbet'] },
     };
 }
 
@@ -1181,24 +1201,27 @@ function calculateTotalGol(quotes, data, url, type) {
     const uniqueVariants = new Set();
     quotes.forEach(quote => {
         quote.cuotas.forEach(cuota => {
-            const match = cuota.name.match(/\b\d+\.[05]\b/); // Regex ajustado para extraer números terminados en .0 o .5
+            let match = cuota.name.match(/\b\d+\.[05]\b/); // Regex ajustado para extraer números terminados en .0 o .5
+            if (categoryActual.current == "basketball") match = cuota.name.match(/\b\d+(\.\d+)?\b/)
+
             if (match) {
                 uniqueVariants.add(match[0]);
             }
         });
     });
-
     const totalVariant = Array.from(uniqueVariants).sort((a, b) => parseFloat(a) - parseFloat(b)); // Convertimos el Set a Array y ordenamos los números
     let results = [];
     for (const variant of totalVariant) {
         let extract = [];
+        // console.log('///////////////////////////')
         for (const quote of quotes) {
             const result = getByGol(quote, variant);
+            // console.log(result)
             if (result && result.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
                 extract.push(result);
             }
         }
-
+        //  console.log('///////////////////////////')
         if (extract.length > 0) {
             const combinations = generarCombinacionesDeCasas2(extract);
             results.push(evaluateSurebets(combinations, 1000000, data, url, type));
@@ -1211,7 +1234,7 @@ function calculateTotalGol(quotes, data, url, type) {
 function getByGol(casa, n) {
     if (casa.cuotas) {
         // Asegurar que coincida con el número exacto, sin incluir decimales no deseados
-        const regex = new RegExp(`(^|\\s)${n}(\\s|$|[^.\\d])`);
+        const regex = new RegExp(`(^|\\s)${n.replace('.', '\\.')}(\\s|$|[^.\\d])`);
         return {
             nombre: casa.nombre,
             cuotas: casa.cuotas.filter(cuota => regex.test(cuota.name))
@@ -1252,20 +1275,22 @@ async function getUrlsTeams(team1, team2, n) {
         const { page, context } = await initBrowser('https://www.google.com/?hl=es', 'google' + n);
         pageT = page;
         contextT = context;
-        page.setDefaultTimeout(5000);
+
+        page.setDefaultTimeout(50000);
         const search = page.locator('*[name = "q"]');
-        await search.fill(team1 + ' FC');
+        await search.fill(team1 + ' FC logo');
         await search.press('Enter');
         await page.getByText('Imágenes').first().waitFor();
         await page.getByText('Imágenes').first().click();
         let img;
-        if (await page.locator('(//a/div/img)[1]').isVisible()) img = page.locator('(//a/div/img)[1]');
-        else if (await page.locator('(//a/div/div/div/g-img/img)[1]').isVisible()) img = page.locator('(//a/div/div/div/g-img/img)[1]');
-        else img = page.locator('body > div:nth-child(4) > table > tbody > tr:nth-child(1) > td:nth-child(1) > div > div > div > div > table > tbody > tr:nth-child(1) > td > a > div > img');
+        await page.waitForTimeout(2000);
+        if (await page.locator('(//h3/a)[1]').isVisible()) img = page.locator('(//h3/a)[1]');
+        else if (await page.locator('(//td/a/div)[1]').isVisible()) img = page.locator('(//td/a/div)[1]');
+        else img = page.locator('(//a/div/img)[1]');
         // await img.click();
         // const link = page.locator('(//a[@rel]/img)[1]');
         const url1 = await img.getAttribute('src');
-        await search.first().fill(team2 + ' FC');
+        await search.first().fill(team2 + ' FC logo');
         await search.first().press('Enter');
         const url2 = await img.getAttribute('src');
         // const url2 = await link.getAttribute('src');

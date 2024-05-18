@@ -5,7 +5,8 @@ const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     matchnames,
-    scrollToBottom
+    scrollToBottom,
+    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -76,7 +77,7 @@ let url = '';
 
 
 
-async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], n) {
+async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
     const { page, context } = await initBrowser('https://apuestas.wplay.co/es/', 'wplay' + n);
     if (page) {
         try {
@@ -134,9 +135,13 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
                             n++;
                         }
                         if (betType.type == 'Lineas del Juego') {
-                            let temp = betTemp.bets[0];
-                            betTemp.bets[0] = betTemp.bets[1];
-                            betTemp.bets[1] = temp;
+                            console.log('////////////////////////////////////////')
+                            if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
+                                let temp = betTemp.bets[0];
+                                betTemp.bets[0] = betTemp.bets[1];
+                                betTemp.bets[1] = temp;
+                            }
+                            console.log('////////////////////////////////////////')
                         }
                     }
                     betWplay.bets.push(betTemp);

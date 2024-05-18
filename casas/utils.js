@@ -10,18 +10,18 @@ let surebetcont = 0;
 
 const userAgents = [
     // Windows
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/90.0.4430.212 Safari/537.36',
-    'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
-    'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) Chrome/0.2.149.27',
-    'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:54.0) Gecko/20100101 Firefox/54.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:113.0) Gecko/20100101 Firefox/113.0',
+    // 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
+    'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) Chrome/112.0.5615.138',
+    'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:113.0) Gecko/20100101 Firefox/113.0',
+    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:114.0) Gecko/20100101 Firefox/114.0',
 
     // Linux
-    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:88.0) Gecko/20100101 Firefox/88.0',
-    'Mozilla/5.0 (X11; Linux x86_64) Chrome/90.0.4430.212 Safari/537.36',
-    'Mozilla/5.0 (X11; Linux x86_64; rv:12.0) Gecko/20100101 Firefox/12.0',
-    'Mozilla/5.0 (X11; Linux x86_64) Ubuntu Chromium/65.0.3325.181 Chrome/65.0.3325.181 Safari/537.36',
-    'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:54.0) Gecko/20100101 Firefox/54.0',
+    'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0',
+    'Mozilla/5.0 (X11; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0',
+    'Mozilla/5.0 (X11; Ubuntu; Linux i686; rv:113.0) Gecko/20100101 Firefox/113.0',
+    'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0',
+    'Mozilla/5.0 (X11; Linux i686; rv:113.0) Gecko/20100101 Firefox/113.0',
 ];
 
 let pages = {
@@ -43,7 +43,7 @@ async function initBrowser(url, name, timeout = 5000) {
         if (!browserInstance) {
             // Si no existe una instancia del navegador, crea una nueva
             const browser = await chromium.launch({
-                headless: false,
+                headless: true,
                 viewport: { width: 550, height: 680 },
                 args: ['--no-sandbox'],
             });
@@ -281,8 +281,16 @@ function quitarTildes(cadena) {
 function normalizar(palabra) {
     palabra = quitarTildes(palabra);
     return palabra
+        .replace('-RJ', '')
+        .replace('-SP', '')
+        .replace('CF', '')
+        .replace('FC', '')
+        .replace('F.C.', '')
+        .replace('da amadora', '')
+        .replace('Sporting Club', 'SC')
         .replace(/\b(sub-20|u20|under 20|sub 20|subtwenty)\b/g, 'sub20')
-        .replace(/\b(femenino|female|women|w|f|fem|\(f\)|\(fem\)|\(w\))\b/g, 'femenino') // Incluye (F) y (Fem)
+        .replace(/\b(femenino|female|women|w|f|fem|\(f\)|\(fem\)|\(w\))\b/g, 'femenino')
+        .replace(/\b(baloncesto})\b/g, '')
         .replace(/\b(90 min)\b/g, '')
         .replace(/[\(\)]/g, '')  // Elimina paréntesis restantes
         .replace(/[-.']/g, ' ')
@@ -394,8 +402,113 @@ function obtenerSinonimos() {
     };
 }
 
+function obtenerAbreviaciones() {
+    return {
+        // Equipos de la NBA (algunos ya listados anteriormente)
+        'lakers': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
+        'celtics': ['boston celtics', 'bos celtics', 'bos'],
+        'bulls': ['chicago bulls', 'chi bulls', 'chi'],
+        'warriors': ['golden state warriors', 'gs warriors', 'gsw', 'golden state'],
+        'heat': ['miami heat', 'mia heat', 'mia'],
+        'cavaliers': ['cleveland cavaliers', 'cle cavaliers', 'cle'],
+        'spurs': ['san antonio spurs', 'sa spurs', 'sa'],
+        'knicks': ['new york knicks', 'ny knicks', 'nyk'],
+        'nets': ['brooklyn nets', 'bk nets', 'bkn'],
+        'sixers': ['philadelphia 76ers', 'phi 76ers', 'phi'],
+
+        // Equipos de Euroliga
+        'real madrid': ['real madrid', 'rm', 'real madrid baloncesto'],
+        'barcelona': ['fc barcelona', 'barcelona', 'barça'],
+        'cska': ['cska moscow', 'cska'],
+        'efes': ['anadolu efes', 'efes'],
+        'olympiacos': ['olympiacos', 'oly'],
+        'fenerbahçe': ['fenerbahçe', 'fener'],
+        'maccabi': ['maccabi tel aviv', 'maccabi'],
+        'panathinaikos': ['panathinaikos', 'pana'],
+        'zalgiris': ['zalgiris kaunas', 'zalgiris'],
+        'bayern': ['bayern munich', 'bayern'],
+        'gran canaria': ['herbalife gran canaria', 'gran canaria'],
+
+        // Otros equipos de Euroliga
+        'baskonia': ['saski baskonia', 'baskonia'],
+        'unicaja': ['unicaja malaga', 'unicaja'],
+        'alba': ['alba berlin', 'alba'],
+        'red star': ['crvena zvezda', 'red star', 'cz'],
+        'partizan': ['partizan belgrade', 'partizan'],
+
+        // Equipos de la CBA
+        'guangdong': ['guangdong southern tigers', 'guangdong tigers', 'guangdong'],
+        'liaoning': ['liaoning flying leopards', 'liaoning leopards', 'liaoning'],
+        'sharks': ['shanghai sharks', 'shanghai'],
+        'beijing': ['beijing ducks', 'beijing'],
+
+        // Equipos de la NBL (Australia)
+        'sydney': ['sydney kings', 'sydney'],
+        'melbourne': ['melbourne united', 'melbourne'],
+        'wildcats': ['perth wildcats', 'wildcats'],
+        'breakers': ['new zealand breakers', 'breakers'],
+
+        // Otros equipos internacionales
+        'unics': ['unics kazan', 'unics'],
+        'monaco': ['as monaco', 'monaco'],
+        'virtus': ['virtus bologna', 'virtus'],
+        'darussafaka': ['darussafaka istanbul', 'darussafaka'],
+        'buducnost': ['buducnost volI', 'buducnost'],
+        'olimpo': ['olimpia milan', 'olimpia milano', 'ea7 emporio armani milano', 'milano'],
+
+
+        // NBA Teams adicionales
+        'hawks': ['atlanta hawks', 'atl hawks', 'atl'],
+        'hornets': ['charlotte hornets', 'cha hornets', 'cha'],
+        'mavericks': ['dallas mavericks', 'dal mavericks', 'dal'],
+        'nuggets': ['denver nuggets', 'den nuggets', 'den'],
+        'pistons': ['detroit pistons', 'det pistons', 'det'],
+        'warriors': ['golden state warriors', 'gs warriors', 'gsw', 'golden state'],
+        'rockets': ['houston rockets', 'hou rockets', 'hou'],
+        'pacers': ['indiana pacers', 'ind pacers', 'ind'],
+        'clippers': ['los angeles clippers', 'la clippers', 'lac'],
+        'grizzlies': ['memphis grizzlies', 'mem grizzlies', 'mem'],
+        'heat': ['miami heat', 'mia heat', 'mia'],
+        'bucks': ['milwaukee bucks', 'mil bucks', 'mil'],
+        'timberwolves': ['minnesota timberwolves', 'min timberwolves', 'min'],
+        'pelicans': ['new orleans pelicans', 'no pelicans', 'no'],
+        'thunder': ['oklahoma city thunder', 'okc thunder', 'okc'],
+        'magic': ['orlando magic', 'orl magic', 'orl'],
+        'suns': ['phoenix suns', 'phx suns', 'phx'],
+        'blazers': ['portland trail blazers', 'por trail blazers', 'por'],
+        'kings': ['sacramento kings', 'sac kings', 'sac'],
+        'spurs': ['san antonio spurs', 'sa spurs', 'sa'],
+        'raptors': ['toronto raptors', 'tor raptors', 'tor'],
+        'jazz': ['utah jazz', 'uta jazz', 'uta'],
+        'wizards': ['washington wizards', 'was wizards', 'was'],
+
+        // Euroleague Teams adicionales
+        'baskonia': ['saski baskonia', 'baskonia'],
+        'unicaja': ['unicaja malaga', 'unicaja'],
+        'alba': ['alba berlin', 'alba'],
+        'red star': ['crvena zvezda', 'red star', 'cz'],
+        'partizan': ['partizan belgrade', 'partizan'],
+
+        // CBA Teams adicionales
+        'sharks': ['shanghai sharks', 'shanghai'],
+        'beijing': ['beijing ducks', 'beijing'],
+
+        // NBL Teams adicionales
+        'wildcats': ['perth wildcats', 'wildcats'],
+        'breakers': ['new zealand breakers', 'breakers'],
+
+        // Otros equipos internacionales adicionales
+        'unics': ['unics kazan', 'unics'],
+        'monaco': ['as monaco', 'monaco'],
+        'virtus': ['virtus bologna', 'virtus'],
+        'darussafaka': ['darussafaka istanbul', 'darussafaka'],
+        'buducnost': ['buducnost volI', 'buducnost'],
+        'olimpo': ['olimpia milan', 'olimpia milano', 'ea7 emporio armani milano', 'milano']
+    };
+}
+
 function obtenerTerminosEspeciales() {
-    return ['II', '2'];
+    return ['II', '2', 'ii'];
 }
 
 function aplicarSinonimos(palabras, sinonimos) {
@@ -409,12 +522,23 @@ function aplicarSinonimos(palabras, sinonimos) {
     });
 }
 
+function expandirAbreviaciones(palabras, abreviaciones) {
+    return palabras.map(palabra => {
+        for (let key in abreviaciones) {
+            if (abreviaciones[key].includes(palabra.toLowerCase())) {
+                return key;  // Retorna el término completo
+            }
+        }
+        return palabra;  // Retorna la palabra original si no se encuentra una abreviación
+    });
+}
+
 function contieneTerminosEspeciales(palabras, terminosEspeciales) {
     return palabras.some(palabra => terminosEspeciales.includes(palabra));
 }
 
 function obtenerDistanciaLevenshtein(str1, str2) {
-    return levenshtein.get(str1, str2);
+    return distanciaLevenshtein(str1, str2);
 }
 
 function obtenerSimilitudJaccard(set1, set2) {
@@ -424,14 +548,21 @@ function obtenerSimilitudJaccard(set1, set2) {
 }
 
 function evaluarCoincidencias(palabras1, palabras2) {
-    const set1 = new Set(palabras1);
-    const set2 = new Set(palabras2);
-
     const sinonimos = obtenerSinonimos();
+    const abreviaciones = obtenerAbreviaciones();
+    const terminosEspeciales = obtenerTerminosEspeciales();
+
+    // Expande las abreviaciones
+    palabras1 = expandirAbreviaciones(palabras1, abreviaciones);
+    palabras2 = expandirAbreviaciones(palabras2, abreviaciones);
+
+    // Aplica sinónimos
     palabras1 = aplicarSinonimos(palabras1, sinonimos);
     palabras2 = aplicarSinonimos(palabras2, sinonimos);
 
-    const terminosEspeciales = obtenerTerminosEspeciales();
+    const set1 = new Set(palabras1);
+    const set2 = new Set(palabras2);
+
     const especial1 = contieneTerminosEspeciales(palabras1, terminosEspeciales);
     const especial2 = contieneTerminosEspeciales(palabras2, terminosEspeciales);
 
@@ -442,9 +573,9 @@ function evaluarCoincidencias(palabras1, palabras2) {
 
     const jaccard = obtenerSimilitudJaccard(set1, set2);
     const distanciaLevenshtein = obtenerDistanciaLevenshtein(palabras1.join(' '), palabras2.join(' '));
-    const esJaccardSuficiente = jaccard >= 0.6; // Ajusta este umbral según tus necesidades.
-    const esLevenshteinAceptable = distanciaLevenshtein <= 4.5; // Ajusta este umbral según tus necesidades.
-
+    console.log(jaccard, distanciaLevenshtein)
+    const esJaccardSuficiente = jaccard >= 0.58; // Ajusta este umbral según tus necesidades.
+    const esLevenshteinAceptable = distanciaLevenshtein <= 8; // Ajusta este umbral según tus necesidades.
     return esJaccardSuficiente && esLevenshteinAceptable;
 }
 
@@ -463,13 +594,14 @@ function tienenPalabrasEnComunDinamicoT(cadena1, cadena2) {
     // Expresión regular para dividir la cadena en palabras, teniendo en cuenta guiones bajos
     const palabrasRegex = /[^_\W]+(?:_[^_\W]+)*/g;
 
-    let palabras1 = cadena1.match(palabrasRegex) || []; // Divide la cadena en palabras
-    let palabras2 = cadena2.match(palabrasRegex) || [];
+    let palabras1 = equipo1.match(palabrasRegex) || []; // Divide la cadena en palabras
+    let palabras2 = equipo2.match(palabrasRegex) || [];
 
     return evaluarCoincidencias(palabras1, palabras2);
 }
 
 async function tienenPalabrasEnComunDinamico(cadena1, cadena2, porcentajeUmbral = 65) {
+    // console.log(cadena1, cadena2)
     const firts = tienenPalabrasEnComunDinamicoT(cadena1, cadena2);
     if (!firts) return { similarity: '', pass: false };
     cadena1 = normalizar(cadena1);
@@ -482,7 +614,7 @@ async function tienenPalabrasEnComunDinamico(cadena1, cadena2, porcentajeUmbral 
     }, 'application/json');
     console.log(cadena1, cadena2)
     console.log(res)
-    if (res) return { similarity: res.similarity, pass: res.similarity > 0.70 };
+    if (res) return { similarity: res.similarity, pass: res.similarity > 0.74 };
     return { similarity: '', pass: false };
 }
 
@@ -490,7 +622,7 @@ function generarCombinacionesDeCasas2(casas) {
     let combinaciones = [];
 
     // Filtrar las casas que tienen cuotas undefined o vacías
-    casas = casas.filter(casa => casa?.cuotas && casa.cuotas.length > 0);
+    casas = casas.filter(casa => casa?.cuotas && casa.cuotas.length == 2);
 
     // Si después de filtrar no quedan suficientes casas para formar una combinación, retorna un arreglo vacío
     if (casas.length < 2) return [];
@@ -516,10 +648,9 @@ function generarCombinacionesDeCasas2(casas) {
 
 function generarCombinacionesDeCasas3(casas) {
     let combinaciones = [];
-
     // Filtrar las casas que tienen cuotas undefined o vacías
     casas = casas.filter(casa => {
-        return casa.cuotas && casa.cuotas.length > 0
+        return casa.cuotas && casa.cuotas.length == 3
     });
     // Si después de filtrar no quedan suficientes casas para formar una combinación, retorna un arreglo vacío
     if (casas.length < 3) return [];
@@ -550,6 +681,7 @@ function generarCombinacionesDeCasas3(casas) {
 
 function evaluateSurebets(combinations, totalInvestment, data, url, type) {
     let results = [];
+    if (!combinations) return ['No se encontraron surebets.'];
     combinations.forEach(combination => { // Directamente cada "combination" en "combinations"
         let result = calculateSureBetForCombination(combination, totalInvestment, type);
         if (result && result.isSureBet) {
@@ -558,12 +690,14 @@ function evaluateSurebets(combinations, totalInvestment, data, url, type) {
     });
     if (results.length) {
         console.log('//////////////////////// surebet //////////////////');
-        console.log(results[0].investments)
         let fecha = new Date(data.start);
         let fechaISO = fecha.toISOString();
-        const category = getCategoryByMatch(type)
+        const category = getCategoryByMatch(type);
+        console.log(results.length)
+        results = removeDuplicateHouseEntries(results);
+        console.log(results.length)
         results.forEach(async result => {
-            console.log(result.investments)
+            // console.log(result.investments)
             postFormData('https://lafija.qalaub.com/v1/api/surebet/', {
                 surebet: JSON.stringify(
                     {
@@ -582,6 +716,28 @@ function evaluateSurebets(combinations, totalInvestment, data, url, type) {
         console.log('//////////////////////// surebet //////////////////');
     }
     return results.length > 0 ? results : ['No se encontraron surebets.'];
+}
+
+function hasDuplicateHouses(investments) {
+    const houses = investments.map(investment => investment.casa);
+    return new Set(houses).size !== houses.length;
+}
+
+function removeDuplicateHouseEntries(data) {
+    const uniqueEntries = [];
+    const seenHouses = new Set();
+
+    for (const entry of data) {
+        const houses = entry.investments.map(investment => investment.casa).sort();
+        const housesKey = houses.join(',');
+
+        if (!seenHouses.has(housesKey)) {
+            uniqueEntries.push(entry);
+            seenHouses.add(housesKey);
+        }
+    }
+
+    return uniqueEntries;
 }
 
 function getRandomInt(min, max) {
@@ -771,6 +927,8 @@ function getCategoryByMatch(type) {
             'Ambos Equipos Marcarán',
             'Se clasifica para la siguiente ronda',
             'Doble Oportunidad',
+            'Prórroga incluida',
+            'Total de puntos - Prórroga incluida',
         ],
         "Goles": [
             'Total de goles',
@@ -783,12 +941,17 @@ function getCategoryByMatch(type) {
             'Doble Oportunidad - 1.ª parte',
             'Hándicap asiático - 1.ª parte',
             'Total asiático - 1.ª parte',
+            '1.ª parte',
+            'Apuesta sin empate - 1.ª parte',
+            'Total de puntos - 1.ª parte',
         ],
         "2 Mitad": [
             'Total de goles - 2.ª parte',
             'Ambos Equipos Marcarán - 2.ª parte',
             'Doble Oportunidad - 2.ª parte',
             '2.ª parte',
+            'Apuesta sin empate - 2.ª parte',
+            'Total de puntos - 2.ª parte',
         ],
         "Tarjetas": [
             'Total de tarjetas',
@@ -799,6 +962,26 @@ function getCategoryByMatch(type) {
             'Total de Tiros de Esquina',
             'Más Tiros de Esquina',
             'Total de Tiros de Esquina - 1.ª parte',
+        ],
+        'Cuarto 1': [
+            'Cuarto 1',
+            'Apuesta sin empate - Cuarto 1',
+            'Total de puntos - Cuarto 1',
+        ],
+        'Cuarto 2': [
+            'Cuarto 2',
+            'Apuesta sin empate - Cuarto 2',
+            'Total de puntos - Cuarto 2',
+        ],
+        'Cuarto 3': [
+            'Cuarto 3',
+            'Apuesta sin empate - Cuarto 3',
+            'Total de puntos - Cuarto 3',
+        ],
+        'Cuarto 4': [
+            'Cuarto 4',
+            'Apuesta sin empate - Cuarto 4',
+            'Total de puntos - Cuarto 4',
         ],
     };
 
@@ -838,5 +1021,6 @@ module.exports = {
     surebetcont,
     scrollToBottom,
     agruparApuestas,
-    categoryActual
+    categoryActual,
+    tienenPalabrasEnComunDinamicoT
 }

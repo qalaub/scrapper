@@ -54,6 +54,13 @@ const permit1 = [
     'Total de Goles de la 1ra mitad',
     '2da mitad Total de  goles',
     ' Hándicap 3 opciones',
+    '1ra Cuarto Total de puntos',
+    '1ra Mitad Total de Puntos',
+    '3er Cuarto Total de puntos',
+    '2do Mitad Total de Puntos',
+    '4to Cuarto Total de puntos',
+    '2do Cuarto Total de puntos',
+    'Total de puntos',
 ];
 let url = '';
 async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo'], n) {
@@ -79,7 +86,8 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
                     await input.fill(betType.type);
                     await page.waitForTimeout(1200);
                     page.setDefaultTimeout(timeouts.bet);
-                    if (permit1.includes(betType.type)) {
+                    const totalList = permit1.includes(betType.type);
+                    if (totalList) {
                         bets = await page.locator('//p[text()= "' + betType.type + '"]/parent::*/parent::*/parent::*//div[contains(@class, "market-bc")]').all();
                         bets = bets.slice(betType.type == ' Hándicap 3 opciones' ? 3 : 2);
                     } else {
@@ -94,20 +102,26 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
                     }
 
                     if (bets.length > 1) {
+                        let temp = true;
                         for (const bet of bets) {
-                            const name = await bet.locator('.market-name-bc').textContent();
+                            const name = await bet.locator('span').first().textContent();
                             const quote = await bet.locator('.market-odd-bc').textContent();
+                            if (totalList) {
+                                names = temp ? 'Mas' : 'Menos';
+                                temp = !temp;
+                            }
                             betTemp.bets.push({
-                                name,
+                                name: (names || '') + name,
                                 quote
                             });
                         }
                     }
                     // if (type == ' Hándicap 3 opciones') console.log(betTemp)
+                    // console.log(betTemp)
                     betBoro.bets.push(betTemp);
                     console.log('//////// BETBORO LENGTH ', betBoro.bets.length)
                 } catch (error) {
-                    //  console.log(error)
+                    // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
 

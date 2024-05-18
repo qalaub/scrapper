@@ -1,9 +1,8 @@
 
-const { getBetTypes, calculateTotalGol, getUrlsTeams } = require("../logic/surebets");
-const { get1xBetApi, getResults1xbet } = require("./1xbet");
+const { getBetTypes, getUrlsTeams } = require("../logic/surebets");
 const { getBetPlayApi } = require("./betplay");
 const { getResultsBetsson } = require("./betsson");
-const { getBetwinnerApi, getResultsBetwinner } = require("./betwinner");
+const { getResultsBetwinner } = require("./betwinner");
 const { getCodereApi } = require("./codere");
 const { getFullretoApi } = require("./fullreto");
 const { getUnibetApi } = require("./unibet");
@@ -15,8 +14,10 @@ const {
     getResponse,
     closeBrowser,
     dividirArregloEnDosSubarreglos,
-    matchnames, 
-    categoryActual} = require("./utils");
+    matchnames,
+    categoryActual,
+    tienenPalabrasEnComunDinamicoT,
+    tienenPalabrasEnComunDinamico } = require("./utils");
 const { getResultsWonder } = require("./wonderbet");
 const { getResultsWPlay } = require("./wplay");
 const { getResultsYaJuegos } = require("./yajuegos");
@@ -30,6 +31,12 @@ const {
     idsBasketball,
 } = require("../logic/constantes");
 const { QuoteManager } = require("../logic/utils/QuoteManage");
+const { getPinnacleApi } = require("./pinnacle");
+const { getResultsBetobet } = require("./betobet");
+const { getResultsDafabet } = require("./dafabet");
+const { getCashwinApi } = require("./cashwin");
+const { getResultsBwin } = require("./bwin");
+const { getLsbetApi } = require("./lsbet");
 
 
 
@@ -46,16 +53,14 @@ const types = {
 }
 
 async function execute() {
+    // console.log(tienenPalabrasEnComunDinamicoT('Adelaide Blue Eagles - Cumberland United', 'Adelaide Blue Eagles II - Cumberland United II'))
     const inicio = new Date();
-    // console.log(await tienenPalabrasEnComunDinamico('1. FC Kaiserslautern 1. FC Magdeburg', '1. FC Kaiserslautern Bayer Leverkusen'))
+    // console.log(await tienenPalabrasEnComunDinamico('Adelaide Blue Eagles - Cumberland United', 'Adelaide Blue Eagles II - Cumberland United II'))
     const calculatePerPair = async (eventOdd, n, category) => {
         const quoteManager = new QuoteManager();
         let surebets = [];
         let cont = 0;
         for (const event of eventOdd) {
-            await getResultsBetwinner('Cleveland Cavaliers - Boston Celtics', betTypes['1xbet'], n, '1xbet');
-            break;
-            console.log('///////////////// ejecucion pair ' + n);
             // Fecha y hora en formato UTC
             const fechaUTC = new Date(event.event.start);
             // Convertir a hora local de Colombia (UTC-5)
@@ -67,10 +72,14 @@ async function execute() {
                 start: fechaUTC,
                 category
             };
+            // await getUrlsTeams(data.team1, data.team2, n);
+            // quoteManager.addQuotes([await getResultsBwin('millonarios fc - atlético bucaramanga', betTypes.bwin, n)], types[category].types, data);
+            // break;
+            console.log('///////////////// ejecucion pair ' + n);
             const name = event.event.name;
             const results1 = await Promise.all([
                 getBetPlayApi(event.event, betTypes.betplay, n),
-                getResultsWPlay(name, betTypes.wplay, n),
+                getResultsWPlay(name, betTypes.wplay, n, data.team1),
                 getResultsBetsson(name, betTypes.betsson, n),
                 getResultsBetwinner(name, betTypes['1xbet'], n),
                 getResultsBetboro(name, betTypes.betboro, n),
@@ -89,6 +98,14 @@ async function execute() {
                 getResultsMegapuesta(name, betTypes.megapuesta, n),
                 getFullretoApi(name, betTypes.fullreto, n),
                 getUnibetApi(event.event, betTypes.betplay, n),
+                getResultsDafabet(name, betTypes.dafabet, n),
+            ]);
+
+            const results4 = await Promise.all([
+                getPinnacleApi(name, betTypes.pinnacle, n, data.team1),
+                getCashwinApi(name, betTypes.cashwin, n),
+                // getResultsBwin(name, betTypes.bwin, n),
+                getLsbetApi(name, betTypes.lsbet, n),
             ]);
 
             const urls = await getUrlsTeams(data.team1, data.team2, n);
@@ -97,13 +114,16 @@ async function execute() {
                 team2: urls[1] || '',
             }
 
-            quoteManager.addQuotes(results1, types[category].types);
-            quoteManager.addQuotes(results2, types[category].types);
-            quoteManager.addQuotes(results3, types[category].types);
+            for (let i = 0; i < 2; i++) {
+                quoteManager.addQuotes(results1, types[category].types, data);
+                quoteManager.addQuotes(results2, types[category].types, data);
+                quoteManager.addQuotes(results3, types[category].types, data);
+                quoteManager.addQuotes(results4, types[category].types, data);
+            }
 
             const surebet = await quoteManager.processSurebets(data, url, types[category].ids);
             surebets.push(surebet);
-            console.log(surebet)
+            // console.log(surebet)
             quoteManager.clearQuotes();
             if (cont % 20 == 0 && cont != 0) {
                 await createJSON('surebet_' + category + n + '_' + cont, surebets);
@@ -126,7 +146,7 @@ async function execute() {
         let pairs = dividirArregloEnDosSubarreglos(events, 2);
         await Promise.all([
             calculatePerPair(pairs[0], 1, category),
-            // calculatePerPair(pairs[1], 2, category),
+            calculatePerPair(pairs[1], 2, category),
         ]);
         await closeBrowser();
     }

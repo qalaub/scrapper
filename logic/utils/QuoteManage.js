@@ -1,4 +1,4 @@
-const { evaluateSurebets, generarCombinacionesDeCasas2, generarCombinacionesDeCasas3, createJSON, matchnames, categoryActual } = require("../../casas/utils");
+const { evaluateSurebets, generarCombinacionesDeCasas2, generarCombinacionesDeCasas3, createJSON, matchnames, categoryActual, tienenPalabrasEnComunDinamicoT } = require("../../casas/utils");
 const { calculateTotalGol } = require("../surebets");
 
 class QuoteManager {
@@ -22,25 +22,39 @@ class QuoteManager {
         'Total de puntos - Cuarto 4',
         'Total de puntos - 1.ª parte',
         'Total de puntos - 2.ª parte',
+        'Total de puntos - Prórroga incluida',
+        'Total de Tiros de Esquina - 1.ª parte',
     ];
 
-    doble = ['3', '9', '13'];
+    doble = [3, 14, 10];
 
-    addQuotes(results, betTypes) {
+    addQuotes(results, betTypes, data) {
         for (const result of results) {
             if (result && result.bets.length > 0) {
                 betTypes.forEach((type, index) => {
-                    this.addQuoteIfValid(result.bets, index.toString(), result.nombre, result.url);
+                    this.addQuoteIfValid(result.bets, index.toString(), result.nombre, result.url, data);
                 });
             }
         }
     }
 
-    addQuoteIfValid(bets, id, name, url) {
+    addQuoteIfValid(bets, id, name, url, data) {
         const bet = this.getById(bets, id);
         if (bet && bet.bets && bet.bets.every(x => x !== undefined)) {
             if (!this.quotes.has(id)) {
                 this.quotes.set(id, []);
+            }
+            if (id == '1') {
+                // let betName = bet.bets[0].name;
+                // if (typeof betName == 'string')
+                //     if (!tienenPalabrasEnComunDinamicoT(data.team1, betName)
+                //         && betName != '1' && !betName.includes('...')) {
+                //         console.log(data.team1, bet.bets[0].name)
+                //         let betTemp = bet.bets[0];
+                //         bet.bets[0] = bet.bets[1];
+                //         bet.bets[1] = betTemp;
+                //         console.log(bet.bets);
+                //     }
             }
             this.quotes.get(id).push({
                 nombre: name,
@@ -61,10 +75,11 @@ class QuoteManager {
 
                 for (const [betType, id] of Object.entries(ids)) {
                     let quotesArray = this.quotes.get(String(id));
-                    if (id == '6' && quotesArray) {
+                    if (id == '12' && quotesArray) {
                         // console.log(quotesArray.map(q => q.cuotas));
                         // console.log(extractAndGroup(quotesArray.map(q => q.cuotas)));
                     }
+
                     if (quotesArray && quotesArray.length > 0 && id != 6) {
                         let combinations;
                         if (id === '1') {
@@ -220,6 +235,7 @@ function extractAndGroup(betsArrays) {
 
     return groups;
 }
+
 
 module.exports = {
     QuoteManager

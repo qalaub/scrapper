@@ -14,7 +14,7 @@ const userAgents = [
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.103 Safari/537.36 OPR/60.0.3255.170'
 ];
 
-async function initRequest(url, n) {
+async function initRequest(url, n, headers = {}) {
     let cont = 0;
     while (cont < 3) {
         const randomUserAgent = userAgents[Math.floor(Math.random() * n || userAgents.length)];
@@ -22,8 +22,9 @@ async function initRequest(url, n) {
         try {
             const res = await context.get(url, {
                 headers: {
-                    'User-Agent': randomUserAgent
-                }
+                    'User-Agent': randomUserAgent,
+                    ...headers
+                },
             });
             const result = await res.json();
             return result;

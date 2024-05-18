@@ -1,10 +1,12 @@
 const { timeouts } = require("../const/timeouts");
 const { buscar, selectMoreOption } = require("../logic/utils/buscar");
+const { orderBetMoreLess } = require("./betplay");
 const {
     initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    matchnames
+    matchnames,
+    scrollToBottom
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -12,10 +14,11 @@ const buscarQ = async (page, query) => {
         const iframe = await page.frameLocator("#sportradarIframe");
         const search = await iframe.locator('#searchText').first();
         await search.click();
-        await search.fill(query.length > 2 ? query : query + " 000");
+        await search.fill(query.length > 3 ? query : query + " 0");
         await page.waitForTimeout(3000);
-        const noResult = await iframe.getByText('No hay ningún evento seleccionado.', { timeout: 10000 }).isVisible();
-        return !noResult;
+        const noResult = await iframe.getByText('No hay ningún evento seleccionado.', { timeout: 5000 }).isVisible();
+        const noResult1 = await iframe.locator('//span[text() = "Más Eventos"]', { timeout: 5000 }).first().isVisible();
+        return !noResult && !noResult1;
     } catch (error) {
         return false;
     }
@@ -57,12 +60,16 @@ const permit1 = [
     'Total tarjetas',
     'Total córneres',
     '1º Mitad - total',
-
+    '1.º cuarto - total',
+    '1º Mitad - total',
+    '3.º cuarto - total',
+    '4.º cuarto - total',
+    '2º Mitad - total',
+    '2.º cuarto - total',
 ];
 
-let url = '';
-
 async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], n) {
+    let url = 'https://www.zamba.co/deportes';
     const { page, context } = await initBrowser('https://www.zamba.co/deportes', 'zamba' + n);
     if (page) {
         try {
@@ -85,12 +92,12 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
             await iframe.locator('//button[contains( @data-test-id, "markets-filter-tab-All")]').click();
             await page.waitForTimeout(2000);
             page.setDefaultTimeout(timeouts.bet);
-            let scroll = 200;
+            await scrollToBottom(page);
             for (const betType of betTypes) {
                 try {
-                    await page.mouse.wheel(0, scroll);
                     let names, bets;
-                    if (permit1.includes(betType.type)) {
+                    const moreless = permit1.includes(betType.type);
+                    if (moreless) {
                         names = await iframe.locator('//h3[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*/parent::*/parent::*//p[contains(@class, "styled__SelectionName")]').all();
                         bets = await iframe.locator('//h3[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*/parent::*/parent::*//p[contains(@class, "styled__SelectionPriceValue")]').all();
                     } else if (betType.type == '1x2') {
@@ -109,6 +116,8 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
                     }
 
                     if (bets.length > 1 && names.length > 1) {
+                        let temp = [];
+                        let pass = true;
                         for (let i = 0; i < bets.length; i++) {
                             const name = await names[i].textContent();
                             const quote = await bets[i].textContent();
@@ -116,8 +125,10 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
                                 name,
                                 quote
                             });
+
                         }
                     }
+                    if(moreless) betTemp.bets = orderBetMoreLess(betTemp.bets);
                     betZamba.bets.push(betTemp);
                     console.log('//////// ZAMBA LENGTH ', betZamba.bets.length)
                 } catch (error) {

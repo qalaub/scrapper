@@ -1,4 +1,4 @@
-const { groupByType } = require("../logic/constantes");
+const { groupByType, groupByTypeBasketball } = require("../logic/constantes");
 const { groupAndReduceBetsByType } = require("../logic/surebets");
 const { buscar, excludes, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
@@ -8,7 +8,8 @@ const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     obtenerObjetoPorTipo,
-    matchnames
+    matchnames,
+    categoryActual
 } = require("./utils");
 
 let page;
@@ -137,28 +138,40 @@ const permit1 = [
     '2ª Parte - Más/Menos Total Goles',
     '1ª Parte - Más/Menos Total Goles',
     'Total de Córner Más/Menos',
-    'Total de Tarjetas Más/Menos'
+    'Total de Tarjetas Más/Menos',
+    'Más/Menos Total de Puntos 2ª Mitad',
+    'Más/Menos Total de Puntos 4º Cuarto',
+    'Más/Menos Total de Puntos 3º Cuarto',
+    'Más/Menos Total de Puntos 1ª Mitad',
+    'Más/Menos Total de Puntos 2º Cuarto',
+    'Más/Menos Total de Puntos 1º Cuarto',
+    'Más/Menos Puntos Totales',
 ]
 
 function agruparApuestas(apuestas, tipoDeseado) {
-    let agrupadas = [];
+    let agrupadas = new Map();
     let otrosTipos = [];
-    let id = '';
-
+    // Procesar todas las apuestas
     apuestas.forEach(apuesta => {
         if (apuesta.type === tipoDeseado) {
-            id = apuesta.id
-            agrupadas.push(...apuesta.bets);
+            if (!agrupadas.has(apuesta.id)) {
+                agrupadas.set(apuesta.id, {
+                    id: apuesta.id,
+                    type: apuesta.type,
+                    bets: [...apuesta.bets]
+                });
+            } else {
+                let current = agrupadas.get(apuesta.id);
+                current.bets.push(...apuesta.bets);
+            }
         } else {
             otrosTipos.push(apuesta);
         }
     });
 
-    // Agregar el nuevo objeto agrupado si hay apuestas del tipo deseado
-    if (agrupadas.length > 0) {
-        otrosTipos.push({ type: tipoDeseado, bets: agrupadas, id });
-    }
-
+    agrupadas.forEach(value => {
+        otrosTipos.push(value);
+    });
     return otrosTipos;
 }
 
@@ -193,7 +206,7 @@ function removeDuplicates(bets) {
     return Array.from(uniqueBets.values());
 }
 
-let url = '';
+let url = 'https://m.codere.com.co/deportesCol/#/HomePage';
 
 async function getCodereApi(name, types) {
     try {
@@ -201,21 +214,37 @@ async function getCodereApi(name, types) {
         if (link) {
             const tiposPermitidos = types.map(t => t.type);
             const res1 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=99`);
-            const res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=60`);
-            const res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=55`);
-            const res4 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=50`);
+            let res2 = [], res3 = [], res4 = [];
+            if (categoryActual.current == 'football') {
+                res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=60`);
+                res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=55`);
+                res4 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=50`);
+            }
+            if (categoryActual.current == 'basketball') {
+                res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=80`);
+                res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=91`);
+            }
+
             let filter = getBets(res1, tiposPermitidos, types);
             filter = filter.concat(getBets(res2, tiposPermitidos, types));
             filter = filter.concat(getBets(res3, tiposPermitidos, types));
             filter = filter.concat(getBets(res4, tiposPermitidos, types));
             if (filter.length > 0) {
                 filter = agruparApuestas(filter, types[groupByType.total].type || '');
-                filter = agruparApuestas(filter, types[groupByType.total2]?.type || '');
-                filter = agruparApuestas(filter, types[groupByType.total1]?.type || '');
-                filter = agruparApuestas(filter, types[groupByType.esquinas]?.type || '');
-                filter = agruparApuestas(filter, types[groupByType.tarjetas]?.type || '');
-                filter = agruparApuestas(filter, types[groupByType.handicap]?.type || '');
-                filter = groupAndReduceBetsByType(filter, types[groupByType.total].type, 1);
+                if (categoryActual.current == 'football') {
+                    filter = agruparApuestas(filter, types[groupByType.total2]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByType.total1]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByType.esquinas]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByType.tarjetas]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByType.handicap]?.type || '');
+                } else if (categoryActual.current == 'basketball') {
+                    filter = agruparApuestas(filter, types[groupByTypeBasketball.total1 - 2]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByTypeBasketball.total2 - 2]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByTypeBasketball.totalCuarto1 - 3]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByTypeBasketball.totalCuarto2 - 4]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByTypeBasketball.totalCuarto3 - 5]?.type || '');
+                    filter = agruparApuestas(filter, types[groupByTypeBasketball.totalCuarto4 - 6]?.type || '');
+                }
                 filter.forEach(item => {
                     item.bets = removeDuplicates(item.bets);
                 });
