@@ -1,9 +1,24 @@
-const { evaluateSurebets, generarCombinacionesDeCasas2, initBrowser, categoryActual } = require("../casas/utils");
-const { idsFootball, idsBasketball, betDescriptionsFootball, betDescriptionsBasketball } = require("./constantes");
+const {
+    evaluateSurebets,
+    generarCombinacionesDeCasas2,
+    initBrowser,
+    categoryActual,
+    quitarTildes,
+    generarCombinacionesDeCasas2MoreLess
+} = require("../casas/utils");
+const {
+    idsFootball,
+    idsBasketball,
+    betDescriptionsFootball,
+    betDescriptionsBasketball,
+    betDescriptionsTennis,
+    idsTennis
+} = require("./constantes");
 
 const categories = {
     football: getBetTypeFootball,
     basketball: getBetTypeBasketball,
+    tennis: getBetTypeTennis,
 }
 
 function getBetTypes(bets, category) {
@@ -27,6 +42,8 @@ function getBetTypes(bets, category) {
         cashwin: [],
         bwin: [],
         lsbet: [],
+        ggbet: [],
+        marathon: [],
     };
 
     for (const tempBet of tempBets) {
@@ -48,6 +65,8 @@ function getBetTypes(bets, category) {
         newBet.cashwin.push(tempBet.cashwin);
         newBet.bwin.push(tempBet.bwin);
         newBet.lsbet.push(tempBet.lsbet);
+        newBet.ggbet.push(tempBet.ggbet);
+        newBet.marathon.push(tempBet.marathon);
     }
 
     // Función para eliminar elementos undefined
@@ -74,6 +93,8 @@ function getBetTypes(bets, category) {
         cashwin: newBet.cashwin,
         bwin: newBet.bwin,
         lsbet: newBet.lsbet,
+        ggbet: newBet.ggbet,
+        marathon: newBet.marathon,
     }
     // Eliminar elementos undefined de cada arreglo
     Object.keys(data).forEach(key => {
@@ -1181,6 +1202,8 @@ function getBetTypeInfo(typeId, description) {
         cashwin: { [typeId]: description['betplay'], type: description['cashwin'] },
         bwin: { [typeId]: description['betplay'], type: description['bwin'] },
         lsbet: { [typeId]: description['betplay'], type: description['lsbet'] },
+        ggbet: { [typeId]: description['betplay'], type: description['ggbet'] },
+        marathon: { [typeId]: description['betplay'], type: description['marathon'] },
     };
 }
 
@@ -1196,14 +1219,87 @@ function getBetTypeBasketball(type) {
     return getBetTypeInfo(typeId, description);
 }
 
+function getBetTypeTennis(type) {
+    const typeId = idsTennis[type];
+    const description = betDescriptionsTennis[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
 function calculateTotalGol(quotes, data, url, type) {
     // Función para extraer todos los números únicos de las cuotas
     const uniqueVariants = new Set();
     quotes.forEach(quote => {
         quote.cuotas.forEach(cuota => {
-            let match = cuota.name.match(/\b\d+\.[05]\b/); // Regex ajustado para extraer números terminados en .0 o .5
-            if (categoryActual.current == "basketball") match = cuota.name.match(/\b\d+(\.\d+)?\b/)
+            let match = cuota.name.match(/\b(\d+(\.0|\.5)?)\b/); // Regex ajustado para extraer números terminados en .0, .5 o enteros
+            if (categoryActual.current == "basketball") match = cuota.name.match(/\b\d+(\.\d+)?\b/);
+            if (match) {
+                uniqueVariants.add(match[0]);
+            }
+        });
+    });
 
+    const totalVariant = Array.from(uniqueVariants).sort((a, b) => parseFloat(a) - parseFloat(b)); // Convertimos el Set a Array y ordenamos los números
+    let results = [];
+    for (const variant of totalVariant) {
+        let extract = [];
+        let extract2 = [];
+        for (const quote of quotes) {
+            const result = getByGol(quote, variant);
+            const result2 = getByGolT(quote, variant);
+
+            if (result && result.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
+                extract.push(result);
+            }
+            if (result2 && result2.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
+                if (result2.cuotas.length == 4) {
+                    const filter1 = result2.cuotas.filter(el => el.name.includes('más') || el.name.includes('mas'));
+                    const filter2 = result2.cuotas.filter(el => el.name.includes('menos'));
+
+                    const extractNumber = name => parseFloat(name.match(/[\d\.]+/)[0]);
+
+                    const minObjMas = filter1.reduce((min, el) => extractNumber(el.name) < extractNumber(min.name) ? el : min, filter1[0]);
+                    const maxObjMenos = filter2.reduce((max, el) => extractNumber(el.name) > extractNumber(max.name) ? el : max, filter2[0]);
+                    result2.cuotas = [
+                        minObjMas,
+                        maxObjMenos
+                    ]
+                }
+                extract2.push(result2);
+            }
+        }
+
+        if (extract.length > 0) {
+            const combinations = generarCombinacionesDeCasas2(extract);
+            results.push(evaluateSurebets(combinations, 1000000, data, url, type));
+        }
+        if (extract.length > 0) {
+            const combinations = generarCombinacionesDeCasas2MoreLess(extract);
+            results.push(evaluateSurebets(combinations, 1000000, data, url, type));
+        }
+    }
+    return results;
+}
+
+function getByGol(casa, n) {
+    if (casa.cuotas) {
+        // Asegurar que coincida con el número exacto, sin incluir decimales no deseados
+        const regex = new RegExp(`(^|\\s)${n}(\\s|$|[^.\\d])`);
+        return {
+            nombre: casa.nombre,
+            cuotas: casa.cuotas.filter(cuota => regex.test(cuota.name)),
+            url: casa.url
+        };
+    }
+    return null;
+}
+
+function calculateTotalGolT(quotes, data, url, type) {
+    // Función para extraer todos los números únicos de las cuotas
+    const uniqueVariants = new Set();
+    quotes.forEach(quote => {
+        quote.cuotas.forEach(cuota => {
+            let match = cuota.name.match(/\b(\d+(\.0|\.5)?)\b/); // Regex ajustado para extraer números terminados en .0, .5 o enteros
+            if (categoryActual.current == "basketball") match = cuota.name.match(/\b\d+(\.\d+)?\b/);
             if (match) {
                 uniqueVariants.add(match[0]);
             }
@@ -1211,33 +1307,59 @@ function calculateTotalGol(quotes, data, url, type) {
     });
     const totalVariant = Array.from(uniqueVariants).sort((a, b) => parseFloat(a) - parseFloat(b)); // Convertimos el Set a Array y ordenamos los números
     let results = [];
+    console.log(totalVariant)
     for (const variant of totalVariant) {
         let extract = [];
         // console.log('///////////////////////////')
         for (const quote of quotes) {
             const result = getByGol(quote, variant);
-            // console.log(result)
+            // console.log(variant, result);
             if (result && result.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
+                if (result.cuotas.length == 4) {
+                    const filter1 = result.cuotas.filter(el => el.name.includes('más') || el.name.includes('mas'));
+                    const filter2 = result.cuotas.filter(el => el.name.includes('menos'));
+
+                    const extractNumber = name => parseFloat(name.match(/[\d\.]+/)[0]);
+
+                    const minObjMas = filter1.reduce((min, el) => extractNumber(el.name) < extractNumber(min.name) ? el : min, filter1[0]);
+                    const maxObjMenos = filter2.reduce((max, el) => extractNumber(el.name) > extractNumber(max.name) ? el : max, filter2[0]);
+                    result.cuotas = [
+                        minObjMas,
+                        maxObjMenos
+                    ]
+                    //  console.log(result.cuotas)
+                }
                 extract.push(result);
             }
         }
         //  console.log('///////////////////////////')
         if (extract.length > 0) {
-            const combinations = generarCombinacionesDeCasas2(extract);
+            // console.log(extract)
+            const combinations = generarCombinacionesDeCasas2MoreLess(extract);
+            console.log(combinations)
             results.push(evaluateSurebets(combinations, 1000000, data, url, type));
         }
     }
     return results;
 }
 
-
-function getByGol(casa, n) {
+function getByGolT(casa, n) {
     if (casa.cuotas) {
-        // Asegurar que coincida con el número exacto, sin incluir decimales no deseados
-        const regex = new RegExp(`(^|\\s)${n.replace('.', '\\.')}(\\s|$|[^.\\d])`);
+        const nPlusOne = (parseFloat(n) + 1).toFixed(1); // Calcula el número con .5 más
+        const regex = new RegExp(`(^|\\s)${n.replace('.', '\\.')}($|\\s)|(^|\\s)${nPlusOne.replace('.', '\\.')}($|\\s)`);
+
+        const filteredCuotas = casa.cuotas.filter(cuota => {
+            let nameMatch = cuota.name.match(/\d+(\.5)?/); // Captura números enteros y .5
+            const match = nameMatch && (nameMatch[0] === n || nameMatch[0] === nPlusOne) && regex.test(` ${cuota.name} `);
+            cuota.name = quitarTildes(cuota.name);
+            cuota.name = cuota.name.toLowerCase();
+            return match// Coincide exactamente con n o nPlusOne
+        });
+
         return {
             nombre: casa.nombre,
-            cuotas: casa.cuotas.filter(cuota => regex.test(cuota.name))
+            cuotas: filteredCuotas,
+            url: casa.url
         };
     }
     return null;
@@ -1276,25 +1398,38 @@ async function getUrlsTeams(team1, team2, n) {
         pageT = page;
         contextT = context;
 
-        page.setDefaultTimeout(50000);
+        page.setDefaultTimeout(2000);
         const search = page.locator('*[name = "q"]');
         await search.fill(team1 + ' FC logo');
         await search.press('Enter');
         await page.getByText('Imágenes').first().waitFor();
         await page.getByText('Imágenes').first().click();
-        let img;
-        await page.waitForTimeout(2000);
-        if (await page.locator('(//h3/a)[1]').isVisible()) img = page.locator('(//h3/a)[1]');
-        else if (await page.locator('(//td/a/div)[1]').isVisible()) img = page.locator('(//td/a/div)[1]');
-        else img = page.locator('(//a/div/img)[1]');
-        // await img.click();
-        // const link = page.locator('(//a[@rel]/img)[1]');
-        const url1 = await img.getAttribute('src');
-        await search.first().fill(team2 + ' FC logo');
-        await search.first().press('Enter');
-        const url2 = await img.getAttribute('src');
-        // const url2 = await link.getAttribute('src');
+        let img, url1, url2;
+        await page.waitForTimeout(1000);
+        if (await page.locator('(//td/a/div/img)[1]').isVisible()) {
+            img = page.locator('(//td/a/div/img)[1]');
+            url1 = await img.getAttribute('src');
+            await search.first().fill(team2 + ' FC logo');
+            await search.first().press('Enter');
+            url2 = await img.getAttribute('src');
+        } else {
+            if (await page.locator('(//h3/a)[1]').isVisible()) img = page.locator('(//h3/a)[1]');
+            else if (await page.locator('(//td/a/div)[1]').isVisible()) img = page.locator('(//td/a/div)[1]');
+            else img = await page.locator('(//h3/parent::*/a)[1]');
+            await img.click();
+            // page.setDefaultTimeout(20000);
+            // await page.waitForTimeout(20000);
+            let link = page.locator('//c-wiz//a/img[@aria-hidden = "false"]');
+            if (!(await link.isVisible())) link = page.locator('//div/a/img[2]');
+            url1 = await link.getAttribute('src');
+            await search.first().fill(team2 + ' FC logo');
+            await search.first().press('Enter');
+            await img.click();
+            url2 = await link.getAttribute('src');
+        }
+        if (url1.includes('data:image/')) return ['', ''];
         // console.log(url1, url2)
+        // const url2 = await link.getAttribute('src');
         return [url1, url2];
     } catch (error) {
         // if (pageT) await pageT.close();

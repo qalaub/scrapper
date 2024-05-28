@@ -57,6 +57,9 @@ const permit1 = [
     'Cuarto primer - total',
     'Cuarto tercer - total',
     'Cuarto cuarto - total',
+    'Total juegos',
+    'Primer set - total juegos',
+
 ];
 
 const permit2 = [
@@ -144,7 +147,7 @@ async function getFullretoApi(name, types) {
             }
             let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
             console.log('//////////////////// FULLRETO //////////////////')
-            // console.log(reducedBetsArray)
+            // console.log(reducedBetsArray.map(p => p.bets))
             console.log('//////////////////// FULLRETO //////////////////')
             return {
                 nombre: 'fullreto',

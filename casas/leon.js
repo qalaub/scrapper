@@ -10,7 +10,7 @@ const {
 
 const buscarQ = async (page, query) => {
     try {
-        const search = await page.locator('#root > div.layout-content-holder-bc > div.filter-sports-bc > div.sport-search-bc.active > input').first();
+        const search = await page.getByPlaceholder('Buscar').first();
         await search.fill(query.length > 2 ? query : query + "  ");
         await page.waitForTimeout(1500);
         const noResult = await page.getByText('No hay resultados', { timeout: 10000 }).isVisible();
@@ -84,11 +84,11 @@ const permit2 = [
 ];
 
 let url = '';
-async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
-    const { page, context } = await initBrowser('https://m.betboro.com/es/sports/pre-match/event-view/Soccer', 'betboro' + n);
+async function getResultsLeon(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
+    const { page, context } = await initBrowser('https://sportsbet.io/es/sports', 'sportbet' + n);
     if (page) {
         try {
-            await page.locator('#root > div.layout-content-holder-bc > div.filter-sports-bc > div.sport-search-bc > div').click();
+            await page.getByPlaceholder('Buscar').click();
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             url = await page.url();
@@ -175,5 +175,5 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
 }
 
 module.exports = {
-    getResultsBetboro
+    getResultsLeon
 }

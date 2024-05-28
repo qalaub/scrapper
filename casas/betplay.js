@@ -559,7 +559,7 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
         const name = f.criterion.label;
         let bets = f.outcomes.map(bet => {
             const result = parseInt(bet.line);
-            const formatted = isNaN(result) ? '' : (result / 1000).toFixed(1);
+            const formatted = isNaN(result) ? '' : ' ' + (result / 1000).toFixed(1);
             return {
                 name: bet.label + formatted,
                 quote: (parseInt(bet.odds) / 1000).toFixed(2)

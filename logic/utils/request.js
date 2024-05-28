@@ -42,8 +42,7 @@ async function postFormData(url, formData, type = 'application/x-www-form-urlenc
     const res = await context.post(url, {
         headers: {
             'User-Agent': randomUserAgent,
-            // Add additional headers if necessary, for example:
-            'Content-Type': type  // This is typically not needed as browsers will add it along with the boundary parameter automatically.
+            'Content-Type': type
         },
         data: formData
     });

@@ -1,7 +1,7 @@
 const { timeouts } = require("../const/timeouts");
 const { excludes, buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
-const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, scrollToBottom } = require("./utils");
+const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, scrollToBottom, categoryActual } = require("./utils");
 
 async function buscarApi(match) {
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
@@ -71,7 +71,7 @@ const buscarQ = async (page, query) => {
     }
 };
 
-const intentarEncontrarOpcion = async (page, match) => {
+const intentarEncontrarOpcion = async (page, match, currentMatch) => {
     const posibleOpcion = page.locator('.bto-sb-search-time');
     let opciones = await posibleOpcion.all();
     let optPass = [];
@@ -79,7 +79,6 @@ const intentarEncontrarOpcion = async (page, match) => {
         const title = await opcion.textContent();
         match = quitarTildes(match.replace(' - ', ' '));
         let text = quitarTildes(title.trim());
-        // console.log(match, text)
         const p = await tienenPalabrasEnComunDinamico(match, text);
         if (p.pass) optPass.push({ opcion, similarity: p.similarity, text });
 
@@ -94,6 +93,7 @@ const intentarEncontrarOpcion = async (page, match) => {
         console.log('WONDER: ', quitarTildes(match), opt.text.trim());
         await opt.opcion.waitFor({ state: 'visible' });
         await opt.opcion.click();
+        currentMatch.current = opt.text;
         return true;
     }
     return false;
@@ -112,17 +112,32 @@ const permit1 = [
     '3° Cuarto - Más / Menos',
     '2° Cuarto - Más / Menos',
     '1° Cuarto - Más / Menos',
+    'Más / Menos',
 ];
 
-let url = '';
+// Función para remover el prefijo de número, comilla y espacio de un string
+function removePrefix(text) {
+    const regex = /^\d{1,2}' - /;
+    return text.replace(regex, '');
+}
 
 async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser('https://www.wonderbet.co/apuestas/#/', 'wonder' + n);
     if (page) {
         try {
+            let url = '';
+            let currentMatch = { current: '' };
             page.setDefaultTimeout(timeouts.search);
-            const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
+            const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion, currentMatch);
             if (encontrado == 'no hay resultados') return;
+            if (categoryActual.isLive) {
+                console.log(currentMatch.current);
+                let temp = removePrefix(currentMatch.current);
+                temp = temp.replace(' - ', ' VS ');
+                await page.getByText(temp).click();
+            }
+            await page.getByText('Todos los mercados').click();
+            await page.waitForTimeout(1000);
             url = await page.url();
             let betWonder = {
                 nombre: 'wonder',
@@ -130,15 +145,12 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                 bets: [],
                 url
             }
-            await page.getByText('Todos los mercados').click();
-            await page.waitForTimeout(1000);
             // Usar la función
             await scrollToBottom(page);
             await page.waitForTimeout(1000);
             page.setDefaultTimeout(timeouts.bet);
             for (const betType of betTypes) {
                 try {
-
                     const locatorBet = 'xpath=(//h4[text() = "' + betType.type + '"])[1]';
                     let type = await page.locator(locatorBet).textContent();
                     let betTemp = {
@@ -189,6 +201,7 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                         }
                     }
                     betWonder.bets.push(betTemp);
+                    // console.log(betTemp)
                     console.log('//////// WONDER LENGTH', betWonder.bets.length)
                 } catch (error) {
                     // console.log(error)

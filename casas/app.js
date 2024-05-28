@@ -1,7 +1,6 @@
-
 const { getBetTypes, getUrlsTeams } = require("../logic/surebets");
 const { getBetPlayApi } = require("./betplay");
-const { getResultsBetsson } = require("./betsson");
+const { getResultsBetsson, getBetssonApi } = require("./betsson");
 const { getResultsBetwinner } = require("./betwinner");
 const { getCodereApi } = require("./codere");
 const { getFullretoApi } = require("./fullreto");
@@ -29,14 +28,17 @@ const {
     betTypesBaketball,
     idsFootball,
     idsBasketball,
+    betTypesTennis,
+    idsTennis,
 } = require("../logic/constantes");
 const { QuoteManager } = require("../logic/utils/QuoteManage");
 const { getPinnacleApi } = require("./pinnacle");
-const { getResultsBetobet } = require("./betobet");
 const { getResultsDafabet } = require("./dafabet");
 const { getCashwinApi } = require("./cashwin");
 const { getResultsBwin } = require("./bwin");
 const { getLsbetApi } = require("./lsbet");
+const { getResultsGgbet } = require("./ggbet");
+const { getMarathonApi } = require("./marathonbet");
 
 
 
@@ -49,23 +51,37 @@ const types = {
         types: betTypesBaketball,
         ids: idsBasketball
     },
-
+    tennis: {
+        types: betTypesTennis,
+        ids: idsTennis
+    },
 }
 
 async function execute() {
-    // console.log(tienenPalabrasEnComunDinamicoT('Adelaide Blue Eagles - Cumberland United', 'Adelaide Blue Eagles II - Cumberland United II'))
+    categoryActual.isLive = false;
+    // console.log(await tienenPalabrasEnComunDinamico('Virginia Marauders (W) - Northern Virginia FC (F)', 'Virginia Marauders FC - Northern Virginia FC'))
     const inicio = new Date();
     // console.log(await tienenPalabrasEnComunDinamico('Adelaide Blue Eagles - Cumberland United', 'Adelaide Blue Eagles II - Cumberland United II'))
     const calculatePerPair = async (eventOdd, n, category) => {
         const quoteManager = new QuoteManager();
         let surebets = [];
         let cont = 0;
+        // eventOdd = eventOdd.filter(e => e.event.name.includes('Santa Fe'));
+        // console.log(eventOdd.length)
         for (const event of eventOdd) {
             // Fecha y hora en formato UTC
             const fechaUTC = new Date(event.event.start);
-            // Convertir a hora local de Colombia (UTC-5)
+            if (categoryActual.isLive) {
+                // Calcular la diferencia en milisegundos
+                const differenceInMilliseconds = Math.abs(inicio - fechaUTC);
+                // Convertir la diferencia a minutos
+                const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
+                // Comprobar si la diferencia es de 70 minutos o menos
+                const isDifference70MinutesOrLess = differenceInMinutes <= 70;
+                console.log(isDifference70MinutesOrLess);  // Devolverá true o false
+                if (!isDifference70MinutesOrLess) continue;
+            }
             fechaUTC.setHours(fechaUTC.getHours() - 5);
-
             const data = {
                 team1: event.event.homeName,
                 team2: event.event.awayName,
@@ -73,52 +89,68 @@ async function execute() {
                 category
             };
             // await getUrlsTeams(data.team1, data.team2, n);
-            // quoteManager.addQuotes([await getResultsBwin('millonarios fc - atlético bucaramanga', betTypes.bwin, n)], types[category].types, data);
+            // quoteManager.addQuotes([await getResultsMegapuesta('Virginia Marauders (W) - Northern Virginia FC (F)', betTypes.ggbet, n, 'Auckland Tuatara')], types[category].types, data);
             // break;
             console.log('///////////////// ejecucion pair ' + n);
-            const name = event.event.name;
-            const results1 = await Promise.all([
-                getBetPlayApi(event.event, betTypes.betplay, n),
-                getResultsWPlay(name, betTypes.wplay, n, data.team1),
-                getResultsBetsson(name, betTypes.betsson, n),
-                getResultsBetwinner(name, betTypes['1xbet'], n),
-                getResultsBetboro(name, betTypes.betboro, n),
-            ]);
-
-            const results3 = await Promise.all([
-                getResultsBetwinner(name, betTypes['1xbet'], n, '1xbet'),
-                getCodereApi(name, betTypes.codere, n),
-                getLuckiaApi(name, betTypes.luckia, n),
-                getResultsSportium(name, betTypes.sportium, n),
-                getResultsZamba(name, betTypes.zamba, n),
-            ]);
-
-            const results2 = await Promise.all([
-                getResultsWonder(name, betTypes.wonderbet, n),
-                getResultsMegapuesta(name, betTypes.megapuesta, n),
-                getFullretoApi(name, betTypes.fullreto, n),
-                getUnibetApi(event.event, betTypes.betplay, n),
-                getResultsDafabet(name, betTypes.dafabet, n),
-            ]);
-
-            const results4 = await Promise.all([
-                getPinnacleApi(name, betTypes.pinnacle, n, data.team1),
-                getCashwinApi(name, betTypes.cashwin, n),
-                // getResultsBwin(name, betTypes.bwin, n),
-                getLsbetApi(name, betTypes.lsbet, n),
-            ]);
-
             const urls = await getUrlsTeams(data.team1, data.team2, n);
             const url = {
-                team1: urls[0] || '',
-                team2: urls[1] || '',
+                team1: urls[0],
+                team2: urls[1],
             }
+            const name = event.event.name;
+            if (!categoryActual.isLive) {
+                const results1 = await Promise.all([
+                    getBetPlayApi(event.event, betTypes.betplay, n),
+                    getResultsWPlay(name, betTypes.wplay, n, data.team1),
+                    getResultsBetsson(name, betTypes.betsson, n),
+                    getResultsBetwinner(name, betTypes['1xbet'], n),
+                    getResultsBetboro(name, betTypes.betboro, n, data.team1),
+                ]);
 
-            for (let i = 0; i < 2; i++) {
+                const results3 = await Promise.all([
+                    getResultsBetwinner(name, betTypes['1xbet'], n, '1xbet'),
+                    getCodereApi(name, betTypes.codere, n),
+                    getLuckiaApi(name, betTypes.luckia, n),
+                    getResultsSportium(name, betTypes.sportium, n),
+                    getResultsZamba(name, betTypes.zamba, n),
+                ]);
+
+                const results2 = await Promise.all([
+                    getResultsWonder(name, betTypes.wonderbet, n),
+                    // getResultsMegapuesta(name, betTypes.megapuesta, n),
+                    getFullretoApi(name, betTypes.fullreto, n),
+                    getResultsDafabet(name, betTypes.dafabet, n),
+                ]);
+
+                const results4 = await Promise.all([
+                    getPinnacleApi(name, betTypes.pinnacle, n, data.team1),
+                    getCashwinApi(name, betTypes.cashwin, n),
+                    getResultsBwin(name, betTypes.bwin, n),
+                    getLsbetApi(name, betTypes.lsbet, n),
+                    getResultsGgbet(name, betTypes.ggbet, n),
+                    getMarathonApi(name, betTypes.marathon, n, data.team1)
+                ]);
+
+                for (let i = 0; i < 1; i++) {
+                    quoteManager.addQuotes(results1, types[category].types, data);
+                    quoteManager.addQuotes(results2, types[category].types, data);
+                    quoteManager.addQuotes(results3, types[category].types, data);
+                    quoteManager.addQuotes(results4, types[category].types, data);
+                }
+            } else {
+                const results1 = await Promise.all([
+                    getBetPlayApi(event.event, betTypes.betplay, n),
+                    getResultsWPlay(name, betTypes.wplay, n, data.team1),
+                    getResultsBetsson(name, betTypes.betsson, n),
+                    getResultsSportium(name, betTypes.sportium, n),
+                    getMarathonApi(name, betTypes.marathon, n, data.team1),
+                    getPinnacleApi(name, betTypes.pinnacle, n, data.team1),
+                    getResultsGgbet(name, betTypes.ggbet, n, data.team1),
+                ]);
+
                 quoteManager.addQuotes(results1, types[category].types, data);
-                quoteManager.addQuotes(results2, types[category].types, data);
-                quoteManager.addQuotes(results3, types[category].types, data);
-                quoteManager.addQuotes(results4, types[category].types, data);
+                quoteManager.addQuotes(results1, types[category].types, data);
+                quoteManager.addQuotes(results1, types[category].types, data);
             }
 
             const surebet = await quoteManager.processSurebets(data, url, types[category].ids);

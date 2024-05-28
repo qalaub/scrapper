@@ -20,18 +20,20 @@ async function buscarApi(match) {
         let pinnacleSearch = await initRequest(`https://guest.api.arcadia.pinnacle.com/0.1/matchups/search?query=${text}`, 2, {
             'X-Api-Key': 'CmX2KcMrXuFmNg6YFbmTxE0y9CIrOi0R',
         });
-        pinnacleSearch = pinnacleSearch?.map(temp => {
-            let fragment = temp.league.name.toLowerCase().replace(/\s+-\s+/g, '-');
-            let sport = temp.league.sport.name;
-            let name = temp.participants[0].name + ' vs ' + temp.participants[1].name;
-            name = name.toLowerCase().replace(/\s/g, '-');
-            let name2 = temp.participants[0].name + ' vs ' + temp.participants[1].name;
-            return {
-                name: name2,
-                link: `https://www.pinnacle.com/es/${sport}/${fragment}/${name}/${temp.id}/#all`,
-            }
-        });
-        return pinnacleSearch;
+        if (pinnacleSearch) {
+            pinnacleSearch = pinnacleSearch?.map(temp => {
+                let fragment = temp.league.name.toLowerCase().replace(/\s+-\s+/g, '-');
+                let sport = temp.league.sport.name;
+                let name = temp.participants[0].name + ' vs ' + temp.participants[1].name;
+                name = name.toLowerCase().replace(/\s/g, '-');
+                let name2 = temp.participants[0].name + ' vs ' + temp.participants[1].name;
+                return {
+                    name: name2,
+                    link: `https://www.pinnacle.com/es/${sport}/${fragment}/${name}/${temp.id}/#all`,
+                }
+            });
+            return pinnacleSearch;
+        }
     }
 
     for (const cad of segmentos) {
@@ -67,6 +69,7 @@ const permit1 = [
     'Total – Partido',
     'Cuarto cuarto - total',
     'Total – 1.ª parte',
+    'Total (Juegos) – Partido',
 ];
 
 const permit2 = [
@@ -81,60 +84,12 @@ const permit2 = [
     '4to Cuarto',
 ];
 
-const filterData = (filter, types) => {
-    const extractNumber = name => parseFloat(name.match(/(\d+(\.\d+)?)/)[0]);
-    return filter.map(f => {
-        let bets = [];
-        bets = f.Items.map(e => {
-            return {
-                name: e.Name,
-                quote: truncatePrice(e.Price)
-            }
-        });
-        if (permit1.includes(f.Name)) bets.sort((a, b) => {
-            const numberA = extractNumber(a.name);
-            const numberB = extractNumber(b.name);
-            const typeA = a.name.includes('Más') || a.name.includes('Mas');
-            const typeB = b.name.includes('Más') || b.name.includes('Mas');
-
-            if (numberA === numberB) {
-                // Si los números son iguales, ordenar por tipo
-                return typeA === typeB ? 0 : typeA ? -1 : 1;
-            }
-
-            // Orden principal por el número
-            return numberA - numberB;
-        });
-        if (f.Name == 'Hándicap 1x2') {
-            // Primero, extraer los handicaps únicos y su orden de aparición
-            const handicaps = [...new Set(bets.map(bet => bet.name.match(/\(([^)]+)\)/)[1]))];
-
-            // Orden de los equipos basado en su primera aparición
-            const teamOrder = [...new Set(bets.map(bet => bet.name.split(' ')[0]))];
-
-            bets.sort((a, b) => {
-                const handicapA = a.name.match(/\(([^)]+)\)/)[1];
-                const handicapB = b.name.match(/\(([^)]+)\)/)[1];
-                const teamA = teamOrder.indexOf(a.name.split(' ')[0]);
-                const teamB = teamOrder.indexOf(b.name.split(' ')[0]);
-
-                // Primero ordenar por handicap
-                if (handicapA !== handicapB) {
-                    return handicaps.indexOf(handicapA) - handicaps.indexOf(handicapB);
-                }
-                // Si el handicap es el mismo, ordenar por el orden de aparición del equipo
-                return teamA - teamB;
-            });
-        }
-        return {
-            id: Object.keys(obtenerObjetoPorTipo(types, f.Name))[0],
-            type: f.Name,
-            bets
-        }
-    });
-}
-
-
+const permit3 = [
+    'Línea de dinero – 1.ª parte',
+    'Línea de dinero – 2.º cuarto',
+    'Línea de dinero – Partido',
+    'Línea de dinero – 1.er cuarto',
+];
 
 async function getPinnacleApi(name, types, n, team1) {
     try {
@@ -152,6 +107,7 @@ async function getPinnacleApi(name, types, n, team1) {
                     let title = await page.locator('//span[text() = "' + type.type + '"]');
                     const parent = await page.locator('//span[text() = "' + type.type + '"]/parent::*/parent::*');
                     const collapse = await parent.getAttribute('data-collapsed');
+                    await page.waitForTimeout(500);
                     if (collapse) await parent.click();
                     await page.waitForTimeout(500);
                     let betTemp = [];
@@ -171,12 +127,18 @@ async function getPinnacleApi(name, types, n, team1) {
                             quote: quote
                         });
                     }
-                    if (type.type == 'Lineas del Juego') {
+                    if (permit3.includes(type.type)) {
                         console.log('////////////////////////////////////////')
                         if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
-                            let temp = betTemp.bets[0];
-                            betTemp.bets[0] = betTemp.bets[1];
-                            betTemp.bets[1] = temp;
+                            if (betTemp.bets.length == 2) {
+                                let temp = betTemp.bets[0];
+                                betTemp.bets[0] = betTemp.bets[1];
+                                betTemp.bets[1] = temp;
+                            } else if (betTemp.bets.length == 3) {
+                                let temp = betTemp.bets[0];
+                                betTemp.bets[0] = betTemp.bets[2];
+                                betTemp.bets[2] = temp;
+                            }
                         }
                         console.log('////////////////////////////////////////')
                     }

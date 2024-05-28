@@ -46,31 +46,6 @@ async function buscarApi(match) {
     }
 }
 
-const permit1 = [
-    'Total de goles',
-    'Totales (incl. prórroga)',
-    'Total tarjetas',
-    'Total Tiros De Esquina',
-    '2ª Mitad - total',
-    '1ª Mitad - total',
-    'Cuarto segundo - total',
-    'Cuarto primer - total',
-    'Cuarto tercer - total',
-    'Cuarto cuarto - total',
-];
-
-const permit2 = [
-    'Principal',
-    '2ª mitad',
-    '1ª mitad',
-    'Tiros esquina',
-    'Tarjetas',
-    '1er Cuarto',
-    '2do Cuarto',
-    '3er Cuarto',
-    '4to Cuarto',
-];
-
 function groupAndFilterData(data, shortNames) {
     const filteredMarkets = data.markets.filter(market =>
         shortNames.some(sn => sn.type === market.shortName)
@@ -172,7 +147,7 @@ async function getCashwinApi(name, types) {
             });
             group = removeDuplicatesById(group);
             console.log('//////////////////// CASHWIN //////////////////')
-            // console.log(group);
+            // console.log(group.map(m => m.bets));
             console.log('//////////////////// CASHWIN //////////////////')
             return {
                 nombre: 'cashwin',

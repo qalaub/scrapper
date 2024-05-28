@@ -232,9 +232,40 @@ function getType1xbetBasketball(input, type) {
     if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
 }
 
+function getType1xbetTennis(input, type) {
+
+    const typeMappings = {
+        '1X2': 1,
+        1: '1X2',
+        'Total': 17,
+        17: 'Total',
+        'Total de sets': 182,
+        182: 'Total de sets',
+    }
+
+    const set1 = {
+        '1X2. 1 Set': 1,
+        1: '1X2. 1 Set',
+        'Total. 1 Set': 17,
+        17: 'Total. 1 Set',
+    }
+
+    const set2 = {
+        '1X2. 2 Set': 1,
+        1: '1X2. 2 Set',
+        'Total. 2 Set': 17,
+        17: 'Total. 2 Set',
+    }
+
+    if (type == '1 Set') return set1[input] || null;
+    if (type == '2 Set') return set2[input] || null;
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
 
 module.exports = {
     get1xBetApi,
     getType1xbet,
     getType1xbetBasketball,
+    getType1xbetTennis
 }

@@ -1,6 +1,6 @@
 const { timeouts } = require("../const/timeouts");
 const { buscar, selectMoreOption } = require("../logic/utils/buscar");
-const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, scrollToBottom } = require("./utils");
+const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, scrollToBottom, categoryActual } = require("./utils");
 
 const buscarQ = async (page, query) => {
     try {
@@ -59,6 +59,8 @@ const permit1 = [
     'Total Puntos Cuarto 2',
     'Total Puntos Cuarto 3',
     'Total Puntos Cuarto 4',
+    'Total de Juegos',
+    'Total de Juegos Set 1',
 ];
 
 const permit2 = [
@@ -68,7 +70,9 @@ const permit2 = [
 let url = '';
 
 async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Completo'], n) {
-    const { page, context } = await initBrowser('https://megapuesta.co/es/sport', 'megapuesta' + n);
+    const { page, context } = await initBrowser(categoryActual.isLive
+        ? 'https://megapuesta.co/es/live'
+        : 'https://megapuesta.co/es/sport', 'megapuesta' + n);
     if (page) {
         try {
             await page.getByRole('searchbox', { name: 'Cargando..' }).isVisible();
@@ -84,11 +88,16 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
                 url
             }
             await page.waitForTimeout(1000);
-            await page.locator('.tabellaQuoteSquadre svg').first().click();
+            let expander = await page.locator('.tabellaQuoteSquadre svg');
+            if (await expander.first().isVisible({ timeout: 1500 })) await expander.first().click();
+            else {
+                await page.locator('.contenitoreRiga > .tabellaQuotePrematch  > .tabellaQuoteSquadre').click();
+            }
             const container = await page.locator('.collapse-esiti-multipli').first();
             let locatorsBet = [
                 '(//*[contains(@data-id ,"m--1")])[2]',
-                '(//*[contains(@data-id ,"m--2")])[2]'
+                '(//*[contains(@data-id ,"m--2")])[2]',
+                '(//*[contains(@data-id ,"m--5")])[2]'
             ];
             await page.waitForTimeout(1000);
             if (await container.locator(locatorsBet[0]).isVisible())
@@ -96,6 +105,10 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
 
             if (await container.locator(locatorsBet[1]).isVisible())
                 await container.locator(locatorsBet[1]).click();
+
+            if (await container.locator(locatorsBet[2]).isVisible())
+                await container.locator(locatorsBet[2]).click();
+
             await page.waitForTimeout(1000);
             await scrollToBottom(page);
             page.setDefaultTimeout(timeouts.bet);

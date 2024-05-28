@@ -34,6 +34,7 @@ const intentarEncontrarOpcion = async (page, match) => {
                 const p = await tienenPalabrasEnComunDinamico(match, text);
                 if (p.pass) optPass.push({
                     name: text,
+                    similarity: p.similarity,
                     opcion: await opcion.locator('a').first()
                 })
             }
@@ -64,6 +65,9 @@ let permit1 = [
     'Corners Más/Menos - Primer tiempo',
     'Corners Más/Menos - Tiempo Regular',
     'Bookings Más/Menos - Tiempo Regular',
+    'Más/Menos Games - Partido',
+    'Más/Menos Games - 1er Set',
+    'Más/Menos Games - 2º Set',
 ];
 
 async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
@@ -92,17 +96,17 @@ async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
                         id: Object.keys(betType)[0],
                         type: betType.type,
                         bets: [],
-                        url,
                     }
                     const parent = await page.locator('//h2[normalize-space(text()) = "' + betType.type + '"]/parent::*');
                     const cl = await type.getAttribute('class');
                     if (cl.includes('collapsed')) {
                         await parent.click();
+                        await page.waitForTimeout(700);
                     }
                     const bets = await page.locator('//h2[normalize-space(text()) = "' + betType.type + '"]/parent::*//td').all();
                     if (bets.length > 1) {
                         for (const bet of bets) {
-                            let name = await bet.locator('.name ').textContent();
+                            let name = await bet.locator('.name').textContent();
                             let quote = await bet.locator('.price').textContent();
                             name = name.replace(/\n+/g, ' ').replace(/\s+/g, ' ').trim();
                             quote = quote.replace(/\n+/g, ' ').trim();
@@ -115,7 +119,7 @@ async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
                     if (permit1.includes(betType.type)) {
                         betTemp.bets = betTemp.bets.filter(bet => {
                             // Expresión regular para buscar patrones como '1.5', '0.5' pero no '1,1.5', '4,2.5'
-                            const decimalRegex = /^(Más|Menos) ([0-9]\.?[05])$/;
+                            const decimalRegex = /^(Más|Menos) ([1-9][0-9]*(?:\.5)?)$/;
 
                             // Devuelve true si el nombre coincide con 'Más 0.5', 'Menos 0.5', 'Más 1.5' o 'Menos 1.5'
                             return decimalRegex.test(bet.name);

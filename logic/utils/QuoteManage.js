@@ -24,6 +24,10 @@ class QuoteManager {
         'Total de puntos - 2.ª parte',
         'Total de puntos - Prórroga incluida',
         'Total de Tiros de Esquina - 1.ª parte',
+        'Total de juegos - Set 1',
+        'Total de juegos - Set 2',
+        'Total de juegos',
+        'Total de sets',
     ];
 
     doble = [3, 14, 10];
@@ -109,6 +113,8 @@ class QuoteManager {
                             if (betType == 'Hándicap 3-Way') { }
                         } else if (categoryActual.current == 'basketball' && !combinate) {
                             calculator = calculateTotalGol;
+                        } else if (categoryActual.current == 'tennis' && !combinate) {
+                            calculator = calculateTotalGol;
                         }
 
                         const surebetResults = calculator(combinations, data, url, betType);
@@ -180,6 +186,9 @@ class QuoteManager {
                         break;
                     case 794:
                         name = 'Equipo 1'
+                        break;
+                    case 795:
+                        name = 'Equipo 2'
                         break;
                     case 180:
                         name = 'Si'

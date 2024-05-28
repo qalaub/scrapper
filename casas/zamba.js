@@ -15,7 +15,7 @@ const buscarQ = async (page, query) => {
         const search = await iframe.locator('#searchText').first();
         await search.click();
         await search.fill(query.length > 3 ? query : query + " 0");
-        await page.waitForTimeout(3000);
+        await page.waitForTimeout(1500);
         const noResult = await iframe.getByText('No hay ningún evento seleccionado.', { timeout: 5000 }).isVisible();
         const noResult1 = await iframe.locator('//span[text() = "Más Eventos"]', { timeout: 5000 }).first().isVisible();
         return !noResult && !noResult1;
@@ -66,6 +66,14 @@ const permit1 = [
     '4.º cuarto - total',
     '2º Mitad - total',
     '2.º cuarto - total',
+    'Total juegos',
+    '1.º set - total juegos',
+    '2.º set - total juegos',
+];
+
+const permit2 = [
+    '1x2',
+    'Ganador',
 ];
 
 async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], n) {
@@ -100,7 +108,7 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
                     if (moreless) {
                         names = await iframe.locator('//h3[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*/parent::*/parent::*//p[contains(@class, "styled__SelectionName")]').all();
                         bets = await iframe.locator('//h3[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*/parent::*/parent::*//p[contains(@class, "styled__SelectionPriceValue")]').all();
-                    } else if (betType.type == '1x2') {
+                    } else if (permit2.includes(betType.type)) {
                         names = await iframe.locator('//h3[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*/parent::*//div/p[contains(@class, "styles__MarketName")]').all();
                         bets = await iframe.locator('//h3[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*/parent::*//div/p[contains(@class, "styled__SelectionPriceValue")]').all();
                     } else {
@@ -111,13 +119,12 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
                     let type = await iframe.locator('//h3[text() = "' + betType.type + '"]').first().textContent();
 
                     let betTemp = {
+                        id: Object.keys(betType)[0],
                         type,
                         bets: []
                     }
 
                     if (bets.length > 1 && names.length > 1) {
-                        let temp = [];
-                        let pass = true;
                         for (let i = 0; i < bets.length; i++) {
                             const name = await names[i].textContent();
                             const quote = await bets[i].textContent();
@@ -128,7 +135,8 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
 
                         }
                     }
-                    if(moreless) betTemp.bets = orderBetMoreLess(betTemp.bets);
+                    if (moreless) betTemp.bets = orderBetMoreLess(betTemp.bets);
+                    // console.log(betTemp.bets);
                     betZamba.bets.push(betTemp);
                     console.log('//////// ZAMBA LENGTH ', betZamba.bets.length)
                 } catch (error) {

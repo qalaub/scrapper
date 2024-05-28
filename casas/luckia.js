@@ -108,15 +108,22 @@ function buildXPathsFromNumbers(numbers, bet) {
         case 'Cuarto 4 - Total':
             goalXpath = numbers.map(n => `normalize-space(text()) = 'Cuarto 4 - Total ${n} puntos'`).join(' or ');
             break;
+        case 'Menos/Más juegos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Menos/Más ${n} juegos'`).join(' or ');
+            break;
+        case 'Set 1 - Menos/Más juegos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Set 1 - Menos/Más ${n} juegos'`).join(' or ');
+            break;
+        case '2.º set - total juegos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = '2.º set - total ${n} juegos'`).join(' or ');
+            break;
         default:
             // Opcionalmente manejar casos no esperados o un valor por defecto
             console.log('Tipo de apuesta no reconocida.');
             break;
     }
-
     const titlesXPath = `//*[contains(@class, 'lp-offer__heading-title') and (${goalXpath})]`;
     const buttonsXPath = `${titlesXPath}/parent::*/parent::*/div[contains(@class, 'lp-offer__content')]`;
-
     return { titlesXPath, buttonsXPath };
 }
 
@@ -135,6 +142,9 @@ const permit1 = [
     'Cuarto 2 - Total',
     '1ª mitad - Menos/Más',
     '2ª mitad - Total',
+    '2.º set - total juegos',
+    'Set 1 - Menos/Más juegos',
+    'Menos/Más juegos',
 ];
 
 async function getLuckiaApi(name, types, n) {
@@ -186,13 +196,11 @@ async function getLuckiaApi(name, types, n) {
                                 quote: text[1].replace(',', '.'),
                             });
                         }
-
                     }
                     bets.push({
                         id: Object.keys(type)[0],
                         type: cleanText(type.type),
                         bets: betTemp,
-                        url,
                     });
                     // console.log(betTemp)
                 }
@@ -220,6 +228,7 @@ async function getLuckiaApi(name, types, n) {
                         type: cleanText(type.type),
                         bets: betTemp,
                     })
+                    // console.log(betTemp)
                     console.log('//////// LUCKIAA LENGTH ', bets.length)
                 }
 

@@ -106,6 +106,9 @@ const betTypeActions = {
         '2º Cuarto - Resultado': '2º Cuarto (',
         '3º Cuarto - Resultado': '3º Cuarto (',
         '4º Cuarto - Resultado': '4º Cuarto (',
+    },
+    tennis: {
+        'Ganador Set 1': 'Mercados de sets (',
     }
 };
 
@@ -126,7 +129,7 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                 url
             }
             page.setDefaultTimeout(timeouts.bet);
-            await page.locator('(//*[text() = "Más"])[1]').click();
+            if (await page.locator('(//*[text() = "Más"])[1]').isVisible()) await page.locator('(//*[text() = "Más"])[1]').click();
             for (const betType of betTypes) {
                 try {
                     let betTemp = {
@@ -183,8 +186,8 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                                 for (const bet of bets) {
                                     let name = await bet.locator('//div/div').first().textContent();
                                     const quote = await bet.locator('//div/div').last().textContent();
-                                    if(name.includes('Más') || name.includes('más')) name = name.slice(0, 3) + " " + name.slice(3);
-                                    if(name.includes('Menos') || name.includes('menos')) name = name.slice(0, 5) + " " + name.slice(5);
+                                    if (name.includes('Más') || name.includes('más')) name = name.slice(0, 3) + " " + name.slice(3);
+                                    if (name.includes('Menos') || name.includes('menos')) name = name.slice(0, 5) + " " + name.slice(5);
                                     betTemp.bets.push({
                                         name,
                                         quote
@@ -201,7 +204,7 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
             }
-            
+
             console.log('//////////////////// SPORTIUM //////////////////')
             console.log('//////////////////// SPORTIUM //////////////////')
             return betRivalo;

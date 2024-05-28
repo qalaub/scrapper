@@ -3,13 +3,13 @@ const { timeouts } = require("../../const/timeouts");
 
 const excludes = ["deportivo", "club", "FC", "Al", "(KSA)", "IF", 'atletico'];
 
-async function buscar(page, match, buscarQ, intentarEncontrarOpcion) {
+async function buscar(page, match, buscarQ, intentarEncontrarOpcion, obj = {}) {
    
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
     segmentos = segmentos.flatMap(segmento => segmento.split(' ').filter(seg => !excludes.includes(seg.toLowerCase())));
     for (const cad of segmentos) {
         if (await buscarQ(page, cad)) {
-            const encontrado = await intentarEncontrarOpcion(page, match);
+            const encontrado = await intentarEncontrarOpcion(page, match, obj);
             if (encontrado) return;
         }
     }

@@ -213,16 +213,24 @@ async function getCodereApi(name, types) {
         const link = await buscarApi(name);
         if (link) {
             const tiposPermitidos = types.map(t => t.type);
-            const res1 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=99`);
+            let url = `https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=99`;
+            if (categoryActual.isLive) url = `https://m.codere.com.co/NavigationService/Game/GetGamesLive?parentid=${link}`;
+            const res1 = await initRequest(url);
             let res2 = [], res3 = [], res4 = [];
-            if (categoryActual.current == 'football') {
-                res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=60`);
-                res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=55`);
-                res4 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=50`);
-            }
-            if (categoryActual.current == 'basketball') {
-                res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=80`);
-                res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=91`);
+            if (!categoryActual.isLive) {
+                if (categoryActual.current == 'football') {
+                    res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=60`);
+                    res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=55`);
+                    res4 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=50`);
+                }
+                if (categoryActual.current == 'basketball') {
+                    res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=80`);
+                    res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=91`);
+                }
+
+                if (categoryActual.current == 'tennis') {
+                    res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=90`);
+                }
             }
 
             let filter = getBets(res1, tiposPermitidos, types);
@@ -245,9 +253,11 @@ async function getCodereApi(name, types) {
                     filter = agruparApuestas(filter, types[groupByTypeBasketball.totalCuarto3 - 5]?.type || '');
                     filter = agruparApuestas(filter, types[groupByTypeBasketball.totalCuarto4 - 6]?.type || '');
                 }
-                filter.forEach(item => {
+                filter = filter.map(item => {
                     item.bets = removeDuplicates(item.bets);
+                    return item;
                 });
+                filter = Array.from(new Map(filter.map(item => [item.type, item])).values());
                 console.log('//////////////////// CODERE //////////////////')
                 console.log('//////////////////// CODERE //////////////////')
             }

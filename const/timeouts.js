@@ -1,5 +1,5 @@
 const timeouts = {
-    bet: 500,
+    bet: 400,
     browser: 15000,
     search: 10000,
 }

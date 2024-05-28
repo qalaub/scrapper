@@ -73,6 +73,22 @@ const permit3 = [
     '4to Cuarto',
 ];
 
+const permit4 = [
+    '2da Mitad',
+    '4to Cuarto',
+    '4to Cuarto Money Line 3-Opciones',
+    '3er Cuarto',
+    '3er Cuarto Línea de Dinero 3 Opciones',
+    '1er Mitad',
+    '1ª Mitad Línea de Dinero 3 Opciones',
+    '2do Cuarto',
+    '2do Cuarto Money Line 3 Opciones',
+    '1er Cuarto',
+    '1er Cuarto Línea de Dinero 3 Opciones',
+    'Lineas del Juego',
+    'Segunda Mitad Línea de Dinero 3-Opciones (Tiempo Regular)',
+];
+
 let url = '';
 
 
@@ -134,16 +150,25 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
                             });
                             n++;
                         }
-                        if (betType.type == 'Lineas del Juego') {
+                        if (permit4.includes(betType.type)) {
                             console.log('////////////////////////////////////////')
                             if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
-                                let temp = betTemp.bets[0];
-                                betTemp.bets[0] = betTemp.bets[1];
-                                betTemp.bets[1] = temp;
+                                if (betTemp.bets.length == 2) {
+                                    let temp = betTemp.bets[0];
+                                    betTemp.bets[0] = betTemp.bets[1];
+                                    betTemp.bets[1] = temp;
+                                } else if (betTemp.bets.length == 3) {
+                                    let temp = betTemp.bets[0];
+                                    betTemp.bets[0] = betTemp.bets[2];
+                                    betTemp.bets[2] = temp;
+                                }
                             }
                             console.log('////////////////////////////////////////')
                         }
                     }
+
+                    if (betType.type == 'Total de Rondas') betTemp.bets = ordenarDinamicamenteMasMenos(betTemp.bets);
+                    // console.log(betTemp)
                     betWplay.bets.push(betTemp);
                     console.log('//////// WPLAY LENGTH', betWplay.bets.length)
                 } catch (error) {
@@ -159,6 +184,21 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
             // await page.close();
         }
     }
+}
+
+function ordenarDinamicamenteMasMenos(apuestas) {
+    const mas = apuestas.filter(apuesta => apuesta.name.includes('Más')).sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+    const menos = apuestas.filter(apuesta => apuesta.name.includes('Menos')).sort((a, b) => parseFloat(a.name) - parseFloat(b.name));
+
+    const resultado = [];
+    const maxLength = Math.max(mas.length, menos.length);
+
+    for (let i = 0; i < maxLength; i++) {
+        if (i < mas.length) resultado.push(mas[i]);
+        if (i < menos.length) resultado.push(menos[i]);
+    }
+
+    return resultado;
 }
 
 module.exports = {

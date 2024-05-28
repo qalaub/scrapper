@@ -1,5 +1,5 @@
 const { timeouts } = require("../const/timeouts");
-const { buscar } = require("../logic/utils/buscar");
+const { buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
 const {
     initBrowser,
@@ -12,15 +12,15 @@ const buscarQ = async (page, query) => {
     try {
         const ignore = await page.getByText('Ignore');
         if (await ignore.first().isVisible()) await ignore.first().click();
-        const close = page.locator('//span[@class="ico-close"]');
-        if (await close.isVisible()) await close.click({ timeout: 2000 });
+        const close = page.locator('(//span[@obg-icon="close-gen2"])[1]');
+        if (await close.isHidden()) await close.click({ timeout: 2000 });
         const searchB = await page.locator('xpath=//button[@test-id ="sportsbook-search.button"]').first();
         await searchB.click();
         const search = await page.locator('xpath=//*[@id="mat-input-0"]').first();
         await search.fill(query.length > 2 ? query : query + " 000");
         await search.press('Space');
         await page.waitForTimeout(2000);
-        const noResultLocator = await page.locator('//mat-option//div/div[contains(text(), "No se encontraron resultados")]');
+        const noResultLocator = await page.getByText('No se encontraron resultados coincidentes para');
         const noResult = await noResultLocator.isVisible({ timeout: 5000 });
         if (noResult) {
             await search.fill('');
@@ -36,38 +36,41 @@ const buscarQ = async (page, query) => {
 
 const intentarEncontrarOpcion = async (page, match) => {
     try {
+        await page.waitForTimeout(1000);
         await page.locator('//mat-option').first().click();
         await page.waitForTimeout(1000);
         let opciones = await page.locator('//div[@test-id = "event.row"]');
-        if (await opciones.first().isVisible({ timeout: 5000 })) {
+        if (await opciones.first().isVisible({ timeout: 2000 })) {
             opciones = await opciones.all();
             let pass = [];
             for (const opcion of opciones) {
-                const local = await opcion.locator('.obg-event-info-participant-name').first().textContent();
-                const away = await opcion.locator('.obg-event-info-participant-name').last().textContent();
+                const local = await opcion.locator('.obg-event-info-participants-name').first().textContent();
+                const away = await opcion.locator('.obg-event-info-participants-name').last().textContent();
                 match = quitarTildes(match.replace(' - ', ' '));
                 let text = quitarTildes(local + ' ' + away);
                 const p = await tienenPalabrasEnComunDinamico(match, text);
+                console.log(text)
                 if (p.pass) pass.push({
+                    similarity: p.similarity, 
                     name: text,
                     opcion
                 })
             }
-            for (const p of pass) {
-                if (p) {
-                    matchnames.push({
-                        text1: match,
-                        text2: p.name,
-                        etiqueta: 1
-                    });
-                    console.log('BETSON: ', match, p.name, pass.length);
-                    await p.opcion.locator('xpath=//div/a').first().click();
-                    return true;
-                }
+            const opt = await selectMoreOption(pass);
+            if (opt) {
+                matchnames.push({
+                    text1: match,
+                    text2: opt.name,
+                    etiqueta: 1
+                });
+                console.log('BETSON: ', match, opt.name);
+                await opt.opcion.locator('xpath=//div/a').first().click();
+                return true;
             }
+            return false;
         }
     } catch (error) {
-        console.log(error);
+        // console.log(error);
     }
     return false;
 };
@@ -82,8 +85,7 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
             // const updateBrowser = await page.getByText('Actualizar navegador');
             // if (await updateBrowser.first().isVisible()) await updateBrowser.first().click();
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
-            if (encontrado == 'no hay resultados') return;
-            await page.waitForLoadState('networkidle');
+            if (encontrado == 'no hay resultados') return;;
             let cont = 1;
             await page.locator('(//span[@test-id= "event-page.resize"])[1]').click();
             await page.waitForTimeout(700);
@@ -116,11 +118,13 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                         id: Object.keys(betType)[0],
                         type: betType.type,
                         bets: [],
-                        url,
                     }
-                    const parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*');
+                    let parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*');
+                    if (betType.type == 'número de goles') {
+                        parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*/parent::*/parent::*');
+                    }
                     const cl = await parent.getAttribute('class');
-                    if (!cl.includes('expanded')) {
+                    if (!cl.includes('bet-distribution-open')) {
                         page.setDefaultTimeout(5000);
                         await page.waitForLoadState('domcontentloaded')
                         await parent.scrollIntoViewIfNeeded();
@@ -128,12 +132,16 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                         await page.waitForTimeout(1700);
                         page.setDefaultTimeout(timeouts.bet);
                     }
-                    const bets = await page.locator('xpath=(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*/parent::*//div[contains(@class, "group-selection-table")]/*').all();
+                    let bets = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*/parent::*/parent::*/parent::*//div[contains(@class, "group-selection-table")  or contains(@class, "obg-selections-group")]//obg-selection-base').all();
+                    if (betType.type == 'número de goles') {
+                        let tempBets = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "total de goles"])[1]/parent::*/parent::*/parent::*/parent::*//div[contains(@class, "group-selection-table")  or contains(@class, "obg-selections-group")]//obg-selection-base').all();
+                        if (bets.length > 0) bets = tempBets;
+                    }
                     if (bets.length > 1) {
                         for (const bet of bets) {
                             if (betType.type != 'número de goles') {
-                                const name = await bet.locator('.obg-selection-base-label').textContent();
-                                const quote = await bet.locator('.obg-selection-base-odds').textContent();
+                                const name = await bet.locator('.obg-selection-v2-label').textContent();
+                                const quote = await bet.locator('.obg-numeric-change-container-odds-value').textContent();
                                 betTemp.bets.push({
                                     name,
                                     quote
@@ -144,8 +152,8 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                                     const isDisabled = await active.first()
                                         .evaluate(el => el.classList.contains("active"));
                                     if (!isDisabled) {
-                                        const name = await bet.locator('.obg-selection-base-label').textContent();
-                                        const quote = await bet.locator('.obg-selection-base-odds').textContent();
+                                        const name = await bet.locator('.obg-selection-v2-label').textContent();
+                                        const quote = await bet.locator('.obg-numeric-change-container-odds-value').textContent();
                                         betTemp.bets.push({
                                             name,
                                             quote
@@ -156,6 +164,7 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                         }
                     }
                     betsson.bets.push(betTemp);
+                    // console.log(betTemp)
                     await page.mouse.wheel(0, scroll / 2);
                     console.log('//////// BETSON LENGTH', betsson.bets.length)
                 } catch (error) {

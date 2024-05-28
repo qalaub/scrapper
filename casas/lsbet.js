@@ -7,7 +7,8 @@ const {
     tienenPalabrasEnComunDinamico,
     obtenerObjetoPorTipo,
     ordenarDinamicamenteMasMenos,
-    matchnames
+    matchnames,
+    categoryActual
 } = require("./utils");
 
 async function buscarApi(match) {
@@ -80,6 +81,7 @@ function translateQuotes(item) {
 }
 
 async function getLsbetApi(name, types) {
+    if(categoryActual.current == 'tennis') return;
     try {
         const link = await buscarApi(name);
         console.log(link?.id);

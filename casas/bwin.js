@@ -6,7 +6,8 @@ const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     matchnames,
-    scrollToBottom
+    scrollToBottom,
+    categoryActual
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -34,10 +35,10 @@ const intentarEncontrarOpcion = async (page, match) => {
                 const away = await opcion.locator('.participant').last().textContent();
                 match = quitarTildes(match.replace(' - ', ' '));
                 let text = local + away;
-                console.log(text)
                 const p = await tienenPalabrasEnComunDinamico(match, text);
                 if (p.pass) optPass.push({
                     name: text,
+                    similarity: p.similarity,
                     opcion: await opcion.locator('a').first()
                 })
             }
@@ -82,6 +83,7 @@ let permit2 = [
 ]
 
 async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
+    if(categoryActual.current == 'tennis') return;
     const { page, context } = await initBrowser('https://sports.bwin.co/es/sports?popup=betfinder', 'bwin' + n);
     if (page) {
         try {
@@ -92,7 +94,8 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             url = await page.url();
-            await page.locator('a').filter({ hasText: 'Todo' }).click();
+            let all = await page.locator('li').filter({ hasText: 'Todo' }).locator('a');
+            if (await all.isVisible()) await all.click();
             page.setDefaultTimeout(timeouts.bet);
             let bwin = {
                 nombre: 'bwin',
@@ -124,7 +127,6 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
                         id: Object.keys(betType)[0],
                         type: betType.type,
                         bets: [],
-                        url,
                     }
                     if (permit1.includes(betType.type)) {
                         let sub = betType.type.split('-');
@@ -138,19 +140,51 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
                     if (!cl.includes('expanded')) {
                         await parent.click();
                     }
-                    let change = true;
+                    let change = false;
                     if (typeTemp != '') {
                         let loca = parent.locator('xpath=/div/ms-period-option-group/ms-tab-bar//*[text() = "' + typeTemp + '"]');
                         if (await loca.isVisible({ timeout: 2000 })) {
                             // console.log('///////fesfsgsges/gsgsegsgeseg/se/gs/eg/sg/ese/gseges' + betType.type + typeTemp)
+                            let bets = await parent.locator('.option-indicator').all();
+                            let temp = [];
+                            if (bets.length > 1) {
+                                for (const bet of bets) {
+                                    let name = await bet.locator('.name').textContent();
+                                    let quote = await bet.locator('.value').textContent();
+                                    temp.push({
+                                        name,
+                                        quote
+                                    });
+                                }
+                                console.log(temp)
+                            }
                             await loca.click();
                             await page.waitForTimeout(700);
-                            await loca.click();
-                            await page.waitForLoadState({ waitUntil: "domcontentloaded" });
-                            await page.waitForTimeout(700);
+                            bets = await parent.locator('.option-indicator').all();
+                            let temp2 = [];
+                            if (bets.length > 1) {
+                                for (const bet of bets) {
+                                    let name = await bet.locator('.name').textContent();
+                                    let quote = await bet.locator('.value').textContent();
+                                    temp2.push({
+                                        name,
+                                        quote
+                                    });
+                                }
+                                console.log(temp2)
+                            }
                             change = false;
-                        }
-                        change = false;
+                            for (let i = 0; i < temp.length; i++) {
+                                if (temp[i] != temp2[i]) {
+                                    change = true;
+                                    break;
+                                }
+                            }
+                            if (change) {
+                                bwin.bets.push(temp2);
+                                change = false;
+                            }
+                        } else change = false;
                     }
                     if (permit2.includes(betType.type)) {
                         const more = await parent.getByText('Mostrar más');
