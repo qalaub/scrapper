@@ -39,6 +39,8 @@ const { getResultsBwin } = require("./bwin");
 const { getLsbetApi } = require("./lsbet");
 const { getResultsGgbet } = require("./ggbet");
 const { getMarathonApi } = require("./marathonbet");
+const { getResultsLeon } = require("./leon");
+const { getResultsStake } = require("./stake");
 
 
 
@@ -55,18 +57,26 @@ const types = {
         types: betTypesTennis,
         ids: idsTennis
     },
+    volleyball: {
+        types: betTypesTennis,
+        ids: idsTennis
+    },
+    'ufc_mma': {
+        types: betTypesTennis,
+        ids: idsTennis
+    },
 }
 
 async function execute() {
     categoryActual.isLive = false;
-    // console.log(await tienenPalabrasEnComunDinamico('Virginia Marauders (W) - Northern Virginia FC (F)', 'Virginia Marauders FC - Northern Virginia FC'))
+    console.log(await tienenPalabrasEnComunDinamicoT('Santeros De Aguada', 'Aguada Santeros'))
     const inicio = new Date();
     // console.log(await tienenPalabrasEnComunDinamico('Adelaide Blue Eagles - Cumberland United', 'Adelaide Blue Eagles II - Cumberland United II'))
     const calculatePerPair = async (eventOdd, n, category) => {
         const quoteManager = new QuoteManager();
         let surebets = [];
         let cont = 0;
-        // eventOdd = eventOdd.filter(e => e.event.name.includes('Santa Fe'));
+        // eventOdd = eventOdd.filter(e => e.event.name.includes('Drogheda'));
         // console.log(eventOdd.length)
         for (const event of eventOdd) {
             // Fecha y hora en formato UTC
@@ -89,7 +99,7 @@ async function execute() {
                 category
             };
             // await getUrlsTeams(data.team1, data.team2, n);
-            // quoteManager.addQuotes([await getResultsMegapuesta('Virginia Marauders (W) - Northern Virginia FC (F)', betTypes.ggbet, n, 'Auckland Tuatara')], types[category].types, data);
+            // quoteManager.addQuotes([await getResultsStake('Minnesota Timberwolves - Dallas Mavericks', betTypes.stake, n, 'SV Wehen Wiesbaden')], types[category].types, data);
             // break;
             console.log('///////////////// ejecucion pair ' + n);
             const urls = await getUrlsTeams(data.team1, data.team2, n);
@@ -117,9 +127,11 @@ async function execute() {
 
                 const results2 = await Promise.all([
                     getResultsWonder(name, betTypes.wonderbet, n),
-                    // getResultsMegapuesta(name, betTypes.megapuesta, n),
+                    getResultsMegapuesta(name, betTypes.megapuesta, n),
                     getFullretoApi(name, betTypes.fullreto, n),
                     getResultsDafabet(name, betTypes.dafabet, n),
+                    // getResultsLeon(name, betTypes.leon, n, data.team1),
+                    getResultsStake(name, betTypes.stake, n, data.team1),
                 ]);
 
                 const results4 = await Promise.all([

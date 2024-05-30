@@ -47,7 +47,7 @@ let browserInstance = null; // Un único objeto para manejar el navegador y el c
 async function initBrowser(url, name, timeout = 5000) {
     let randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
     if (name.includes('marathon')) randomUserAgent = marathonUser[Math.floor(Math.random() * marathonUser.length)];
-    if (name.includes('google')) randomUserAgent = 'Mozilla/5.0 (X11; Fedora; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0';
+    if (name.includes('google')) randomUserAgent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36';
     console.log(randomUserAgent)
     const tryCreate = async () => {
         if (!browserInstance) {
@@ -300,6 +300,7 @@ function normalizar(palabra) {
         .replace('de Futbol', '')
         .replace('Futbol Club', '')
         .replace('Futbol', '')
+        .replace(' de ', ' ')
         .toLowerCase();
     palabra = palabra
         .replace(/\b(sub-20|u20|under 20|sub 20|subtwenty)\b/g, 'sub20')
@@ -340,6 +341,7 @@ function equiposIguales(equipo1, equipo2) {
 
 function obtenerSinonimos() {
     return {
+        'aguada': ['aguada santeros', 'santeros aguada', 'santeros'],
         'huskies': ['huskies', 'tuatara'],
         'basketball': ['basketball', 'basket'],
         'asp': ['asp', 'patras'],

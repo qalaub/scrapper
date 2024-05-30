@@ -165,15 +165,19 @@ async function getMarathonApi(name, types, n, team1) {
                         }
                         if (permit3.includes(type.type)) {
                             console.log('////////////////////////////////////////')
-                            if (!tienenPalabrasEnComunDinamicoT(betTemp[0].name, team1)) {
-                                if (betTemp.length == 2) {
-                                    let temp = betTemp[0];
-                                    betTemp[0] = betTemp[1];
-                                    betTemp[1] = temp;
-                                } else if (betTemp.length == 3) {
-                                    let temp = betTemp[0];
-                                    betTemp[0] = betTemp[2];
-                                    betTemp[2] = temp;
+                            const p = await page.locator('//div[@data-test = "event-team-names"]/div').first();
+                            const t = await p.textContent();
+                            if (t != "" && t) {
+                                if (!tienenPalabrasEnComunDinamicoT(t, team1)) {
+                                    if (betTemp.length == 2) {
+                                        let temp = betTemp[0];
+                                        betTemp[0] = betTemp[1];
+                                        betTemp[1] = temp;
+                                    } else if (betTemp.length == 3) {
+                                        let temp = betTemp[0];
+                                        betTemp[0] = betTemp[2];
+                                        betTemp[2] = temp;
+                                    }
                                 }
                             }
                             console.log('////////////////////////////////////////')

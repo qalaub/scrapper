@@ -12,13 +12,16 @@ const {
     betDescriptionsFootball,
     betDescriptionsBasketball,
     betDescriptionsTennis,
-    idsTennis
+    idsTennis,
+    betDescriptionsVolleyball
 } = require("./constantes");
 
 const categories = {
     football: getBetTypeFootball,
     basketball: getBetTypeBasketball,
     tennis: getBetTypeTennis,
+    'ufc_mma': getBetTypeTennis,
+    volleyball: getBetTypeVolleyball,
 }
 
 function getBetTypes(bets, category) {
@@ -44,6 +47,9 @@ function getBetTypes(bets, category) {
         lsbet: [],
         ggbet: [],
         marathon: [],
+        sportbet: [],
+        leon: [],
+        stake: [],
     };
 
     for (const tempBet of tempBets) {
@@ -67,6 +73,9 @@ function getBetTypes(bets, category) {
         newBet.lsbet.push(tempBet.lsbet);
         newBet.ggbet.push(tempBet.ggbet);
         newBet.marathon.push(tempBet.marathon);
+        newBet.sportbet.push(tempBet.sportbet);
+        newBet.leon.push(tempBet.leon);
+        newBet.stake.push(tempBet.stake);
     }
 
     // Función para eliminar elementos undefined
@@ -95,6 +104,9 @@ function getBetTypes(bets, category) {
         lsbet: newBet.lsbet,
         ggbet: newBet.ggbet,
         marathon: newBet.marathon,
+        sportbet: newBet.sportbet,
+        leon: newBet.leon,
+        stake: newBet.stake,
     }
     // Eliminar elementos undefined de cada arreglo
     Object.keys(data).forEach(key => {
@@ -102,1084 +114,6 @@ function getBetTypes(bets, category) {
     });
 
     return data;
-}
-
-function getBetTypeFootbal(type) {
-    switch (type) {
-        case 'Total de goles':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Total de goles',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Total Goles Más/Menos de'
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: 'número de goles',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: 'Total',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: 'Más/Menos Total Goles',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: 'Totales',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: 'Menos/Más',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: 'Total de goles Más/Menos',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: 'Total',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: 'Total Goles -  Mas / Menos',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: 'Total Goles',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: 'Total de goles',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Total de goles',
-                },
-            }
-        case 'Tiempo reglamentario':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Tiempo reglamentario',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Resultado Tiempo Completo'
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: 'ganador del partido',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '1x2',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '1X2',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '1X2',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '1x2',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '1X2',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '1x2',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: 'Ganador',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: 'Final',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '1x2',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Resultado del Partido',
-                },
-            }
-        case 'Ambos Equipos Marcarán':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos Equipos Marcarán',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos Equipos Anotan'
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: 'ambos equipos anotan',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos equipos anotarán',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: 'Marcan Ambos Equipos',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos equipos marcarán',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos equipos marcarán',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: 'Marcan ambos equipos',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos Equipos Marcan',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: 'ambos equipos anotaran',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos Equipos Marcarán',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos equipos marcan',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Ambos equipos marcan',
-                },
-            }
-        case 'Doble Oportunidad':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad'
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: 'doble oportunidad',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: 'Doble oportunidad',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble oportunidad',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble oportunidad',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble oportunidad',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Doble Oportunidad',
-                },
-            }
-        case 'Gol en ambas mitades':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Gol en ambas mitades',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se anotarán goles en ambas mitades'
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: 'gol en ambos tiempos',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-        case 'Se clasifica para la siguiente ronda':
-            return {
-                betplay: {
-                    [idsFootball[type]]: type,
-                    type: 'Se clasifica para la siguiente ronda',
-                },
-                wplay: {
-                    [idsFootball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsFootball[type]]: type,
-                    type: '',
-                },
-                betboro: {
-                    [idsFootball[type]]: type,
-                    type: 'Goles en ambas mitades',
-                },
-            }
-    }
-}
-
-function getBetTypeBasketball1(type) {
-    switch (type) {
-        case 'Prórroga incluida':
-            return {
-                betplay: {
-                    [idsBasketball[type]]: type,
-                    type: 'Prórroga incluida',
-                },
-                wplay: {
-                    [idsBasketball[type]]: type,
-                    type: 'Lineas del Juego'
-                },
-                betsson: {
-                    [idsBasketball[type]]: type,
-                    type: 'ganador - partido',
-                },
-                '1xbet': {
-                    [idsBasketball[type]]: type,
-                    type: 'Victoria del equipo',
-                },
-                codere: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador del Partido',
-                },
-                yaJuegos: {
-                    [idsBasketball[type]]: type,
-                    type: 'Totales',
-                },
-                luckia: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador del partido (incl. prórroga)',
-                },
-                sportium: {
-                    [idsBasketball[type]]: type,
-                    type: 'Handicap de Juegos',
-                },
-                zamba: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador (incl. prórroga)',
-                },
-                wonderbet: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador del Partido',
-                },
-                megapuesta: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador (Inc. Pró.)',
-                },
-                fullreto: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador (incl. prórroga)',
-                },
-                betboro: {
-                    [idsBasketball[type]]: type,
-                    type: 'Ganador (incl. prórroga)',
-                },
-            }
-        case 'Total de puntos - Prórroga incluida':
-            return {
-                betplay: {
-                    [idsBasketball[type]]: type,
-                    type: 'Total de puntos - Prórroga incluida',
-                },
-                wplay: {
-                    [idsBasketball[type]]: type,
-                    type: 'Total Puntos (Inc. Prórroga)'
-                },
-                betsson: {
-                    [idsBasketball[type]]: type,
-                    type: 'puntos totales',
-                },
-                '1xbet': {
-                    [idsBasketball[type]]: type,
-                    type: 'Total',
-                },
-                codere: {
-                    [idsBasketball[type]]: type,
-                    type: 'Más/Menos Puntos Totales',
-                },
-                yaJuegos: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsBasketball[type]]: type,
-                    type: 'Menos/más (incl. prórroga)',
-                },
-                sportium: {
-                    [idsBasketball[type]]: type,
-                    type: 'Total de puntos',
-                },
-                zamba: {
-                    [idsBasketball[type]]: type,
-                    type: 'Total (incl. prórroga)',
-                },
-                wonderbet: {
-                    [idsBasketball[type]]: type,
-                    type: 'Más / Menos',
-                },
-                megapuesta: {
-                    [idsBasketball[type]]: type,
-                    type: 'Total (incl. prórroga)',
-                },
-                fullreto: {
-                    [idsBasketball[type]]: type,
-                    type: 'Totales (incl. prórroga)',
-                },
-                betboro: {
-                    [idsBasketball[type]]: type,
-                    type: 'Totales (incl. prórroga)',
-                },
-            }
-        case '':
-            return {
-                betplay: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                wplay: {
-                    [idsBasketball[type]]: type,
-                    type: ''
-                },
-                betsson: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                '1xbet': {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                codere: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                yaJuegos: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                luckia: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                sportium: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                zamba: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                wonderbet: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                megapuesta: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-                fullreto: {
-                    [idsBasketball[type]]: type,
-                    type: '',
-                },
-            }
-    }
 }
 
 function getBetTypeInfo(typeId, description) {
@@ -1204,6 +138,9 @@ function getBetTypeInfo(typeId, description) {
         lsbet: { [typeId]: description['betplay'], type: description['lsbet'] },
         ggbet: { [typeId]: description['betplay'], type: description['ggbet'] },
         marathon: { [typeId]: description['betplay'], type: description['marathon'] },
+        sportbet: { [typeId]: description['betplay'], type: description['sportbet'] },
+        leon: { [typeId]: description['betplay'], type: description['leon'] },
+        stake: { [typeId]: description['betplay'], type: description['stake'] },
     };
 }
 
@@ -1222,6 +159,12 @@ function getBetTypeBasketball(type) {
 function getBetTypeTennis(type) {
     const typeId = idsTennis[type];
     const description = betDescriptionsTennis[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
+function getBetTypeVolleyball(type) {
+    const typeId = idsVolleyball[type];
+    const description = betDescriptionsVolleyball[type] || type; // Default a usar el propio tipo si no está definida una descripción
     return getBetTypeInfo(typeId, description);
 }
 
@@ -1244,6 +187,7 @@ function calculateTotalGol(quotes, data, url, type) {
         let extract = [];
         let extract2 = [];
         for (const quote of quotes) {
+            // console.log(variant)
             const result = getByGol(quote, variant);
             const result2 = getByGolT(quote, variant);
 
@@ -1259,10 +203,17 @@ function calculateTotalGol(quotes, data, url, type) {
 
                     const minObjMas = filter1.reduce((min, el) => extractNumber(el.name) < extractNumber(min.name) ? el : min, filter1[0]);
                     const maxObjMenos = filter2.reduce((max, el) => extractNumber(el.name) > extractNumber(max.name) ? el : max, filter2[0]);
+                    if (categoryActual.current != 'football') {
+                        result2.cuotas = [
+                            maxObjMenos,
+                            minObjMas,
+                        ]
+                        extract2.push(result2);
+                    }
                     result2.cuotas = [
                         minObjMas,
                         maxObjMenos
-                    ]
+                    ];
                 }
                 extract2.push(result2);
             }
@@ -1272,8 +223,8 @@ function calculateTotalGol(quotes, data, url, type) {
             const combinations = generarCombinacionesDeCasas2(extract);
             results.push(evaluateSurebets(combinations, 1000000, data, url, type));
         }
-        if (extract.length > 0) {
-            const combinations = generarCombinacionesDeCasas2MoreLess(extract);
+        if (extract2.length > 0) {
+            const combinations = generarCombinacionesDeCasas2MoreLess(extract2);
             results.push(evaluateSurebets(combinations, 1000000, data, url, type));
         }
     }
@@ -1282,8 +233,13 @@ function calculateTotalGol(quotes, data, url, type) {
 
 function getByGol(casa, n) {
     if (casa.cuotas) {
-        // Asegurar que coincida con el número exacto, sin incluir decimales no deseados
-        const regex = new RegExp(`(^|\\s)${n}(\\s|$|[^.\\d])`);
+        let regex;
+        if (n.includes('.')) {
+            // Expresión regular para números decimales
+            regex = new RegExp(`(^|\\s)${n}($|\\s|[^\\d])`);
+        } else {
+            regex = new RegExp(`(^|\\s)${n}($|\\s|$)`);
+        }
         return {
             nombre: casa.nombre,
             cuotas: casa.cuotas.filter(cuota => regex.test(cuota.name)),
@@ -1292,6 +248,8 @@ function getByGol(casa, n) {
     }
     return null;
 }
+
+
 
 function calculateTotalGolT(quotes, data, url, type) {
     // Función para extraer todos los números únicos de las cuotas
@@ -1439,7 +397,6 @@ async function getUrlsTeams(team1, team2, n) {
 }
 
 module.exports = {
-    getBetTypeFootbal,
     calculateTotalGol,
     getBetTypes,
     groupAndReduceBetsByType,

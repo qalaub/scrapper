@@ -89,6 +89,7 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
     if (page) {
         try {
             await page.locator('#root > div.layout-content-holder-bc > div.filter-sports-bc > div.sport-search-bc > div').click();
+            page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             url = await page.url();

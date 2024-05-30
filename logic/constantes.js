@@ -1,5 +1,5 @@
 
-const categories = ['football', 'basketball', 'tennis'   /* ,    'basketball', 'tennis', 'basketball',*/];
+const categories = ['volleyball',  /* , 'handball' 'football','basketball',    'ufc_mma'   'basketball', 'tennis', 'basketball',*/];
 
 const betTypesFootball = [
     'Tiempo reglamentario',
@@ -57,6 +57,20 @@ const betTypesTennis = [
     'Total de juegos - Set 2',
 ];
 
+const betTypesVolleyball = [
+    'Cuotas del partido',
+    'Total de puntos',
+    'Total de sets',
+    'Set 1',
+    'Total de puntos - Set 1',
+    'Set 2',
+    'Total de puntos - Set 2',
+    'Resultado al final del Set 2',
+    'Puntos totales - Resultado al final del Set 2',
+    'Set 3',
+    'Total de puntos - Set 3',
+];
+
 const idsFootball = {};
 for (let i = 0; i < betTypesFootball.length; i++) {
     idsFootball[betTypesFootball[i]] = i + 1;
@@ -70,6 +84,11 @@ for (let i = 0; i < betTypesBaketball.length; i++) {
 const idsTennis = {};
 for (let i = 0; i < betTypesTennis.length; i++) {
     idsTennis[betTypesTennis[i]] = i + 1;
+}
+
+const idsVolleyball = {};
+for (let i = 0; i < betTypesVolleyball.length; i++) {
+    idsTennis[betTypesVolleyball[i]] = i + 1;
 }
 
 const betDescriptionsFootball = {
@@ -94,6 +113,8 @@ const betDescriptionsFootball = {
         lsbet: 'Gesamtzahl Tore mehr als / weniger als',
         ggbet: 'Total',
         marathon: 'Total de goles',
+        leon: 'Más de / Menos de',
+        stake: 'Total',
     },
     'Tiempo reglamentario': {
         betplay: 'Tiempo reglamentario',
@@ -116,6 +137,8 @@ const betDescriptionsFootball = {
         lsbet: 'Match Ergebnis',
         ggbet: '1x2',
         marathon: 'Resultado del partido',
+        leon: 'Tiempo reglamentario',
+        stake: '1X2',
     },
     'Doble Oportunidad': {
         betplay: 'Doble Oportunidad',
@@ -137,6 +160,8 @@ const betDescriptionsFootball = {
         bwin: 'Doble oportunidad',
         lsbet: 'Doppelte Chance',
         ggbet: 'Doble oportunidad',
+        leon: 'Doble oportunidad',
+        stake: 'Doble Oportunidad',
     },
     'Se clasifica para la siguiente ronda': {
         betplay: 'Se clasifica para la siguiente ronda',
@@ -157,6 +182,8 @@ const betDescriptionsFootball = {
         bwin: 'Se clasifica',
         lsbet: 'Zu Qualifizieren',
         marathon: 'Se clasifica para la final',
+        // leon: ''
+        stake: 'Equipo en avanzar',
     },
     'Ambos Equipos Marcarán': {
         betplay: 'Ambos Equipos Marcarán',
@@ -176,7 +203,9 @@ const betDescriptionsFootball = {
         dafabet: 'Ambos equipos marcan - Tiempo Regular',
         bwin: 'Ambos equipos marcan',
         lsbet: 'Beide Teams treffen',
-        ggbet: 'Ambos equipos marcan'
+        ggbet: 'Ambos equipos marcan',
+        leon: 'Ambos equipos marcan',
+        stake: 'Ambos equipos para anotar',
     },
     'Gol en ambas mitades': {
         betplay: 'Gol en ambas mitades',
@@ -193,7 +222,8 @@ const betDescriptionsFootball = {
         fullreto: 'Goles en ambas mitades',
         betboro: 'Goles en ambas mitades',
         cashwin: '1st/2nd half both teams to score',
-        bwin: 'Goles que se marcan en ambas partes'
+        bwin: 'Goles que se marcan en ambas partes',
+        leon: 'Inicio para anotar en ambas mitades'
     },
     'Total de goles - 2.ª parte': {
         betplay: 'Total de goles - 2.ª parte',
@@ -213,6 +243,8 @@ const betDescriptionsFootball = {
         bwin: 'Total de goles-2º tiempo',
         ggbet: '2nd half - 1x2',
         marathon: 'Total de goles - 2.º tiempo',
+        leon: '2do tiempo: Más/Menos',
+        stake: 'Total 2da mitad'
     },
     'Ambos Equipos Marcarán - 2.ª parte': {
         betplay: 'Ambos Equipos Marcarán - 2.ª parte',
@@ -229,7 +261,9 @@ const betDescriptionsFootball = {
         betboro: '2da mitad Ambos equipos anotarán',
         cashwin: '2nd half - both teams to score',
         bwin: 'Ambos equipos marcan-2º tiempo',
-        ggbet: '2º Mitad - ambos equipos marcan'
+        ggbet: '2º Mitad - ambos equipos marcan',
+        // leon: '',
+        stake: 'Ambos equipos a anotar en 2da mitad',
     },
     'Doble Oportunidad - 2.ª parte': {
         betplay: 'Doble Oportunidad - 2.ª parte',
@@ -244,7 +278,8 @@ const betDescriptionsFootball = {
         betboro: '2da Mitad Doble Oportunidad',
         cashwin: '2nd half - total',
         bwin: 'Doble oportunidad-2º tiempo',
-        ggbet: '2nd half  - Double chance'
+        ggbet: '2nd half  - Double chance',
+        leon: '2do tiempo: Doble Oportunidads'
     },
     '2.ª parte': {
         betplay: '2.ª parte',
@@ -265,7 +300,32 @@ const betDescriptionsFootball = {
         bwin: 'Resultado del partido-2º tiempo',
         lsbet: 'Second Half Result',
         ggbet: '2nd half - 1x2',
-        marathon: 'Resultado - 2.º tiempo'
+        marathon: 'Resultado - 2.º tiempo',
+        leon: '2do tiempo: Resultado',
+        stake: 'Resultado 2da mitad',
+    },
+    '1.ª parte': {
+        betplay: '1.ª parte',
+        wplay: 'Resultado 1ra Mitad',
+        betsson: 'resultado del 1ro tiempo',
+        '1xbet': '1x2. 1 Mitad',
+        codere: '1ª Parte - 1X2',
+        yaJuegos: '',
+        luckia: '1ª mitad - 1X2',
+        sportium: 'Resultado 1ª Mitad',
+        zamba: '1º Mitad - 1x2',
+        wonderbet: '1° Tiempo - Ganador (1-X-2)',
+        megapuesta: '1ª Mitad',
+        fullreto: '1ª Mitad - 1x2',
+        betboro: 'Resultado de la Primera Mitad',
+        dafabet: 'Resultado - Primer tiempo',
+        cashwin: '1st half - 1x2',
+        bwin: 'Resultado del partido-1º tiempo',
+        lsbet: 'First Half Result',
+        ggbet: '1st half - 1x2',
+        marathon: 'Resultado - 1.º tiempo',
+        leon: '1ra mitad: Resultado',
+        stake: 'Resultado 1er mitad',
     },
     'Total de goles - 1.ª parte': {
         betplay: 'Total de goles - 1.ª parte',
@@ -287,6 +347,8 @@ const betDescriptionsFootball = {
         lsbet: 'Half-time Totals Over/Under',
         ggbet: '1st Mitad - total',
         marathon: 'Total de goles - 1.er tiempo',
+        leon: '1.er tiempo: Totales Más/Menos',
+        stake: 'Total 1er mitad',
     },
     'Ambos Equipos Marcarán - 1.ª parte': {
         betplay: 'Ambos Equipos Marcarán - 1.ª parte',
@@ -306,7 +368,9 @@ const betDescriptionsFootball = {
         dafabet: 'Ambos equipos marcan - Primer tiempo',
         cashwin: '1st half - 1x2 & both teams to score',
         bwin: 'Ambos equipos marcan-1º tiempo',
-        lsbet: 'Half-time Both Teams To Score Yes/No'
+        lsbet: 'Half-time Both Teams To Score Yes/No',
+        leon: '1.er tiempo: Ambos equipos marcan Sí/No',
+        stake: 'Ambos equipos a anotar en 1er mitad',
     },
     'Doble Oportunidad - 1.ª parte': {
         betplay: 'Doble Oportunidad - 1.ª parte',
@@ -326,7 +390,8 @@ const betDescriptionsFootball = {
         cashwin: '1st half - double chance',
         bwin: 'Doble oportunidad-1º tiempo',
         lsbet: 'Erste Hälfte   Doppelte Chance',
-        ggbet: '1st half  - Double chance'
+        ggbet: '1st half  - Double chance',
+        leon: '1.er tiempo: Doble Oportunidad'
     },
     'Total de Tiros de Esquina': {
         betplay: 'Total de Tiros de Esquina',
@@ -349,6 +414,8 @@ const betDescriptionsFootball = {
         lsbet: 'Total Corners Over/Under',
         ggbet: 'Córneres - Total',
         marathon: 'Total de córneres',
+        // leon: '',
+        stake: 'Total de esquinas',
     },
     'Más Tiros de Esquina': {
         betplay: 'Más Tiros de Esquina',
@@ -369,7 +436,9 @@ const betDescriptionsFootball = {
         bwin: 'Córners',
         lsbet: 'Team With Most Corners (With Draw)',
         ggbet: 'Córneres - 1x2',
-        marathon: 'Más córneres'
+        marathon: 'Más córneres',
+        leon: 'Resultado de las esquinas',
+        stake: 'Resultado en esquinas',
     },
     'Total de tarjetas': {
         betplay: 'Total de tarjetas',
@@ -391,6 +460,7 @@ const betDescriptionsFootball = {
         bwin: 'Número total de tarjetas amarillas',
         lsbet: 'Gesamtzahl der Karten Über / Unter',
         ggbet: 'Tarjetas amarillas - Total',
+        leon: 'Tarjetas Amarillas: Más/Menos',
     },
     'Tarjeta Roja mostrada': {
         betplay: 'Tarjeta Roja mostrada',
@@ -404,7 +474,9 @@ const betDescriptionsFootball = {
         betboro: 'Una tarjeta roja en el partido',
         dafabet: 'Expulsión (tarjeta roja) - Tiempo Regular',
         bwin: 'Tarjeta roja - Sí/No',
-        ggbet: 'Expulsión'
+        ggbet: 'Expulsión',
+        leon: 'Tarjeta Roja: ¿Sí/No?',
+        stake: 'Tarjetas rojas',
     },
     'Más Tarjetas': {
         betplay: 'Más Tarjetas',
@@ -423,6 +495,8 @@ const betDescriptionsFootball = {
         bwin: 'Más tarjetas amarillas',
         ggbet: 'Tarjetas amarillas - 1x2',
         marathon: 'Más tarjetas amarillas',
+        leon: '1X2 Tarjetas Amarillas',
+        stake: 'Linea de tarjetas amarillas'
     },
     'Total de Tiros de Esquina - 1.ª parte': {
         betplay: 'Total de Tiros de Esquina - 1.ª parte',
@@ -442,6 +516,7 @@ const betDescriptionsFootball = {
         bwin: 'Número de córners-1º tiempo',
         ggbet: '1 tiempo - Tarjetas amarillas - Total',
         marathon: 'Total de córneres - 1.er tiempo',
+        leon: '1er tiempo: Córners Más/Menos'
     },
     'Hándicap asiático - 1.ª parte': {
         betplay: 'Hándicap asiático - 1.ª parte',
@@ -457,21 +532,11 @@ const betDescriptionsFootball = {
         megapuesta: '',
         fullreto: '',
         betboro: '',
+        leon: '',
     },
     'Total asiático - 1.ª parte': {
         betplay: 'Total asiático - 1.ª parte',
         wplay: 'Handicap Asiático Total Goles 1ra Mitad',
-        betsson: '',
-        '1xbet': '',
-        codere: '',
-        yaJuegos: '',
-        luckia: '',
-        sportium: '',
-        zamba: '',
-        wonderbet: '',
-        megapuesta: '',
-        fullreto: '',
-        betboro: '',
     },
     'Hándicap 3-Way': {
         betplay: 'Hándicap 3-Way',
@@ -479,7 +544,6 @@ const betDescriptionsFootball = {
         betsson: 'hándicap (3 opciones)',
         '1xbet': 'Hándicap',
         codere: '1X2 Handicap',
-        yaJuegos: '',
         luckia: '1X2 - Hándicap',
         sportium: '1X2 Handicap',
         // zamba: '',
@@ -511,7 +575,9 @@ const betDescriptionsBasketball = {
         cashwin: 'Winner (incl. OT)',
         marathon: 'Ganador del partido incluyendo la prórroga',
         lsbet: 'Ganador',
-        ggbet: 'Ganador (incl. prórroga)'
+        ggbet: 'Ganador (incl. prórroga)',
+        leon: 'Porroga incluida',
+        stake: '1X2',
     },
     'Total de puntos - Prórroga incluida': {
         betplay: 'Total de puntos - Prórroga incluida',
@@ -532,7 +598,9 @@ const betDescriptionsBasketball = {
         cashwin: 'Total (incl. OT)',
         marathon: 'Total de puntos',
         lsbet: 'Total Puntos Más de/Menos de',
-        ggbet: 'Total (incl. prórroga)'
+        ggbet: 'Total (incl. prórroga)',
+        leon: 'Total',
+        stake: 'Total',
     },
     'Cuarto 1': {
         betplay: 'Cuarto 1',
@@ -552,6 +620,8 @@ const betDescriptionsBasketball = {
         cashwin: 'First quarter - 1x2',
         marathon: 'Resultado del 1.er cuarto',
         ggbet: '1st cuarto - 1x2',
+        leon: '1er Cuarto: Resultado',
+        stake: 'Resultado 1er cuarto'
     },
     'Apuesta sin empate - Cuarto 1': {
         betplay: 'Apuesta sin empate - Cuarto 1',
@@ -572,6 +642,7 @@ const betDescriptionsBasketball = {
         cashwin: 'First quarter - draw no bet',
         lsbet: 'Ganador 1er Cuarto',
         ggbet: '1st quarter - Draw no bet',
+        leon: '1er Cuarto: Medio tiempo'
     },
     'Total de puntos - Cuarto 1': {
         betplay: 'Total de puntos - Cuarto 1',
@@ -594,6 +665,8 @@ const betDescriptionsBasketball = {
         marathon: 'Total de puntos - 1.er cuarto',
         lsbet: '1º Cuarto Puntos Totales Más/Menos de',
         ggbet: '1st quarter - Total',
+        leon: '1er Cuarto: Total',
+        stake: 'Total 1er cuarto'
     },
     'Cuarto 2': {
         betplay: 'Cuarto 2',
@@ -612,6 +685,7 @@ const betDescriptionsBasketball = {
         cashwin: 'Second quarter - 1x2',
         marathon: 'Resultado del 2.º cuarto',
         ggbet: '2nd cuarto - 1x2',
+        leon: '2do Trimestre: Resultado'
     },
     'Apuesta sin empate - Cuarto 2': {
         betplay: 'Apuesta sin empate - Cuarto 2',
@@ -643,6 +717,7 @@ const betDescriptionsBasketball = {
         cashwin: 'Second quarter - total',
         marathon: 'Total de puntos - 2.º cuarto',
         ggbet: '2nd quarter - Total',
+        leon: '2do Cuarto: Más/Menos'
     },
     '1.ª parte': {
         betplay: '1.ª parte',
@@ -660,6 +735,8 @@ const betDescriptionsBasketball = {
         cashwin: '1st half - 1x2',
         marathon: 'Resultado de la 1.ª mitad',
         ggbet: '1º Mitad - 1x2',
+        leon: '1er Tiempo: Resultado',
+        stake: 'Resultado 1er mitad'
     },
     'Apuesta sin empate - 1.ª parte': {
         betplay: 'Apuesta sin empate - 1.ª parte',
@@ -675,6 +752,7 @@ const betDescriptionsBasketball = {
         dafabet: 'Ganador-1º Tiempo',
         cashwin: '1st half - draw no bet',
         lsbet: '1ª mitad',
+        leon: '1era mitad: línea de dinero'
     },
     'Total de puntos - 1.ª parte': {
         betplay: 'Total de puntos - 1.ª parte',
@@ -693,6 +771,8 @@ const betDescriptionsBasketball = {
         marathon: 'Total de puntos - 1.ª mitad',
         lsbet: '1er Mitad Total De Puntos Más/Menos',
         ggbet: '1st half - total',
+        leon: '1era mitad: Total',
+        stake: 'Total 1er mitad'
     },
     'Cuarto 3': {
         betplay: 'Cuarto 3',
@@ -710,6 +790,7 @@ const betDescriptionsBasketball = {
         cashwin: 'Third quarter - 1x2',
         marathon: 'Resultado del 3.er cuarto',
         ggbet: '3rd cuarto - 1x2',
+        leon: '3er Trimestre: Resultado'
     },
     'Apuesta sin empate - Cuarto 3': {
         betplay: 'Apuesta sin empate - Cuarto 3',
@@ -740,6 +821,7 @@ const betDescriptionsBasketball = {
         dafabet: 'Más/Menos - 3º Cuarto',
         cashwin: 'Third quarter - total',
         marathon: 'Total de puntos - 3.er cuarto',
+        leon: '3er Cuarto: Más/Menos'
     },
     'Cuarto 4': {
         betplay: 'Cuarto 4',
@@ -788,6 +870,7 @@ const betDescriptionsBasketball = {
         dafabet: 'Más/Menos - 4º Cuarto',
         cashwin: 'Fourth quarter - total',
         marathon: 'Total de puntos - 4.º cuarto',
+        leon: '4to Cuarto: Más/Menos (Tiempo regular)'
     },
     'Apuesta sin empate - 2.ª parte': {
         betplay: '2.ª parte',
@@ -836,6 +919,7 @@ const betDescriptionsBasketball = {
         megapuesta: '2ª Mitad',
         marathon: 'Resultado de la 2.ª mitad',
         ggbet: '2º Mitad - 1x2',
+        leon: '2° Tiempo: Resultado (Tiempo reglamentario)'
     },
     '': {
         betplay: '',
@@ -875,6 +959,8 @@ const betDescriptionsTennis = {
         lsbet: 'Ganador del partido',
         ggbet: 'Ganador',
         marathon: 'Resultado del partido',
+        leon: 'Cuotas del partido',
+        stake: '1X2'
     },
     'Total de juegos': {
         betplay: 'Total de juegos',
@@ -896,6 +982,8 @@ const betDescriptionsTennis = {
         lsbet: 'Menos de/Más de Juegos',
         ggbet: 'Total juegos',
         marathon: 'Total de juegos',
+        leon: 'Juegos totales',
+        stake: 'Total'
     },
     'Total de sets': {
         betplay: 'Total de sets',
@@ -905,6 +993,7 @@ const betDescriptionsTennis = {
         betboro: 'Total de Sets',
         pinnacle: 'Total (Sets) – Partido',
         marathon: 'Total de sets',
+        leon: 'Sets Totales - Más/Menos',
     },
     'Set 1': {
         betplay: 'Set 1',
@@ -926,6 +1015,8 @@ const betDescriptionsTennis = {
         lsbet: 'Ganador 1º Set',
         ggbet: '1st set - ganador',
         marathon: 'Resultado del 1.er set',
+        leon: 'Conjunto 1 - Ganador',
+        stake: 'Ganador 1er sets'
     },
     'Set 2': {
         betplay: 'Set 2',
@@ -945,6 +1036,7 @@ const betDescriptionsTennis = {
         bwin: '¿Quién ganará el 2° set?',
         lsbet: 'Ganador 2º Set',
         ggbet: '2nd set - ganador',
+        leon: 'Conjunto 2 - Ganador'
         // marathon: '',
     },
     'Total de juegos - Set 1': {
@@ -963,6 +1055,7 @@ const betDescriptionsTennis = {
         bwin: '¿Cuántos juegos se disputarán en el 1er set?',
         lsbet: '1º Set Menos de/Más de',
         marathon: 'Total de juegos del 1.er set',
+        leon: 'Set 1 - Total de juegos Más/Menos'
     },
     'Total de juegos - Set 2': {
         betplay: 'Total de juegos - Set 2',
@@ -1000,6 +1093,32 @@ const betDescriptionsTennis = {
     },
 }
 
+const betDescriptionsVolleyball = {
+    '': {
+        betplay: '',
+        wplay: '',
+        betsson: '',
+        '1xbet': '',
+        codere: '',
+        yaJuegos: '',
+        luckia: '',
+        sportium: '',
+        zamba: '',
+        wonderbet: '',
+        megapuesta: '',
+        fullreto: '',
+        betboro: '',
+        pinnacle: '',
+        dafabet: '',
+        cashwin: '',
+        bwin: '',
+        lsbet: '',
+        ggbet: '',
+        marathon: '',
+        stake: '',
+    },
+}
+
 const groupByType = {
     total: 1,
     total2: 7,
@@ -1026,6 +1145,8 @@ module.exports = {
     idsBasketball,
     betTypesTennis,
     idsTennis,
+    idsVolleyball,
+    betDescriptionsVolleyball,
     betDescriptionsFootball,
     betDescriptionsBasketball,
     groupByType,

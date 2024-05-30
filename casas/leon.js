@@ -10,10 +10,10 @@ const {
 
 const buscarQ = async (page, query) => {
     try {
-        const search = await page.getByPlaceholder('Buscar').first();
-        await search.fill(query.length > 2 ? query : query + "  ");
+        const search = await page.locator('//input[@name= "search"]').first();
+        await search.fill(query.length > 2 ? query : query + " 000");
         await page.waitForTimeout(1500);
-        const noResult = await page.getByText('No hay resultados', { timeout: 10000 }).isVisible();
+        const noResult = await page.getByText('No hay resultados para está búsqueda', { timeout: 5000 }).isVisible();
         return !noResult;
     } catch (error) {
         return false;
@@ -21,12 +21,12 @@ const buscarQ = async (page, query) => {
 };
 
 const intentarEncontrarOpcion = async (page, match) => {
-    const posibleOpcion = page.locator('.sport-search-result-item-bc');
+    const posibleOpcion = page.locator('//li/a[contains(@class, "search-item")]');
     await posibleOpcion.first().waitFor({ state: 'visible' });
     let opciones = await posibleOpcion.all();
     let optPass = [];
     for (const opcion of opciones) {
-        let text = await opcion.locator('p').nth(1).textContent();
+        let text = await opcion.locator('//div[2]/div[1]').first().textContent();
         match = quitarTildes(match.replace(' - ', ' '));
         text = quitarTildes(text.replace(' - ', ' '));
         const p = await tienenPalabrasEnComunDinamico(match, text, 75);
@@ -39,7 +39,7 @@ const intentarEncontrarOpcion = async (page, match) => {
             text2: opt.text,
             etiqueta: 1
         });
-        console.log('BETBORO: ', match, opt.text);
+        console.log('LEON: ', match, opt.text);
         await opt.opcion.waitFor({ state: 'visible' });
         await opt.opcion.click();
         return true;
@@ -48,24 +48,9 @@ const intentarEncontrarOpcion = async (page, match) => {
 };
 
 const permit1 = [
-    'Total de goles',
-    'Total (incl. prórroga)',
-    'Tarjetas Amarillas: Total',
-    'Córneres: Total',
-    'Total de Goles de la 1ra mitad',
-    '2da mitad Total de  goles',
-    ' Hándicap 3 opciones',
-    '1ra Cuarto Total de puntos',
-    '1ra Mitad Total de Puntos',
-    '3er Cuarto Total de puntos',
-    '2do Mitad Total de Puntos',
-    '4to Cuarto Total de puntos',
-    '2do Cuarto Total de puntos',
-    'Total de puntos',
-    'Total de Juegos',
-    'Total de Sets',
-    '1er Set total de juegos',
-    '2er Set total de juegos',
+    'Tiempo reglamentario',
+    'Porroga incluida',
+    'Cuotas del partido'
 ];
 
 const permit2 = [
@@ -85,55 +70,53 @@ const permit2 = [
 
 let url = '';
 async function getResultsLeon(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
-    const { page, context } = await initBrowser('https://sportsbet.io/es/sports', 'sportbet' + n);
+    const { page, context } = await initBrowser('https://leon.bet/es-pe/', 'leon' + n);
     if (page) {
         try {
-            await page.getByPlaceholder('Buscar').click();
+            await page.locator('//button[@title= "Buscar"]').click();
+            page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             url = await page.url();
-            let betBoro = {
-                nombre: 'betboro',
+            let leon = {
+                nombre: 'leon',
                 title: match,
                 bets: [],
                 url
             }
-            await page.locator('.ss-icon-holder-bc').click();
-            const input = await page.locator('.ss-input-bc');
+            await page.getByText('Todos los mercados').click();
+            page.setDefaultTimeout(1300);
+            page.setDefaultTimeout(timeouts.bet);
             for (const betType of betTypes) {
                 try {
-                    let names, bets;
-                    page.setDefaultTimeout(1300);
-                    await input.fill(betType.type);
-                    await page.waitForTimeout(1200);
-                    page.setDefaultTimeout(timeouts.bet);
-                    const totalList = permit1.includes(betType.type);
-                    if (totalList) {
-                        bets = await page.locator('//p[text()= "' + betType.type + '"]/parent::*/parent::*/parent::*//div[contains(@class, "market-bc")]').all();
-                        bets = bets.slice(betType.type == ' Hándicap 3 opciones' ? 3 : 2);
-                    } else {
-                        bets = await page.locator('//p[text()= "' + betType.type + '"]/parent::*/parent::*/parent::*//div[contains(@class, "market-bc")]').all();
-                    }
-
-                    let type = await page.locator('//p[text()= "' + betType.type + '"]').first().textContent();
-
+                    let parent;
                     let betTemp = {
                         id: Object.keys(betType)[0],
-                        type,
                         bets: []
                     }
+                    if (permit1.includes(betType.type)) {
+                        betTemp.type = betType.type;
+                        parent = await page.locator('(//div[contains(@class, "headline-info")])[1]');
+                    } else {
+                        parent = await page.locator('//span[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*');
+                        const container = await parent.locator('//div[contains(@class, "header")]').getAttribute('class');
+                        if (container.includes('closed')) {
+                            await parent.click();
+                            await page.waitForTimeout(700);
+                        }
+                        const type = await page.locator('//span[text() = "' + betType.type + '"]').first().textContent();
+                        betTemp.type = type
+                    }
 
+                    const bets = await parent.locator('//button').all();
                     if (bets.length > 1) {
-                        let temp = true;
                         for (const bet of bets) {
-                            const name = await bet.locator('span').first().textContent();
-                            const quote = await bet.locator('.market-odd-bc').textContent();
-                            if (totalList) {
-                                names = temp ? 'Mas' : 'Menos';
-                                temp = !temp;
-                            }
+                            let name = await bet.locator('span').first().textContent();
+                            if(name.includes('Por encima de')) name = name.replace('Por encima de', 'mas de')
+                            if(name.includes('Por debajo de')) name = name.replace('Por debajo de', 'menos de')
+                            const quote = await bet.locator('span').last().textContent();
                             betTemp.bets.push({
-                                name: (names || '') + name,
+                                name,
                                 quote
                             });
                         }
@@ -153,21 +136,22 @@ async function getResultsLeon(match, betTypes = ['Resultado Tiempo Completo'], n
                         }
                         console.log('////////////////////////////////////////')
                     }
+
                     // if (type == ' Hándicap 3 opciones') console.log(betTemp)
                     // console.log(betTemp)
-                    betBoro.bets.push(betTemp);
-                    console.log('//////// BETBORO LENGTH ', betBoro.bets.length)
+                    leon.bets.push(betTemp);
+                    console.log('//////// LEON LENGTH ', leon.bets.length)
                 } catch (error) {
                     // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
 
             }
-            console.log('//////////////////// BETBORO //////////////////')
-            console.log('//////////////////// BETBORO //////////////////')
-            return betBoro;
+            console.log('//////////////////// LEON //////////////////')
+            console.log('//////////////////// LEON //////////////////')
+            return leon;
         } catch (error) {
-            console.log('ERRPR BETBORO BETBORO BETBORO BETBORO ERRPR');
+            console.log('ERRPR LEON LEON LEON LEON ERRPR');
             console.log(error);
             // await page.close();
         }
