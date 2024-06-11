@@ -17,7 +17,7 @@ const buscarQ = async (page, query) => {
         const noResult = await page.getByText('Lo sentimos, no hay resultados para tu búsqueda.', { timeout: 10000 }).isVisible();
         return !noResult;
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return false;
     }
 };
@@ -55,7 +55,8 @@ const permit1 = [
     'Doble Oportunidad 1ª Mitad',
     'Tiros de esquina más/Menos de (9.5)',
     'Equipo con más Tiros de Esquina',
-    'Total de Tarjetas (3.5)'
+    'Total de Tarjetas (3.5)',
+    'Más de/Menos de Total de Puntos'
 ];
 
 const permit2 = [
@@ -87,16 +88,18 @@ const permit4 = [
     '1er Cuarto Línea de Dinero 3 Opciones',
     'Lineas del Juego',
     'Segunda Mitad Línea de Dinero 3-Opciones (Tiempo Regular)',
+    'Resultado Tiempo Completo',
+    'Doble Oportunidad',
+    'Se clasificará',
+    'Resultado 2da Mitad',
+    'Resultado 1ra Mitad',
 ];
-
-let url = '';
-
-
 
 async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
     const { page, context } = await initBrowser('https://apuestas.wplay.co/es/', 'wplay' + n);
     if (page) {
         try {
+            let url = '';
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;

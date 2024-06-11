@@ -5,7 +5,8 @@ const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     matchnames,
-    categoryActual
+    categoryActual,
+    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -88,8 +89,6 @@ function buildXPathsFromNumbers(numbers, bet) {
     return { titlesXPath, buttonsXPath };
 }
 
-let url = '';
-
 const betTypeActions = {
     football: {
         'Ambos marcan ambas partes': 'Goles (',
@@ -109,13 +108,30 @@ const betTypeActions = {
     },
     tennis: {
         'Ganador Set 1': 'Mercados de sets (',
+    },
+    volleyball: {
+        'Ganador Set 1': 'Mercados de sets (',
+    },
+    baseball: {
+        'Primer Equipo en Marcar': 'Apuestas de carreras (',
+        'Entrada 1 - Resultado': 'Mercados de entradas (',
     }
 };
 
-async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'], n) {
+const permit1 = [
+    'Mayor número de córners',
+    '1ª Mitad - Doble Oportunidad',
+    'Resultado 1ª Mitad',
+    'Resultado 2ª Mitad',
+    'Clasificarse',
+    'Doble Oportunidad',
+    '1X2',
+];
+async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
     const { page, context } = await initBrowser('https://sports.sportium.com.co/', 'sportium' + n);
     if (page) {
         try {
+            let url = '';
             page.setDefaultTimeout(timeouts.search);
             await page.waitForTimeout(5000);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);

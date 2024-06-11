@@ -28,6 +28,19 @@ class QuoteManager {
         'Total de juegos - Set 2',
         'Total de juegos',
         'Total de sets',
+        'Total de puntos - Set 1',
+        'Total de puntos - Set 2',
+        'Total de puntos - Set 3',
+        'Total de puntos',
+        'Total de sets',
+        'Número total de Aces',
+        'Número total de juegos con quiebre',
+        'Total de Doble Faltas',
+        'Total de carreras',
+        'Total de carreras - Entrada 1',
+        'Total de puntos - Set 3',
+        'Total de asaltos',
+        'Total de carreras',
     ];
 
     doble = [3, 14, 10];
@@ -48,18 +61,6 @@ class QuoteManager {
             if (!this.quotes.has(id)) {
                 this.quotes.set(id, []);
             }
-            if (id == '1') {
-                // let betName = bet.bets[0].name;
-                // if (typeof betName == 'string')
-                //     if (!tienenPalabrasEnComunDinamicoT(data.team1, betName)
-                //         && betName != '1' && !betName.includes('...')) {
-                //         console.log(data.team1, bet.bets[0].name)
-                //         let betTemp = bet.bets[0];
-                //         bet.bets[0] = bet.bets[1];
-                //         bet.bets[1] = betTemp;
-                //         console.log(bet.bets);
-                //     }
-            }
             this.quotes.get(id).push({
                 nombre: name,
                 cuotas: bet.bets,
@@ -79,11 +80,7 @@ class QuoteManager {
 
                 for (const [betType, id] of Object.entries(ids)) {
                     let quotesArray = this.quotes.get(String(id));
-                    if (id == '12' && quotesArray) {
-                        // console.log(quotesArray.map(q => q.cuotas));
-                        // console.log(extractAndGroup(quotesArray.map(q => q.cuotas)));
-                    }
-
+                    if (betType == 'Doble Oportunidad') continue;
                     if (quotesArray && quotesArray.length > 0 && id != 6) {
                         let combinations;
                         if (id === '1') {
@@ -96,7 +93,6 @@ class QuoteManager {
                             });
                         }
                         quotesArray = quotesArray.map(q => this.normalize(q));
-
                         let combinate = this.needsCombination(betType);
                         if (combinate) {
                             if (quotesArray.some(q => q.cuotas.length === 3)) {
@@ -114,6 +110,12 @@ class QuoteManager {
                         } else if (categoryActual.current == 'basketball' && !combinate) {
                             calculator = calculateTotalGol;
                         } else if (categoryActual.current == 'tennis' && !combinate) {
+                            calculator = calculateTotalGol;
+                        } else if (categoryActual.current == 'volleyball' && !combinate) {
+                            calculator = calculateTotalGol;
+                        } else if (categoryActual.current == 'baseball' && !combinate) {
+                            calculator = calculateTotalGol;
+                        } else if (categoryActual.current == 'ufc_mma' && !combinate) {
                             calculator = calculateTotalGol;
                         }
 

@@ -83,11 +83,11 @@ const permit2 = [
     '2do Mitad: Ganador (2 vías)',
 ];
 
-let url = '';
 async function getResultsSportbet(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
     const { page, context } = await initBrowser('https://sportsbet.io/es/sports', 'sportbet' + n);
     if (page) {
         try {
+            let url = '';
             await page.getByPlaceholder('Buscar').click();
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;

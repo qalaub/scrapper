@@ -10,12 +10,17 @@ let surebetcont = 0;
 
 const userAgents = [
     // Windows
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/113.0.5672.126 Safari/537.36",
+    "Mozilla/5.0 (Windows NT 10.0; WOW64; rv:113.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:113.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Edge/113.0.1774.50",
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/113.0.5672.127 Safari/537.36",
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:113.0) Gecko/20100101 Firefox/113.0',
     'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; rv:11.0) like Gecko',
     'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US) Chrome/112.0.5615.138',
     'Mozilla/5.0 (Windows NT 6.1; WOW64; rv:113.0) Gecko/20100101 Firefox/113.0',
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:114.0) Gecko/20100101 Firefox/114.0',
-
     // Linux
     'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0',
     'Mozilla/5.0 (X11; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0',
@@ -47,7 +52,8 @@ let browserInstance = null; // Un único objeto para manejar el navegador y el c
 async function initBrowser(url, name, timeout = 5000) {
     let randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
     if (name.includes('marathon')) randomUserAgent = marathonUser[Math.floor(Math.random() * marathonUser.length)];
-    if (name.includes('google')) randomUserAgent = 'Mozilla/5.0 (X11; Linux i686) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36';
+    if (name.includes('google')) randomUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:114.0) Gecko/20100101 Firefox/114.0';
+    // if (name.includes('bcgame')) randomUserAgent = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:113.0) Gecko/20100101 Firefox/113.0';
     console.log(randomUserAgent)
     const tryCreate = async () => {
         if (!browserInstance) {
@@ -55,7 +61,10 @@ async function initBrowser(url, name, timeout = 5000) {
             const browser = await chromium.launch({
                 headless: true,
                 viewport: { width: 550, height: 680 },
-                args: ['--no-sandbox'],
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                ],
             });
             const context = await browser.newContext({
                 userAgent: randomUserAgent,
@@ -75,6 +84,9 @@ async function initBrowser(url, name, timeout = 5000) {
             let page;
             if (!pages[name]) {
                 page = await browserInstance.context.newPage();
+                await page.setExtraHTTPHeaders({
+                    'Accept-Language': 'es-ES,es;q=0.9',
+                });
                 pages[name] = page;
             }
             else page = pages[name];
@@ -139,7 +151,7 @@ async function closeContext() {
 }
 
 async function getResponse(type) {
-    let url = `https://na-offering-api.kambicdn.net/offering/v2018/betplay/listView/${type}/all/all/all/starting-within.json?lang=es_CO&market=CO&client_id=2&channel_id=1&useCombined=true&useCombinedLive=true&${generateFormattedDateRange(48)}`;
+    let url = `https://na-offering-api.kambicdn.net/offering/v2018/betplay/listView/${type}/all/all/all/starting-within.json?lang=es_CO&market=CO&client_id=2&ncid=1717514727038&channel_id=1&useCombined=true&useCombinedLive=true&${generateFormattedDateRange(48)}`;
     if (categoryActual.isLive) {
         url = `https://na-offering-api.kambicdn.net/offering/v2018/betplay/listView/${type}/all/all/all/in-play.json?lang=es_CO&market=CO&client_id=2&channel_id=1&useCombined=true&useCombinedLive=true`;
     }
@@ -292,7 +304,7 @@ function quitarTildes(cadena) {
 
 function normalizar(palabra) {
     palabra = quitarTildes(palabra);
-    const patrones = /\bAS\b|-RJ|-SP|CF|FC|F\.C\.|`|FK|CA|SC|CFC|JPN|\bSL\b/g;
+    const patrones = /\bAS\b|-RJ|-RS|-SP|CF|FC|F\.C\.|`|FK|CA|SC|-BA|CFC|JPN|OCS|\bSL\b/g;
     palabra = palabra
         .replace(patrones, '')
         .replace('da amadora', '')
@@ -301,10 +313,12 @@ function normalizar(palabra) {
         .replace('Futbol Club', '')
         .replace('Futbol', '')
         .replace(' de ', ' ')
+        .replace(' De ', ' ')
         .toLowerCase();
     palabra = palabra
         .replace(/\b(sub-20|u20|under 20|sub 20|subtwenty)\b/g, 'sub20')
-        .replace(/\b(women|femenino|female|fem|\(f\)|\(fem\)|\(w\))\b(?!\.)/gi, 'femenino')
+        .replace(/\b(sub-19|u19|under 19|sub 19)\b/g, 'sub20')
+        .replace(/\b(women|femenino|female|mujeres|fem|\(f\)|\(fem\)|\(w\)|\(won\))\b(?!\.)/gi, 'femenino')
         .replace(/\((f|w|fem)\)/gi, 'femenino')
         .replace(/\b(baloncesto)\b/g, '')
         .replace(/\b(90 min)\b/g, '')
@@ -314,6 +328,7 @@ function normalizar(palabra) {
         .replace(/\s+/g, ' ')  // Sustituye múltiples espacios en blanco por un solo espacio
         .replace(/-|\./g, '')
         .trim();
+    if (categoryActual.current == 'volleyball') palabra = palabra.replace('femenino', '');
     return palabra;
 }
 
@@ -341,6 +356,9 @@ function equiposIguales(equipo1, equipo2) {
 
 function obtenerSinonimos() {
     return {
+        'tsitsipas': ['s tsitsipas', 'tsitsipas', 'stefanos tsitsipas'],
+        'alcaraz': ['c alcaraz garfia', 'alcaraz', 'carlos alcaraz'],
+        'olympique': ['olympique', 'olympique safi', 'oc safi', 'oc'],
         'aguada': ['aguada santeros', 'santeros aguada', 'santeros'],
         'huskies': ['huskies', 'tuatara'],
         'basketball': ['basketball', 'basket'],
@@ -358,9 +376,9 @@ function obtenerSinonimos() {
         'guandong': ['guangdong', 'guangdong southern tigers'],
         'leopards': ['zhejiang leopards', 'shenzhen leopards'],
         'denver': ['denver nuggets', 'den nuggets', 'den'],
-        'losangeles': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
+        // 'losangeles': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
         'nuggets': ['denver nuggets', 'den nuggets', 'den'],
-        'lakers': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
+        // 'lakers': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
         'warriors': ['golden state warriors', 'gs warriors'],
         'heat': ['miami heat'],
         'celtics': ['boston celtics'],
@@ -424,7 +442,7 @@ function obtenerSinonimos() {
 function obtenerAbreviaciones() {
     return {
         // Equipos de la NBA (algunos ya listados anteriormente)
-        'lakers': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
+        // 'lakers': ['los angeles lakers', 'la lakers', 'l.a. lakers', 'la'],
         'celtics': ['boston celtics', 'bos celtics', 'bos'],
         'bulls': ['chicago bulls', 'chi bulls', 'chi'],
         'warriors': ['golden state warriors', 'gs warriors', 'gsw', 'golden state'],
@@ -572,7 +590,6 @@ function evaluarCoincidencias(palabras1, palabras2) {
     const terminosEspeciales = obtenerTerminosEspeciales();
     // Ajuste dinámico de umbrales
     const longitudMedia = (palabras1.length + palabras2.length) / 2;
-
     // Expande las abreviaciones
     palabras1 = expandirAbreviaciones(palabras1, abreviaciones);
     palabras2 = expandirAbreviaciones(palabras2, abreviaciones);
@@ -598,7 +615,7 @@ function evaluarCoincidencias(palabras1, palabras2) {
     let umbralJaccard, umbralLevenshtein;
 
     if (longitudMedia <= 5) {
-        umbralJaccard = 0.5;
+        umbralJaccard = 0.61;
         umbralLevenshtein = 9;
     } else if (longitudMedia <= 10) {
         umbralJaccard = 0.65;
@@ -611,8 +628,8 @@ function evaluarCoincidencias(palabras1, palabras2) {
     const esJaccardSuficiente = jaccard >= umbralJaccard;
     const esLevenshteinAceptable = distanciaLevenshtein <= umbralLevenshtein;
     if (true) {
-        //console.log(palabras1, palabras2)
-        //console.log(jaccard, distanciaLevenshtein, umbralJaccard, umbralLevenshtein);
+        // console.log(palabras1, palabras2)
+        // console.log(jaccard, distanciaLevenshtein, umbralJaccard, umbralLevenshtein);
     }
     return esJaccardSuficiente && esLevenshteinAceptable;
 }
@@ -621,20 +638,22 @@ function tienenPalabrasEnComunDinamicoT(cadena1, cadena2) {
     if (cadena1 === 'Locales Visitantes' || cadena2 === 'Locales Visitantes') {
         return false;
     }
-
-    const equipo1 = normalizar(cadena1);
-    const equipo2 = normalizar(cadena2);
+    let equipo1 = normalizar(cadena1);
+    let equipo2 = normalizar(cadena2);
     if (equiposIguales(equipo1, equipo2)) {
         return true;
     }
     if (equipo1 == 'real sociedad atletico madrid' && equipo2 == 'real sociedad real madrid') return false;
+    if (equipo1 == 'bahrein corea del sur' && equipo2 == 'singapur corea del sur') return false;
 
     // Verificar si uno de los equipos contiene "femenino" y el otro no
     const contieneFemenino1 = equipo1.includes('femenino');
     const contieneFemenino2 = equipo2.includes('femenino');
-    if (contieneFemenino1 !== contieneFemenino2) {
+    if (contieneFemenino1 !== contieneFemenino2 && categoryActual.current != 'volleyball') {
         return false;
     }
+    if (categoryActual.current == 'volleyball') equipo1 = equipo1.replace('femenino', '');
+    if (categoryActual.current == 'volleyball') equipo2 = equipo2.replace('femenino', '');
     // Expresión regular para dividir la cadena en palabras, teniendo en cuenta guiones bajos
     const palabrasRegex = /[^\W_()]+(?:_[^\W_()]+)*/g;
 
@@ -676,10 +695,14 @@ function generarCombinacionesDeCasas2(casas) {
             for (let a = 0; a < casas[i].cuotas.length; a++) {
                 for (let b = 0; b < casas[j].cuotas.length; b++) {
                     if (a !== b) { // Asegurar que se usen cuotas diferentes para la combinación
-                        combinaciones.push([
-                            { casa: casas[i].nombre, team: casas[i].cuotas[a].name, quote: casas[i].cuotas[a].quote, url: casas[i].url || '' },
-                            { casa: casas[j].nombre, team: casas[j].cuotas[b].name, quote: casas[j].cuotas[b].quote, url: casas[j].url || '' }
-                        ]);
+                        const team1 = casas[i].cuotas[a].name;
+                        const team2 = casas[j].cuotas[b].name;
+                        if (team1 != team2) { // Verificar que los equipos no sean iguales
+                            combinaciones.push([
+                                { casa: casas[i].nombre, team: team1, quote: casas[i].cuotas[a].quote, url: casas[i].url || '' },
+                                { casa: casas[j].nombre, team: team2, quote: casas[j].cuotas[b].quote, url: casas[j].url || '' }
+                            ]);
+                        }
                     }
                 }
             }
@@ -691,10 +714,10 @@ function generarCombinacionesDeCasas2(casas) {
 
 function generarCombinacionesDeCasas3(casas) {
     let combinaciones = [];
+
     // Filtrar las casas que tienen cuotas undefined o vacías
-    casas = casas.filter(casa => {
-        return casa.cuotas && casa.cuotas.length == 3
-    });
+    casas = casas.filter(casa => casa.cuotas && casa.cuotas.length == 3);
+
     // Si después de filtrar no quedan suficientes casas para formar una combinación, retorna un arreglo vacío
     if (casas.length < 3) return [];
 
@@ -706,12 +729,17 @@ function generarCombinacionesDeCasas3(casas) {
                     for (let b = 0; b < casas[j].cuotas.length; b++) {
                         for (let c = 0; c < casas[k].cuotas.length; c++) {
                             // Asegurar que se usen cuotas diferentes para la combinación
-                            if (a !== b && b !== c && a !== c) {
-                                combinaciones.push([
-                                    { casa: casas[i].nombre, team: casas[i].cuotas[a].name, quote: casas[i].cuotas[a].quote, url: casas[i].url || '' },
-                                    { casa: casas[j].nombre, team: casas[j].cuotas[b].name, quote: casas[j].cuotas[b].quote, url: casas[j].url || '' },
-                                    { casa: casas[k].nombre, team: casas[k].cuotas[c].name, quote: casas[k].cuotas[c].quote, url: casas[k].url || '' }
-                                ]);
+                            if (a != b && b != c && a != c) {
+                                const team1 = casas[i].cuotas[a].name;
+                                const team2 = casas[j].cuotas[b].name;
+                                const team3 = casas[k].cuotas[c].name;
+                                if (team1 != team2 && team2 != team3 && team1 != team3) { // Verificar que los equipos no sean iguales
+                                    combinaciones.push([
+                                        { casa: casas[i].nombre, team: team1, quote: casas[i].cuotas[a].quote, url: casas[i].url || '' },
+                                        { casa: casas[j].nombre, team: team2, quote: casas[j].cuotas[b].quote, url: casas[j].url || '' },
+                                        { casa: casas[k].nombre, team: team3, quote: casas[k].cuotas[c].quote, url: casas[k].url || '' }
+                                    ]);
+                                }
                             }
                         }
                     }
@@ -719,6 +747,7 @@ function generarCombinacionesDeCasas3(casas) {
             }
         }
     }
+
     return combinaciones;
 }
 
@@ -736,7 +765,7 @@ function generarCombinacionesDeCasas2MoreLess(casas) {
 
     casas.forEach(casa => {
         casa.cuotas.forEach(cuota => {
-            const valor = cuota.name.match(/[\d\.]+/)[0]; 
+            const valor = cuota.name.match(/[\d\.]+/)[0];
             const tipo = cuota.name.includes('más') || cuota.name.includes('mas') ? 'mas' : 'menos';
             if (!cuotasPorValor[valor]) {
                 cuotasPorValor[valor] = { mas: [], menos: [] };
@@ -757,10 +786,10 @@ function generarCombinacionesDeCasas2MoreLess(casas) {
     for (let i = 0; i < valoresOrdenados.length - 1; i++) {
         const valorActual = valoresOrdenados[i];
         const valorSiguiente = valoresOrdenados[i + 1];
-        
+
         const masCuotas = cuotasPorValor[valorActual].mas;
         const menosCuotas = cuotasPorValor[valorSiguiente].menos;
-        
+
         masCuotas.forEach(masCuota => {
             menosCuotas.forEach(menosCuota => {
                 if (masCuota.casa !== menosCuota.casa && menosCuota.quote !== undefined) {
@@ -776,46 +805,100 @@ function generarCombinacionesDeCasas2MoreLess(casas) {
 function evaluateSurebets(combinations, totalInvestment, data, url, type) {
     let results = [];
     if (!combinations) return ['No se encontraron surebets.'];
-    combinations.forEach(combination => { // Directamente cada "combination" en "combinations"
+
+    combinations.forEach(combination => {
         let result = calculateSureBetForCombination(combination, totalInvestment, type);
         if (result && result.isSureBet) {
             results.push(result);
         }
     });
+
     if (results.length) {
         console.log('//////////////////////// surebet //////////////////');
         let fecha = new Date(data.start);
         let fechaISO = fecha.toISOString();
         const category = getCategoryByMatch(type);
-        console.log(results.length)
+        console.log(results.length);
         results = removeDuplicateHouseEntries(results);
-        console.log(results.length)
-        results.forEach(async result => {
-            // console.log(result.investments)
-            postFormData('https://lafija.qalaub.com/v1/api/surebet/', {
-                surebet: JSON.stringify(
-                    {
-                        surebet: result.investments,
-                        ...data,
-                        type,
-                        event: category,
-                    }
-                ),
-                team1: url.team1.toString(),
-                team2: url.team2.toString(),
-                matches: fechaISO,
-                live: categoryActual.isLive,
-            }, 'application/json');
-        });
+        console.log(results.length);
+        if (results.length < 20) {
+            results.forEach(async result => {
+                const pass = await hasDuplicateEntries(result.investments, data.team1, data.team2);
+                if (!pass) {
+                    postFormData('https://lafija.qalaub.com/v1/api/surebet/', {
+                        surebet: JSON.stringify(
+                            {
+                                surebet: result.investments,
+                                ...data,
+                                type,
+                                event: category,
+                            }
+                        ),
+                        team1: url.team1.toString(),
+                        team2: url.team2.toString(),
+                        matches: fechaISO,
+                        live: categoryActual.isLive,
+                    }, 'application/json');
+                } else {
+                    console.log('Entrada duplicada encontrada en surebet, no se enviará.');
+                }
+            });
+        }
+
         surebetcont++;
         console.log('//////////////////////// surebet //////////////////');
     }
+
     return results.length > 0 ? results : ['No se encontraron surebets.'];
 }
 
-function hasDuplicateHouses(investments) {
-    const houses = investments.map(investment => investment.casa);
-    return new Set(houses).size !== houses.length;
+async function hasDuplicateEntries(investments, team1, team2) {
+    if (investments.length === 0) return false;
+
+    // Normalizar nombres de equipos
+    for (let i = 0; i < investments.length; i++) {
+        investments[i].team = normalizeTeamName(investments[i].team, team1, team2);
+    }
+
+    let team1Count = 0;
+    let team2Count = 0;
+
+    for (let investment of investments) {
+        if (typeof investment.team === 'string') {
+            investment.team = investment.team.toLowerCase();
+            if (/\b(si|no|sí)\b/i.test(investment.team)) return false;
+            if (/menos|más/i.test(investment.team)) return false;
+        }
+
+        let normalizedTeam = normalizeTeamName(investment.team, team1, team2);
+
+        const res1 = await postFormData('https://compare.qalaub.com/comparar', {
+            sentences: [normalizedTeam, team1]
+        }, 'application/json');
+        const res2 = await postFormData('https://compare.qalaub.com/comparar', {
+            sentences: [normalizedTeam, team2]
+        }, 'application/json');
+
+        let similarity1 = parseFloat(res1.similarity);
+        let similarity2 = parseFloat(res2.similarity);
+
+        if (similarity1 > 0.70) team1Count++;
+        if (similarity2 > 0.70) team2Count++;
+
+        if (team1Count > 1 || team2Count > 1) return true;
+    }
+
+    // Verificar si ambos equipos aparecen exactamente una vez
+    return !(team1Count === 1 && team2Count === 1);
+}
+
+function normalizeTeamName(team, team1, team2) {
+    if (team == 1 || team == "1") return team1;
+    if (team == 2 || team == "2") return team2;
+
+    if (team.includes(team1)) return team1;
+    if (team.includes(team2)) return team2;
+    return team;
 }
 
 function removeDuplicateHouseEntries(data) {
@@ -833,12 +916,6 @@ function removeDuplicateHouseEntries(data) {
     }
 
     return uniqueEntries;
-}
-
-function getRandomInt(min, max) {
-    min = Math.ceil(min); // Redondear al entero más próximo por encima
-    max = Math.floor(max); // Redondear al entero más próximo por debajo
-    return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function calculateSureBetForCombination(combination, totalInvestment, type) {
@@ -862,7 +939,6 @@ function calculateSureBetForCombination(combination, totalInvestment, type) {
     odds.forEach((odd, index) => {
         const investmentPercentage = (1 / odd) / sumImport;
         const investment = (totalInvestment * investmentPercentage).toFixed(2);
-        console.log(combination[index].url)
         investments.push({
             type,
             casa: combination[index].casa,
@@ -1088,9 +1164,6 @@ function getCategoryByMatch(type) {
     }
     return "Categoría Desconocida";
 }
-
-
-
 
 module.exports = {
     initBrowser,

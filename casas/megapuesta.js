@@ -9,7 +9,7 @@ const buscarQ = async (page, query) => {
         await search.click();
         await search.fill(query);
         await page.waitForTimeout(1500);
-        const result = await page.locator('.autocomplete-search-results-popup-title-3').first().isVisible();
+        const result = await page.locator(categoryActual.isLive ? '.tabellaQuoteNew' : '.tabellaQuotePrematch').first().isVisible();
         return result;
     } catch (error) {
         console.log(error);
@@ -18,13 +18,13 @@ const buscarQ = async (page, query) => {
 };
 
 const intentarEncontrarOpcion = async (page, match) => {
-    const posibleOpcion = page.locator('.autocomplete-search-results-popup-title-3');
+    const posibleOpcion = page.locator('.tabellaQuoteSquadre');
     let opciones = await posibleOpcion.all();
     let pass = [];
     let optPass = [];
     for (const opcion of opciones) {
         const title = await opcion.textContent();
-
+        // console.log(title);
         match = quitarTildes(match.replace(' - ', ' '));
         let text = quitarTildes(title.trim());
         text = text.substring(text.indexOf('-') + 2);
@@ -61,13 +61,12 @@ const permit1 = [
     'Total Puntos Cuarto 4',
     'Total de Juegos',
     'Total de Juegos Set 1',
+    'Total Puntos'
 ];
 
 const permit2 = [
     '2ª Mitad',
 ];
-
-let url = '';
 
 async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Completo'], n) {
     const { page, context } = await initBrowser(categoryActual.isLive
@@ -75,6 +74,7 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
         : 'https://megapuesta.co/es/sport', 'megapuesta' + n);
     if (page) {
         try {
+            let url = '';
             await page.getByRole('searchbox', { name: 'Cargando..' }).isVisible();
             await page.getByRole('searchbox', { name: 'Buscar' }).isVisible();
             page.setDefaultTimeout(timeouts.search);

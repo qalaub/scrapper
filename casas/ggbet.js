@@ -99,7 +99,7 @@ const permit2 = [
 ];
 
 async function getResultsGgbet(match, betTypes = ['ganador del partido'], n, team1) {
-    if (categoryActual.current == 'tennis') return;
+    // if (categoryActual.current == 'tennis') return;
     const { page, context } = await initBrowser('https://gg.bet/es', 'ggbet' + n);
     if (page) {
         try {
@@ -183,7 +183,7 @@ async function getResultsGgbet(match, betTypes = ['ganador del partido'], n, tea
             console.log('//////////////////// GGBET //////////////////')
             return ggbet;
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             // await page.close();
         }
     }

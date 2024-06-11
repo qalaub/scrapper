@@ -69,11 +69,17 @@ const permit1 = [
     'Total juegos',
     '1.º set - total juegos',
     '2.º set - total juegos',
+    'Total puntos',
+    '1.º set - total puntos',
+    '2.º set - total puntos',
+    '3.º set - total puntos',
+    'Total (incl. extra innings)',
 ];
 
 const permit2 = [
     '1x2',
     'Ganador',
+    'Ganador (incl. extra innings)'
 ];
 
 async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], n) {

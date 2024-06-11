@@ -29,7 +29,7 @@ const buscarQ = async (page, query) => {
         return !noResult;
 
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return false;
     }
 };
@@ -49,7 +49,7 @@ const intentarEncontrarOpcion = async (page, match) => {
                 match = quitarTildes(match.replace(' - ', ' '));
                 let text = quitarTildes(local + ' ' + away);
                 const p = await tienenPalabrasEnComunDinamico(match, text);
-                console.log(text)
+                // console.log(text)
                 if (p.pass) pass.push({
                     similarity: p.similarity, 
                     name: text,
@@ -74,6 +74,7 @@ const intentarEncontrarOpcion = async (page, match) => {
     }
     return false;
 };
+
 async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
     const { page, context } = await initBrowser('https://www.betsson.co/apuestas-deportivas', 'betsson' + n);
     if (page) {
@@ -93,12 +94,13 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
             const all = page.locator('//span[text() = "Todos"]');
             await all.click();
             await page.waitForTimeout(700);
+            url = await page.url();
             page.setDefaultTimeout(timeouts.bet);
             let scroll = 400;
             const container = page.locator('//*[@test-id = "event.market-tabs"]');
             const size = await container.boundingBox();
-            if (size.height < 3000) scroll = 0;
-            url = await page.url();
+            // console.log(size.height)
+            if (size.height < 1700) scroll = 0;
             let betsson = {
                 nombre: 'betsson',
                 title: match,
@@ -119,12 +121,12 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                         type: betType.type,
                         bets: [],
                     }
-                    let parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*');
+                    let parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*/parent::*/parent::*/parent::*');
                     if (betType.type == 'número de goles') {
                         parent = await page.locator('(//div[@test-id = "event-markets.content"]//span[translate(normalize-space(text()), "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz") = "' + betType.type + '"])[1]/parent::*/parent::*/parent::*');
                     }
                     const cl = await parent.getAttribute('class');
-                    if (!cl.includes('bet-distribution-open')) {
+                    if (cl.includes('item-closed')) {
                         page.setDefaultTimeout(5000);
                         await page.waitForLoadState('domcontentloaded')
                         await parent.scrollIntoViewIfNeeded();
@@ -191,7 +193,6 @@ async function buscarApi(match) {
 
     const buscar = async (text) => {
         let betssonSearch = await initRequest(`https://www.betsson.co/api/sb/v2/search/suggestions?searchText=${text}`);
-        console.log(betssonSearch);
         return betssonSearch;
     }
 
@@ -216,7 +217,6 @@ async function getBetssonApi(name, types) {
             bets: filter
         }
     } catch (error) {
-        console.log(error)
     }
 }
 

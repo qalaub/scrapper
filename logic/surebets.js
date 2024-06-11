@@ -13,15 +13,21 @@ const {
     betDescriptionsBasketball,
     betDescriptionsTennis,
     idsTennis,
-    betDescriptionsVolleyball
+    betDescriptionsVolleyball,
+    idsVolleyball,
+    idsBaseball,
+    betDescriptionsBaseball,
+    idsMMA,
+    betDescriptionsMMA
 } = require("./constantes");
 
 const categories = {
     football: getBetTypeFootball,
     basketball: getBetTypeBasketball,
     tennis: getBetTypeTennis,
-    'ufc_mma': getBetTypeTennis,
+    'ufc_mma': getBetTypeMMA,
     volleyball: getBetTypeVolleyball,
+    baseball: getBetTypeBaseball,
 }
 
 function getBetTypes(bets, category) {
@@ -50,6 +56,7 @@ function getBetTypes(bets, category) {
         sportbet: [],
         leon: [],
         stake: [],
+        unobet: [],
     };
 
     for (const tempBet of tempBets) {
@@ -76,6 +83,7 @@ function getBetTypes(bets, category) {
         newBet.sportbet.push(tempBet.sportbet);
         newBet.leon.push(tempBet.leon);
         newBet.stake.push(tempBet.stake);
+        newBet.unobet.push(tempBet.unobet);
     }
 
     // Función para eliminar elementos undefined
@@ -107,6 +115,7 @@ function getBetTypes(bets, category) {
         sportbet: newBet.sportbet,
         leon: newBet.leon,
         stake: newBet.stake,
+        unobet: newBet.unobet,
     }
     // Eliminar elementos undefined de cada arreglo
     Object.keys(data).forEach(key => {
@@ -141,6 +150,7 @@ function getBetTypeInfo(typeId, description) {
         sportbet: { [typeId]: description['betplay'], type: description['sportbet'] },
         leon: { [typeId]: description['betplay'], type: description['leon'] },
         stake: { [typeId]: description['betplay'], type: description['stake'] },
+        unobet: { [typeId]: description['betplay'], type: description['unobet'] },
     };
 }
 
@@ -167,6 +177,19 @@ function getBetTypeVolleyball(type) {
     const description = betDescriptionsVolleyball[type] || type; // Default a usar el propio tipo si no está definida una descripción
     return getBetTypeInfo(typeId, description);
 }
+
+function getBetTypeBaseball(type) {
+    const typeId = idsBaseball[type];
+    const description = betDescriptionsBaseball[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
+function getBetTypeMMA(type) {
+    const typeId = idsMMA[type];
+    const description = betDescriptionsMMA[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
 
 function calculateTotalGol(quotes, data, url, type) {
     // Función para extraer todos los números únicos de las cuotas
@@ -247,58 +270,6 @@ function getByGol(casa, n) {
         };
     }
     return null;
-}
-
-
-
-function calculateTotalGolT(quotes, data, url, type) {
-    // Función para extraer todos los números únicos de las cuotas
-    const uniqueVariants = new Set();
-    quotes.forEach(quote => {
-        quote.cuotas.forEach(cuota => {
-            let match = cuota.name.match(/\b(\d+(\.0|\.5)?)\b/); // Regex ajustado para extraer números terminados en .0, .5 o enteros
-            if (categoryActual.current == "basketball") match = cuota.name.match(/\b\d+(\.\d+)?\b/);
-            if (match) {
-                uniqueVariants.add(match[0]);
-            }
-        });
-    });
-    const totalVariant = Array.from(uniqueVariants).sort((a, b) => parseFloat(a) - parseFloat(b)); // Convertimos el Set a Array y ordenamos los números
-    let results = [];
-    console.log(totalVariant)
-    for (const variant of totalVariant) {
-        let extract = [];
-        // console.log('///////////////////////////')
-        for (const quote of quotes) {
-            const result = getByGol(quote, variant);
-            // console.log(variant, result);
-            if (result && result.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
-                if (result.cuotas.length == 4) {
-                    const filter1 = result.cuotas.filter(el => el.name.includes('más') || el.name.includes('mas'));
-                    const filter2 = result.cuotas.filter(el => el.name.includes('menos'));
-
-                    const extractNumber = name => parseFloat(name.match(/[\d\.]+/)[0]);
-
-                    const minObjMas = filter1.reduce((min, el) => extractNumber(el.name) < extractNumber(min.name) ? el : min, filter1[0]);
-                    const maxObjMenos = filter2.reduce((max, el) => extractNumber(el.name) > extractNumber(max.name) ? el : max, filter2[0]);
-                    result.cuotas = [
-                        minObjMas,
-                        maxObjMenos
-                    ]
-                    //  console.log(result.cuotas)
-                }
-                extract.push(result);
-            }
-        }
-        //  console.log('///////////////////////////')
-        if (extract.length > 0) {
-            // console.log(extract)
-            const combinations = generarCombinacionesDeCasas2MoreLess(extract);
-            console.log(combinations)
-            results.push(evaluateSurebets(combinations, 1000000, data, url, type));
-        }
-    }
-    return results;
 }
 
 function getByGolT(casa, n) {

@@ -2,7 +2,7 @@ const { timeouts } = require("../const/timeouts");
 const { groupAndReduceBetsByType } = require("../logic/surebets");
 const { excludes, buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
-const { getType1xbet, getType1xbetBasketball, getType1xbetTennis } = require("./1xbet");
+const { getType1xbet, getType1xbetBasketball, getType1xbetTennis, getType1xbetVolleyball, getType1xbetBaseball } = require("./1xbet");
 const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
@@ -10,7 +10,8 @@ const {
     ordenarDinamicamenteMasMenos,
     matchnames,
     initBrowser,
-    categoryActual
+    categoryActual,
+    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -23,26 +24,47 @@ const buscarQ = async (page, query) => {
         const noResult = await page.getByText('No hay resultados').first().isVisible({ timeout: 10000 });
         return !noResult;
     } catch (error) {
-        console.log(error);
         return false;
     }
 };
 
+const getCategory = c => {
+    switch (c) {
+        case 'football':
+            return 'football';
+        case 'basketball':
+            return 'basketball ';
+        case 'tennis':
+            return 'tennis';
+        case 'volleyball':
+            return 'volleyball';
+        case 'baseball':
+            return 'baseball';
+        case 'ufc_mma':
+            return 'ufc';
+    }
+}
+
 const intentarEncontrarOpcion = async (page, match) => {
+    const category = getCategory(categoryActual.current);
     await page.waitForTimeout(1000);
     const opciones = await page.locator('.games-search-modal-card-info__main').all();
     let optPass = [];
     for (const opcion of opciones) {
+        const previousSibling = await opcion.locator('xpath=../preceding-sibling::*[1]');
+        let previousSiblingText = await previousSibling.getAttribute('href');
+        if (!previousSiblingText.includes(category)) continue;
         let title = await opcion.textContent();
         match = quitarTildes(match.replace(' - ', ' '));
         let text = quitarTildes(title.trim());
         const p = await tienenPalabrasEnComunDinamico(match, text);
         title = title.replace(/\s+/g, ' ');
-        const result = await page.locator(`//span[contains(text(), "${title.trim()}")]/parent::*/parent::*/parent::*`).first();
-        if (p.pass) optPass.push({ opcion: result, similarity: p.similarity, text });
+        // const result = await page.locator(`//span[contains(text(), "${title.trim()}")]/parent::*/parent::*/parent::*`).first();
+        if (p.pass) optPass.push({ opcion: previousSibling, similarity: p.similarity, text, category: previousSiblingText });
     }
     const opt = await selectMoreOption(optPass);
     if (opt) {
+        if (!opt.category.includes(category)) return false;
         matchnames.push({
             text1: match,
             text2: opt.text,
@@ -71,7 +93,6 @@ const selectType = async (page, type, previus = 'Tiempo reglamentario') => {
             return type;
         }
     } catch (error) {
-        console.log(error);
     }
     return previus;
 };
@@ -82,6 +103,8 @@ async function processCategory(page, category, typeUpdate) {
         'football': ['1 Mitad', '2 Mitad', 'Saques de esquina', 'Tarjetas amarillas'],
         'basketball': ['1 Cuarto', '2 Cuarto', '3 Cuarto', '4 Cuarto', '1 Mitad', '2 Mitad'],
         'tennis': ['1 Set', '2 Set'],
+        'volleyball': ['1 Set', '2 Set', '3 Set'],
+        'baseball': ['1 Entrada'],
     };
 
     let previus = 'Tiempo reglamentario';
@@ -91,7 +114,7 @@ async function processCategory(page, category, typeUpdate) {
     }
 }
 
-async function getResultsBetwinner(match, betTypes = ['1x2'], n, name = 'betwinner') {
+async function getResultsBetwinner(match, betTypes = ['1x2'], n, name = 'betwinner', team1) {
     const { page, context } = await initBrowser('https://betwinner.com.co/', name + n);
     if (page) {
         let url = '';
@@ -126,9 +149,9 @@ async function getResultsBetwinner(match, betTypes = ['1x2'], n, name = 'betwinn
             page.setDefaultTimeout(3000);
             await processCategory(page, categoryActual.current, type);
             url = await page.url();
-            return await getBetwinnerApi(match, betTypes, ids, name, url);
+            return await getBetwinnerApi(match, betTypes, ids, name, url, team1);
         } catch (error) {
-            console.log(error);
+           // console.log(error);
         }
     }
 }
@@ -146,16 +169,27 @@ const permit1 = [
     'Total. 4 Cuarto',
     'Total. 1 Set',
     'Total. 2 Set',
+    'Total. 3 Set',
     'Total de sets',
+    'Total. 1 Entrada',
 ];
 
-async function getBetwinnerApi(name, types, ids, house, url) {
+const permit2 = [
+    '1x2',
+    'Doble oportunidad',
+    '1x2. 2 Mitad',
+    '1x2. 1 Mitad',
+    '1x2. Saques de esquina',
+
+];
+
+async function getBetwinnerApi(name, types, ids, house, url, team1) {
     try {
         const res = [];
         if (ids.length > 0) {
             for (const id of ids) {
                 res.push({
-                    res: await initRequest(`https://1xbet.com/LineFeed/GetGameZip?id=${id.id}&lng=es&isSubGames=true&GroupEvents=true&countevents=1385&grMode=4&partner=152&topGroups=&country=91&marketType=1`),
+                    res: await initRequest(`https://1xbet.com/LineFeed/GetGameZip?id=${id.id}&lng=es&isSubGames=true&GroupEvents=true&allEventsGroupSubGames=true&countevents=250&country=91&fcountry=91&marketType=1&gr=70&isNewBuilder=true`),
                     type: id.type
                 });
             }
@@ -167,21 +201,36 @@ async function getBetwinnerApi(name, types, ids, house, url) {
                         tiposPermitidos = types.map(t => getType1xbetBasketball(t.type, r.type));
                     if (categoryActual.current == 'tennis')
                         tiposPermitidos = types.map(t => getType1xbetTennis(t.type, r.type));
+                    if (categoryActual.current == 'volleyball')
+                        tiposPermitidos = types.map(t => getType1xbetVolleyball(t.type, r.type));
+                    if (categoryActual.current == 'baseball')
+                        tiposPermitidos = types.map(t => getType1xbetBaseball(t.type, r.type));
                     if (r.res && r.res.Value?.GE) {
                         let temFilter = r.res.Value.GE.filter(item => tiposPermitidos.includes(item.G));
+                        let team1T = r.res.Value.O1;
+                        let team2T = r.res.Value.O2;
+                        if (tienenPalabrasEnComunDinamicoT(team1, team1T)) team1T = team1;
                         temFilter = temFilter.map(f => {
                             let type = getType1xbet(f.G, r.type);
                             if (categoryActual.current == 'basketball')
                                 type = getType1xbetBasketball(f.G, r.type);
                             if (categoryActual.current == 'tennis')
                                 type = getType1xbetTennis(f.G, r.type);
-
+                            if (categoryActual.current == 'volleyball')
+                                type = getType1xbetVolleyball(f.G, r.type);
+                            if (categoryActual.current == 'baseball')
+                                type = getType1xbetBaseball(f.G, r.type);
                             let bets = [];
                             if (!permit1.includes(type)) {
-                                bets = f.E.map(e => {
-                                    if (e[0].P != 2) return {
-                                        name: e[0].T,
-                                        quote: e[0].C
+                                bets = f.E.map((e, i) => {
+                                    if (e[0].P != 2) {
+                                        let temp = {
+                                            name: e[0].T,
+                                            quote: e[0].C
+                                        };
+                                        if (e[0].T == "1") temp.name = team1T;
+                                        if (e[0].T == "3") temp.name = team2T;
+                                        return temp;
                                     }
                                 })
                             } else if (type == 'Hándicap') {

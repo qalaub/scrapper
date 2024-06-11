@@ -19,7 +19,6 @@ const buscarQ = async (page, query) => {
         const noResult = await page.getByText('SIN RESULTADOS').isVisible({ timeout: 5000 });
         return !noResult;
     } catch (error) {
-        console.log(error)
         return false;
     }
 };
@@ -59,7 +58,6 @@ const intentarEncontrarOpcion = async (page, match) => {
             return false;
         }
     } catch (error) {
-        console.log(error);
     }
     return false;
 };
@@ -74,12 +72,14 @@ let permit1 = [
     'Doble oportunidad-1º tiempo',
     'Resultado del partido-1º tiempo',
     'Número de córners-1º tiempo'
+    
 ];
 
 let permit2 = [
     'Total de goles',
     'Número de córners',
-    'Número total de tarjetas amarillas'
+    'Número total de tarjetas amarillas',
+    'Total de puntos'
 ]
 
 async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
@@ -156,7 +156,6 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
                                         quote
                                     });
                                 }
-                                console.log(temp)
                             }
                             await loca.click();
                             await page.waitForTimeout(700);
@@ -171,7 +170,6 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
                                         quote
                                     });
                                 }
-                                console.log(temp2)
                             }
                             change = false;
                             for (let i = 0; i < temp.length; i++) {
@@ -214,7 +212,7 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
             console.log('//////////////////// BWIN //////////////////')
             return bwin;
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             // await page.close();
         }
     }

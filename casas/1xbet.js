@@ -35,7 +35,6 @@ async function buscarApi(match) {
                 }
             }
             if (pass?.length > 0) {
-                // console.log(pass);
                 matchnames.push({
                     text1: match,
                     text2: pass[0].name,
@@ -50,17 +49,13 @@ async function buscarApi(match) {
 async function get1xBetApi(name, types) {
     try {
         const link = await buscarApi(name);
-        console.log(link)
         const res1 = await initRequest(`https://1xbet.com/LineFeed/GetGameZip?id=${link}&lng=es&isSubGames=true&GroupEvents=true&allEventsGroupSubGames=true&countevents=250&country=91&fcountry=91&marketType=1&gr=70&isNewBuilder=true`, 2);
         const res2 = await initRequest(`https://1xbet.com/LineFeed/GetGameZip?id=${link}&lng=es&isSubGames=true&GroupEvents=true&countevents=1385&grMode=4&partner=152&topGroups=&country=91&marketType=1`, 2);
         if (res2) {
             const tiposPermitidos = types.map(t => getType1xbet(t.type));
-            console.log(res2.Value.GE.length)
             let filter = res2.Value.GE.filter(item => {
-                console.log(item.G)
                 return tiposPermitidos.includes(item.G)
             });
-            console.log(filter.length)
             filter = filter.map(f => {
                 const type = getType1xbet(f.G);
                 let bets = [];
@@ -92,7 +87,6 @@ async function get1xBetApi(name, types) {
 
             const reducedBetsArray = groupAndReduceBetsByType(filter, 'Total', 1);
             console.log('//////////////////// 1XBET //////////////////')
-            console.log(reducedBetsArray)
             console.log('//////////////////// 1XBET //////////////////')
             return {
                 nombre: '1xbet',
@@ -101,9 +95,6 @@ async function get1xBetApi(name, types) {
             }
         }
     } catch (error) {
-        // if (error.includes('Value')) {
-        console.log(error)
-        // }
     }
 }
 
@@ -262,10 +253,72 @@ function getType1xbetTennis(input, type) {
     if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
 }
 
+function getType1xbetVolleyball(input, type) {
+
+    const typeMappings = {
+        '1X2': 1,
+        1: '1X2',
+        'Total': 17,
+        17: 'Total',
+        'Total de sets': 182,
+        182: 'Total de sets',
+    }
+
+    const set1 = {
+        '1X2. 1 Set': 1,
+        1: '1X2. 1 Set',
+        'Total. 1 Set': 17,
+        17: 'Total. 1 Set',
+    }
+
+    const set2 = {
+        '1X2. 2 Set': 1,
+        1: '1X2. 2 Set',
+        'Total. 2 Set': 17,
+        17: 'Total. 2 Set',
+    }
+
+    const set3 = {
+        '1X2. 3 Set': 1,
+        1: '1X2. 3 Set',
+        'Total. 3 Set': 17,
+        17: 'Total. 3 Set',
+    }
+
+    if (type == '1 Set') return set1[input] || null;
+    if (type == '2 Set') return set2[input] || null;
+    if (type == '3 Set') return set3[input] || null;
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
+function getType1xbetBaseball(input, type) {
+    const typeMappings = {
+        '1x2': 1,
+        1: '1x2',
+        'Total': 17,
+        17: 'Total',
+        'Primera carrera': 779,
+        779: 'Primera carrera',
+        'Anotación de los hits': 968,
+        968: 'Anotación de los hits',
+    }
+
+    const entrada1 = {
+        '1x2. 1 Entrada': 1,
+        1: '1x2. 1 Entrada',
+        'Total. 1 Entrada': 17,
+        17: 'Total. 1 Entrada',
+    }
+
+    if (type == '1 Entrada') return entrada1[input] || null;
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
 
 module.exports = {
     get1xBetApi,
     getType1xbet,
     getType1xbetBasketball,
-    getType1xbetTennis
+    getType1xbetTennis,
+    getType1xbetVolleyball,
+    getType1xbetBaseball
 }

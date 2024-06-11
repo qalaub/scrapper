@@ -117,6 +117,21 @@ function buildXPathsFromNumbers(numbers, bet) {
         case '2.º set - total juegos':
             goalXpath = numbers.map(n => `normalize-space(text()) = '2.º set - total ${n} juegos'`).join(' or ');
             break;
+        case 'Menos/Más puntos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Menos/Más ${n} puntos'`).join(' or ');
+            break;
+        case 'Set 1 - Menos/Más puntos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Set 1 - Menos/Más ${n} puntos'`).join(' or ');
+            break;
+        case 'Set 2 - Menos/Más puntos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Set 2 - Menos/Más ${n} puntos'`).join(' or ');
+            break;
+        case 'Set 3 - Menos/Más puntos':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Set 3 - Menos/Más ${n} puntos'`).join(' or ');
+            break;
+        case 'Menos/Más carreras (incl. extra innings)':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Menos/Más ${n} carreras (incl. extra innings)'`).join(' or ');
+            break;
         default:
             // Opcionalmente manejar casos no esperados o un valor por defecto
             console.log('Tipo de apuesta no reconocida.');
@@ -128,6 +143,11 @@ function buildXPathsFromNumbers(numbers, bet) {
 }
 
 const permit1 = [
+    'Set 1 - Menos/Más puntos',
+    'Set 2 - Menos/Más puntos',
+    'Set 3 - Menos/Más puntos',
+    'Total de Sets en el Partido',
+    'Menos/Más puntos',
     'Menos/Más',
     'Menos/más (incl. prórroga)',
     '1ª mitad - Menos/Más',
@@ -145,6 +165,7 @@ const permit1 = [
     '2.º set - total juegos',
     'Set 1 - Menos/Más juegos',
     'Menos/Más juegos',
+    'Menos/Más carreras (incl. extra innings)'
 ];
 
 async function getLuckiaApi(name, types, n) {

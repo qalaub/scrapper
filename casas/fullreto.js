@@ -7,7 +7,8 @@ const {
     tienenPalabrasEnComunDinamico,
     obtenerObjetoPorTipo,
     ordenarDinamicamenteMasMenos,
-    matchnames
+    matchnames,
+    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
 async function buscarApi(match) {
@@ -20,6 +21,7 @@ async function buscarApi(match) {
             return {
                 name: temp.Name,
                 link: temp.Id,
+                sport: temp.SportId,
             }
         });
         return fullretoSearch;
@@ -40,7 +42,7 @@ async function buscarApi(match) {
                     text2: opt.opcion.name,
                     etiqueta: 1
                 });
-                return opt.opcion.link;
+                return opt.opcion;
             }
         }
     }
@@ -72,9 +74,25 @@ const permit2 = [
     '2do Cuarto',
     '3er Cuarto',
     '4to Cuarto',
+    'Mercados por Set',
+    'Innings',
+    'Pitcher Lines'
 ];
 
-const filterData = (filter, types) => {
+const permit3 = [
+    '1x2',
+    'Doble oportunidad',
+    'Se clasifica',
+    'Tarjetas 1x2',
+    'Córner 1x2',
+    '1ª Mitad - doble oportunidad',
+    '1ª Mitad - 1x2',
+    '2ª Mitad - 1x2',
+    '2ª Mitad - doble oportunidad',
+    'Se clasifica',
+];
+
+const filterData = (filter, types, team1) => {
     const extractNumber = name => parseFloat(name.match(/(\d+(\.\d+)?)/)[0]);
     return filter.map(f => {
         let bets = [];
@@ -127,39 +145,51 @@ const filterData = (filter, types) => {
     });
 }
 
+const removeDuplicate = (data) => {
+    let seen = new Set();
+    let uniqueData = data.filter(item => {
+        if (seen.has(item.id)) {
+            return false;
+        } else {
+            seen.add(item.id);
+            return true;
+        }
+    });
+    return Array.from(uniqueData);
+}
+
 let url = 'https://www.fullreto.co/Sport#/prelive';
 
-async function getFullretoApi(name, types) {
+async function getFullretoApi(name, types, n, team1) {
     try {
         const link = await buscarApi(name);
-        console.log(link);
-        const res = await initRequest(`https://sb2frontend-altenar2.biahosted.com/api/Sportsbook/GetEventDetails?timezoneOffset=300&langId=4&skinName=fullreto&configId=12&culture=es-ES&countryCode=CO&deviceType=Desktop&numformat=en&integration=fullreto&eventId=${link}&sportId=66`, 2);
-        if (res) {
-            const typeTemp = types.map(t => t.type);
-            const principal = res.Result.MarketGroups.filter(m => {
-                // console.log(m.Name)
-                return permit2.includes(m.Name);
-            });
-            let filter = [];
-            for (const p of principal) {
-                let t = filterData(p.Items.filter(i => typeTemp.includes(i.Name)), types);
-                filter = filter.concat(t); // Reasigna el resultado a `filter`
-            }
-            let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
-            console.log('//////////////////// FULLRETO //////////////////')
-            // console.log(reducedBetsArray.map(p => p.bets))
-            console.log('//////////////////// FULLRETO //////////////////')
-            return {
-                nombre: 'fullreto',
-                title: name,
-                bets: reducedBetsArray,
-                url
+        if (link) {
+            const res = await initRequest(`https://sb2frontend-altenar2.biahosted.com/api/Sportsbook/GetEventDetails?timezoneOffset=300&langId=4&skinName=fullreto&configId=12&culture=es-ES&countryCode=CO&deviceType=Desktop&numformat=en&integration=fullreto&eventId=${link.link}&sportId=${link.sport}`, 2);
+            if (res) {
+                const typeTemp = types.map(t => t.type);
+                const principal = res.Result.MarketGroups.filter(m => {
+                    return permit2.includes(m.Name);
+                });
+                let filter = [];
+                for (const p of principal) {
+                    let t = filterData(p.Items.filter(i => typeTemp.includes(i.Name)), types, team1);
+                    filter = filter.concat(t); // Reasigna el resultado a `filter`
+                }
+                let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
+                reducedBetsArray = removeDuplicate(reducedBetsArray);
+                console.log('//////////////////// FULLRETO //////////////////')
+                // console.log(reducedBetsArray)
+                console.log('//////////////////// FULLRETO //////////////////')
+                return {
+                    nombre: 'fullreto',
+                    title: name,
+                    bets: reducedBetsArray,
+                    url
+                }
             }
         }
     } catch (error) {
-        // if (error.includes('Value')) {
-        console.log(error)
-        // }
+        console.log(error);
     }
 }
 

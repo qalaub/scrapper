@@ -146,6 +146,8 @@ const permit1 = [
     'Más/Menos Total de Puntos 2º Cuarto',
     'Más/Menos Total de Puntos 1º Cuarto',
     'Más/Menos Puntos Totales',
+    'Total de Carreras Más/Menos',
+    '1ª Entrada Más/Menos Carreras',
 ]
 
 function agruparApuestas(apuestas, tipoDeseado) {
@@ -206,7 +208,7 @@ function removeDuplicates(bets) {
     return Array.from(uniqueBets.values());
 }
 
-let url = 'https://m.codere.com.co/deportesCol/#/HomePage';
+let urlG = 'https://m.codere.com.co/deportesCol/#/HomePage';
 
 async function getCodereApi(name, types) {
     try {
@@ -230,6 +232,14 @@ async function getCodereApi(name, types) {
 
                 if (categoryActual.current == 'tennis') {
                     res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=90`);
+                    res3 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=1`);
+                }
+
+                if (categoryActual.current == 'volleyball') {
+                    res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=91`);
+                }
+                if (categoryActual.current == 'baseball') {
+                    res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=91`);
                 }
             }
 
@@ -259,13 +269,14 @@ async function getCodereApi(name, types) {
                 });
                 filter = Array.from(new Map(filter.map(item => [item.type, item])).values());
                 console.log('//////////////////// CODERE //////////////////')
+                // console.log(filter)
                 console.log('//////////////////// CODERE //////////////////')
             }
             return {
                 nombre: 'codere',
                 title: name,
                 bets: filter,
-                url,
+                url: urlG,
             }
         }
     } catch (error) {

@@ -70,6 +70,10 @@ const permit1 = [
     'Cuarto cuarto - total',
     'Total – 1.ª parte',
     'Total (Juegos) – Partido',
+    'Total (Puntos) – 1.º set',
+    'Total (Puntos) – 2.º set',
+    'Total (Puntos) – 3.º set',
+    'Total – Partido',
 ];
 
 const permit2 = [
@@ -89,6 +93,9 @@ const permit3 = [
     'Línea de dinero – 2.º cuarto',
     'Línea de dinero – Partido',
     'Línea de dinero – 1.er cuarto',
+    'Línea de dinero (Puntos) – 1.º set',
+    'Línea de dinero (Puntos) – 2.º set',
+    'Línea de dinero (Puntos) – 3.º set',
 ];
 
 async function getPinnacleApi(name, types, n, team1) {
@@ -110,6 +117,7 @@ async function getPinnacleApi(name, types, n, team1) {
                     await page.waitForTimeout(500);
                     if (collapse) await parent.click();
                     await page.waitForTimeout(500);
+                    await page.waitForTimeout(500);
                     let betTemp = [];
                     if (permit1.includes(type.type)) {
                         const more = await parent.getByText('Más información');
@@ -127,21 +135,21 @@ async function getPinnacleApi(name, types, n, team1) {
                             quote: quote
                         });
                     }
-                    if (permit3.includes(type.type)) {
-                        console.log('////////////////////////////////////////')
-                        if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
-                            if (betTemp.bets.length == 2) {
-                                let temp = betTemp.bets[0];
-                                betTemp.bets[0] = betTemp.bets[1];
-                                betTemp.bets[1] = temp;
-                            } else if (betTemp.bets.length == 3) {
-                                let temp = betTemp.bets[0];
-                                betTemp.bets[0] = betTemp.bets[2];
-                                betTemp.bets[2] = temp;
-                            }
-                        }
-                        console.log('////////////////////////////////////////')
-                    }
+                    // if (permit3.includes(type.type)) {
+                    //     console.log('////////////////////////////////////////')
+                    //     if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
+                    //         if (betTemp.bets.length == 2) {
+                    //             let temp = betTemp.bets[0];
+                    //             betTemp.bets[0] = betTemp.bets[1];
+                    //             betTemp.bets[1] = temp;
+                    //         } else if (betTemp.bets.length == 3) {
+                    //             let temp = betTemp.bets[0];
+                    //             betTemp.bets[0] = betTemp.bets[2];
+                    //             betTemp.bets[2] = temp;
+                    //         }
+                    //     }
+                    //     console.log('////////////////////////////////////////')
+                    // }
                     bets.push({
                         id: Object.keys(type)[0],
                         type: type.type,

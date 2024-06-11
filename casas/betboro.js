@@ -66,6 +66,9 @@ const permit1 = [
     'Total de Sets',
     '1er Set total de juegos',
     '2er Set total de juegos',
+    '1ra Set Total de puntos',
+    '1ra Inning total de carreras',
+    'Carreras totaless',
 ];
 
 const permit2 = [
@@ -81,13 +84,18 @@ const permit2 = [
     '4to Cuarto Resultado (3 vías)',
     '4to Cuarto Ganador (2 vías)',
     '2do Mitad: Ganador (2 vías)',
+    'Resultado del Partido',
+    'Doble Oportunidad',
+    'Clasificará',
+    'Resultado de la Segunda Mitad',
+    'Resultado de la Primera Mitad',
 ];
 
-let url = '';
 async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
     const { page, context } = await initBrowser('https://m.betboro.com/es/sports/pre-match/event-view/Soccer', 'betboro' + n);
     if (page) {
         try {
+            let url = '';
             await page.locator('#root > div.layout-content-holder-bc > div.filter-sports-bc > div.sport-search-bc > div').click();
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
@@ -139,22 +147,6 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
                             });
                         }
                     }
-                    if (permit2.includes(betType.type)) {
-                        console.log('////////////////////////////////////////')
-                        if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
-                            if (betTemp.bets.length == 2) {
-                                let temp = betTemp.bets[0];
-                                betTemp.bets[0] = betTemp.bets[1];
-                                betTemp.bets[1] = temp;
-                            } else if (betTemp.bets.length == 3) {
-                                let temp = betTemp.bets[0];
-                                betTemp.bets[0] = betTemp.bets[2];
-                                betTemp.bets[2] = temp;
-                            }
-                        }
-                        console.log('////////////////////////////////////////')
-                    }
-                    // if (type == ' Hándicap 3 opciones') console.log(betTemp)
                     // console.log(betTemp)
                     betBoro.bets.push(betTemp);
                     console.log('//////// BETBORO LENGTH ', betBoro.bets.length)

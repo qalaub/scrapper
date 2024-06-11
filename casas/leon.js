@@ -68,11 +68,11 @@ const permit2 = [
     '2do Mitad: Ganador (2 vías)',
 ];
 
-let url = '';
 async function getResultsLeon(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
     const { page, context } = await initBrowser('https://leon.bet/es-pe/', 'leon' + n);
     if (page) {
         try {
+            let url = '';
             await page.locator('//button[@title= "Buscar"]').click();
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);

@@ -72,11 +72,16 @@ const permit1 = [
     'Total de juegos',
     'Total de juegos del 1.er set',
     'Total de sets',
+    'Total de dobles faltas',
+    'Total de aces',
+    'Total de carreras',
+    'Total de carreras en la 1.ª entrada'
 ];
 
 const permit2 = [
     'Más córneres',
     'Más tarjetas amarillas',
+    'Más hits',
 ];
 
 const permit3 = [
@@ -102,6 +107,10 @@ const typeToSelector = {
     'Resultado de la 1.ª mitad': 'Mercados de mitades',
     'Resultado del 1.er cuarto': 'Mercados de cuartos',
     '1st Set Result': 'Mercados de sets',
+    'Gana el 1.er set': 'Mercados de sets',
+    'Total de dobles faltas': 'Mercados de dobles faltas',
+    'Total de aces': 'Mercados de aces',
+    'Más hits': 'Otros',
 };
 
 

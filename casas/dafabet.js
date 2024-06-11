@@ -5,7 +5,8 @@ const {
     initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    matchnames
+    matchnames,
+    categoryActual
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -22,6 +23,19 @@ const buscarQ = async (page, query) => {
     }
 };
 
+const getType = c => {
+    switch (c) {
+        case 'football':
+            return 'Fútbol'; 
+        case 'basketball':
+            return 'Baloncesto '; 
+        case 'tennis':
+            return 'Tenis'; 
+        case 'volleyball':
+            return 'Voleibol'; 
+    }
+}
+
 const intentarEncontrarOpcion = async (page, match) => {
     try {
         let opciones = await page.locator('.search-result-item');
@@ -29,6 +43,8 @@ const intentarEncontrarOpcion = async (page, match) => {
             opciones = await opciones.all();
             let optPass = [];
             for (const opcion of opciones) {
+                const isValid = await opcion.locator('.results-small-text').textContent();
+                if (!isValid.includes(getType(categoryActual.current))) continue;
                 const text = await opcion.locator('a').first().textContent();
                 match = quitarTildes(match.replace(' - ', ' '));
                 const p = await tienenPalabrasEnComunDinamico(match, text);
@@ -68,6 +84,8 @@ let permit1 = [
     'Más/Menos Games - Partido',
     'Más/Menos Games - 1er Set',
     'Más/Menos Games - 2º Set',
+    'Más/Menos (Puntos) - Partido',
+    'Más/Menos (Puntos) - 1er Set',
 ];
 
 async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {

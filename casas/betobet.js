@@ -17,7 +17,6 @@ const buscarQ = async (page, query) => {
         return !noResult;
 
     } catch (error) {
-        console.log(error)
         return false;
     }
 };
@@ -33,7 +32,6 @@ const intentarEncontrarOpcion = async (page, match) => {
                 const away = await opcion.locator('.event-participant-name').last().textContent();
                 match = quitarTildes(match.replace(' - ', ' '));
                 let text = quitarTildes(local + ' ' + away);
-                console.log(text);
                 const p = await tienenPalabrasEnComunDinamico(match, text);
                 if (p.pass) pass.push({
                     name: text,
@@ -59,12 +57,11 @@ const intentarEncontrarOpcion = async (page, match) => {
     return false;
 };
 
-let url = '';
-
 async function getResultsBetobet(match, betTypes = ['ganador del partido'], n) {
     const { page, context } = await initBrowser('https://betobet.one/es/', 'betobet' + n);
     if (page) {
         try {
+            let url = '';
             page.setDefaultTimeout(timeouts.search);
             await page.locator('(//div[text() = "Register" ])[1]').waitFor();
             await page.locator('(//div[text() = "Register" ])[1]').click();

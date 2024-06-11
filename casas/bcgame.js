@@ -10,10 +10,11 @@ const {
 
 const buscarQ = async (page, query) => {
     try {
-        const search = await page.locator('#event_search_sbx').first();
+        const search = await page.getByPlaceholder('Buscar').first();
         await search.fill(query.length > 2 ? query : query + " 000");
+        await search.press('Enter');
         await page.waitForTimeout(2500);
-        const noResult = await page.getByText('No se han encontrado resultados', { timeout: 10000 }).isVisible();
+        const noResult = await page.getByText('¡Nada Encontrado! Por favor, prueba con otra solicitud o ve a Live y juega!', { timeout: 5000 }).isVisible();
         return !noResult;
     } catch (error) {
         return false;
@@ -21,17 +22,20 @@ const buscarQ = async (page, query) => {
 };
 
 const intentarEncontrarOpcion = async (page, match) => {
-    await page.waitForTimeout(2500);
-    const posibleOpcion = page.locator('.wpt-event-info');
+    const tempMatch = match.split(' ')[1];
+    const posibleOpcion = page.getByRole('link', { name: tempMatch })
     await posibleOpcion.first().waitFor({ state: 'visible' });
     let opciones = await posibleOpcion.all();
     let optPass = [];
     for (const opcion of opciones) {
-        let home = await opcion.locator('.wpt-teams__team').first().textContent();
-        let away = await opcion.locator('.wpt-teams__team').last().textContent();
+        let home = await opcion.locator('//div/div/div').nth(1).textContent();
+        let away = await opcion.locator('//div/div/div').nth(2).textContent();
+        home = home.trim();
+        away = away.trim();
         match = quitarTildes(match.replace(' - ', ' '));
         let text = home + ' ' + away;
-        text = quitarTildes(text);
+        text = quitarTildes(text).replace(/\//g, '');
+        // console.log(text)
         const p = await tienenPalabrasEnComunDinamico(match, text, 75);
         if (p.pass) optPass.push({ opcion, similarity: p.similarity, text });
     }
@@ -42,7 +46,7 @@ const intentarEncontrarOpcion = async (page, match) => {
             text2: opt.text,
             etiqueta: 1
         });
-        console.log('STAKE: ', match, opt.text);
+        console.log('BCGAME: ', match, opt.text);
         await opt.opcion.waitFor({ state: 'visible' });
         await opt.opcion.click();
         return true;
@@ -75,7 +79,6 @@ function transformarNombre(name) {
             name = name.replace(/total superior/gi, 'mas de');
             name = name.replace(/superior/gi, 'mas de');
             name = name.replace(/total de juegos superior/gi, 'mas de');
-            name = name.replace(/totales superior/gi, 'mas de');
             break;
         }
     }
@@ -85,30 +88,36 @@ function transformarNombre(name) {
             name = name.replace(/total de juegos inferior/gi, 'menos de');
             name = name.replace(/und/gi, 'menos de');
             name = name.replace(/inferior/gi, 'menos de');
-            name = name.replace(/totales inferior/gi, 'menos de');
             break;
         }
     }
     return name;
 }
 
-async function getResultsStake(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
-    const { page, context } = await initBrowser('https://stake.com.co/es/deportes', 'stake' + n);
+async function getResultsBcgame(match, betTypes = ['Resultado Tiempo Completo'], n, team1) {
+    match = match.replace(',', '');
+    const { page, context } = await initBrowser('https://bc.game/es/', 'bcgame' + n);
     if (page) {
         try {
-            let url = '';
-            await page.getByRole('link', { name: 'casino Casino' }).click();
-            await page.waitForTimeout(1300);
-            await page.getByRole('link', { name: 'sports Deportes' }).click();
+            const close = await page.locator('.close-icon');
+            if (await close.isVisible({ timeout: 5000 })) await close.click();
+            else {
+                await page.goto('https://www.google.com/search?q=bc+game&oq=bc+game&gs_lcrp=EgZjaHJvbWUyBggAEEUYOdIBCDEzODRqMGo0qAIAsAIA&sourceid=chrome&ie=UTF-8');
+                await page.getByRole('link', { name: 'Casino Home' }).click();
+                if (await close.isVisible({ timeout: 5000 })) await close.click();
+                await page.getByRole('link', { name: 'Deportes', exact: true }).click();
+                if (await close.isVisible({ timeout: 5000 })) await close.click();
+                await page.locator('div:nth-child(24) > .bt38 > svg').click();
+            }
             page.setDefaultTimeout(timeouts.search);
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
-            await page.locator('//a[contains(@class ,"wmf-navbar__item__link") and text() = "Todos"]').click();
-            page.setDefaultTimeout(1300);
+            await page.waitForTimeout(2500);
+            await page.locator('#event-header').getByRole('link', { name: 'Cuotas' }).click();
             page.setDefaultTimeout(timeouts.bet);
             url = await page.url();
-            let stake = {
-                nombre: 'stake',
+            let bcgame = {
+                nombre: 'bcgame',
                 title: match,
                 bets: [],
                 url
@@ -147,24 +156,24 @@ async function getResultsStake(match, betTypes = ['Resultado Tiempo Completo'], 
                         }
                     }
                     // console.log(betTemp)
-                    stake.bets.push(betTemp);
-                    console.log('//////// STAKE LENGTH ', stake.bets.length)
+                    bcgame.bets.push(betTemp);
+                    console.log('//////// BCGAME LENGTH ', bcgame.bets.length)
                 } catch (error) {
                     //console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
 
             }
-            console.log('//////////////////// STAKE //////////////////')
-            console.log('//////////////////// STAKE //////////////////')
-            return stake;
+            console.log('//////////////////// BCGAME //////////////////')
+            console.log('//////////////////// BCGAME //////////////////')
+            return bcgame;
         } catch (error) {
-            console.log('ERRPR STAKE STAKE STAKE STAKE ERRPR');
+            console.log('ERRPR BCGAME BCGAME BCGAME BCGAME ERRPR');
             console.log(error);
         }
     }
 }
 
 module.exports = {
-    getResultsStake
+    getResultsBcgame
 }

@@ -17,159 +17,6 @@ const {
 } = require("./utils");
 const { getResultsWPlay } = require("./wplay");
 
-async function getResults1x2(betTypes = ['Total de goles']) {
-    const { page, context } = await initBrowser('https://betplay.com.co/', 'betplay');
-    await page.locator('xpath=//button[@class = "d-block text-white menu-button"]').click();
-    await page.getByText('Transmisión en vivo').click();
-    await page.waitForLoadState("domcontentloaded");
-    // await page.getByText('En Vivo Ahora').first().click();
-    await page.getByText('Comenzando').click();
-    await page.getByText('4 horas', { exact: true }).click();
-    await page.waitForTimeout(5000);
-
-    const container = await page.locator('xpath=//div/div[contains(@class, "KambiBC-view-wrapper")]');
-    if (container.length > 0) {
-        await page.evaluate((element) => {
-            console.log(element);
-            element.scrollTop = element.scrollHeight;
-        }, container[0]);
-    } else {
-        console.log('Elemento no encontrado');
-    }
-
-
-    await page.waitForLoadState('domcontentloaded');
-    const elements = await page.locator('xpath=//a[contains(@href, "#event")]').all();
-
-    // Filtrar los elementos para mantener solo los que tienen enlaces únicos
-    const uniqueLinks = new Set();
-    const uniqueElements = [];
-    for (const element of elements) {
-        const href = await element.getAttribute('href');
-        if (!uniqueLinks.has(href)) {
-            uniqueLinks.add(href);
-            uniqueElements.push(element);
-        }
-    }
-    const length = uniqueElements.length;
-    console.log(length);
-    const names = [];
-    for (const element of uniqueElements) {
-        names.push(
-            await element.locator('.KambiBC-event-participants__name').first().textContent() +
-            await element.locator('.KambiBC-event-participants__name').last().textContent()
-        );
-    }
-    context.setDefaultTimeout(8000);
-    let betsOrder = [];
-    let arrsur = [];
-    let cont = 0;
-    const inicio = new Date();
-    for (const name of names) {
-        if (cont % 10 == 0) {
-            context.setDefaultTimeout(20000);
-            await page.waitForTimeout(10000);
-            context.setDefaultTimeout(8000);
-        }
-        console.log(cont);
-        try {
-            await page.waitForTimeout(2000);
-            await page.waitForLoadState('domcontentloaded');
-            await page.getByText(name).scrollIntoViewIfNeeded();
-            await page.getByText(name).click();
-            await page.waitForTimeout(3000);
-            let title = '';
-            let titleElement = await page.locator('xpath=//span/label').first();
-            if (await titleElement.isVisible()) {
-                titleElement = await page.locator('xpath=//span/label').all();
-                if (titleElement.length > 1) {
-                    title = await page.locator('xpath=//span/label').first().textContent() + ' ' +
-                        await page.locator('xpath=//span/label').last().textContent();
-                } else title = await page.locator('xpath=//span/label').textContent();
-            }
-            else {
-                const iframe = page.frame('event-info');
-                const texts = iframe.locator('xpath=(//article/div)[1]');
-                let text1 = await texts.locator('h4').first().textContent();
-                let text2 = await texts.locator('h4').last().textContent();
-                text1 += ' ' + await texts.locator('p').first().textContent();
-                text2 += ' ' + await texts.locator('p').last().textContent();
-                title = text1 + ' ' + text2;
-            }
-
-            // const bets = await page.locator('xpath=//ul/li[contains(@class,  "KambiBC-bet-offer-subcategory")]').all();
-
-            const lists = await page.locator('//button[text() = "Mostrar la lista"]').all();
-            for (let i = 0; i < lists.length; i++)
-                await page.getByText('Mostrar la lista').first().click({ timeout: 10000 });
-            let tempBet = {
-                title,
-                bets: []
-            };
-            for (const betType of betTypes) {
-                const type = await page.locator('xpath=//span[text() = "' + betType + '"]').first().textContent();
-                const btns = await page.locator('xpath=//span[text() = "' + betType + '"]/parent::*/parent::*/parent::*/following-sibling::*//div[contains(@class, "KambiBC-outcomes-list__column")]').all();
-                let betsTemp = [];
-                for (const btn of btns) {
-                    if (await btn.textContent() == "Ocultar la lista") break;
-                    const name = await btn.locator('xpath=//div/div').first({ timeout: 1000 }).textContent();
-                    const quote = await btn.locator('xpath=//div/div').last().textContent();
-                    betsTemp.push({
-                        name,
-                        quote
-                    });
-                }
-                tempBet.bets.push({
-                    type,
-                    bets: betsTemp,
-                });
-                const types = getBetType(betType);
-                const results = await Promise.all([
-                    getResultsWPlay(title, [types.wplay]),
-                    getResultsBetsson(title, [types.betsson]),
-                    getResults1xBet(title, [types["1xbet"]]),
-                ]);
-                // results[0] corresponderá al resultado de getResultsWPlay
-                // results[1] corresponderá al resultado de getResultsYaJuegos
-                if (results[0] || results[1] || results[2]) {
-                    let quotes = [tempBet.bets[0].bets];
-                    for (const result of results) {
-                        if (result) {
-                            quotes.push(result.bets[0].bets)
-                        }
-                    }
-                    if (betType == 'Total de goles') {
-                        let temp = calculateTotalGol(quotes);
-                        if (temp != 'No se encontraron surebets.') arrsur.push(temp);
-                    }
-                    console.log();
-                    console.log();
-                }
-            }
-
-
-            betsOrder.push(tempBet);
-            await page.waitForLoadState('domcontentloaded');
-            // await page.getByText('En vivo ahora').first().click();
-            await page.getByText('Comenzando').click();
-            await page.waitForTimeout(4000);
-
-        } catch (error) {
-            await page.waitForLoadState('domcontentloaded');
-            await page.getByText('Comenzando').first().click();
-            //await page.getByText('En vivo ahora').first().click();
-            console.log(error);
-        }
-        cont++;
-    }
-    const final = new Date();
-    console.log(final - inicio);
-    await createJSON('betplay', arrsur);
-    await page.close();
-    await context.close();
-    // process.exit();
-}
-
 const buscarQ = async (page, query) => {
     try {
         await page.locator('.KambiBC-header-main__terms').click();
@@ -178,7 +25,6 @@ const buscarQ = async (page, query) => {
         const noResult = await page.getByText('No se encontraron resultados para la búsqueda de', { timeout: 10000 }).isVisible();
         return !noResult;
     } catch (error) {
-        console.log(error);
         return false;
     }
 };
@@ -287,7 +133,6 @@ async function getResultsBetPlay(match, betTypes = ['Total de goles']) {
                                 if (!await btn.isDisabled()) {
                                     const name = await btn.locator('xpath=//div/div').first({ timeout: 1000 }).textContent();
                                     const quote = await btn.locator('xpath=//div').last().textContent();
-                                    console.log(name, quote);
                                     betsTemp.push({
                                         name,
                                         quote
@@ -595,7 +440,7 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
         reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto3]?.type || '');
         reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto4]?.type || '');
     }
-
+    // console.log(reducedBetsArray)
     console.log(`//////////////////// ${name} //////////////////`)
     console.log(`//////////////////// ${name} //////////////////`)
     return reducedBetsArray;
@@ -620,7 +465,6 @@ async function getBetPlayApi(event, betTypes) {
 
 module.exports = {
     getResultsBetPlay,
-    getResults1x2,
     getResultsBetPlayTemp,
     getBetForBetplay,
     getBetPlayApi,
