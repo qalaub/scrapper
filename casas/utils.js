@@ -59,7 +59,7 @@ async function initBrowser(url, name, timeout = 5000) {
         if (!browserInstance) {
             // Si no existe una instancia del navegador, crea una nueva
             const browser = await chromium.launch({
-                headless: false,
+                headless: true,
                 viewport: { width: 550, height: 680 },
                 args: [
                     '--no-sandbox',
