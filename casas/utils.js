@@ -59,7 +59,7 @@ async function initBrowser(url, name, timeout = 5000) {
         if (!browserInstance) {
             // Si no existe una instancia del navegador, crea una nueva
             const browser = await chromium.launch({
-                headless: true,
+                headless: false,
                 viewport: { width: 550, height: 680 },
                 args: [
                     '--no-sandbox',
@@ -171,76 +171,6 @@ async function createJSON(name, data) {
     }
 }
 
-function getEquals(bet, club) {
-    if (bet == "Ambos Equipos Marcarán") return "Ambos Equipos Anotan";
-    if (bet == "Ambos Equipos marcarán en ambas mitades") return "Ambos Equipos anotarán en Ambas Mitades";
-    if (bet == "Total de goles") return "Total Goles Más/Menos de";
-    if (bet == "Tiempo reglamentario") return "Resultado Tiempo Completo";
-    if (bet == "Doble Oportunidad") return "Doble Oportunidad";
-    if (bet == "Total de goles de " + club) return club + " Total Goles";
-}
-
-function surbetC(n1, n2, n3) {
-    const surbet = (100 / n1) + (100 / n2);
-    if (surbet < 100) {
-        const import1 = (1 / n1);
-        const import2 = (1 / n2);
-        const sumImport = import1 + import2;
-        const res1 = n1 * import1;
-        const res2 = n1 * import2;
-        const be1 = res1 - sumImport;
-        const be2 = res2 - sumImport;
-        const eur = 4271.92;
-        const ap = n3 / eur;
-        const i1 = ((ap / sumImport) * import1).toFixed(2);
-        const i2 = ((ap / sumImport) * import2).toFixed(2);
-        const pri = Math.round(i1 * eur);
-        const sec = Math.round(i2 * eur);
-        const gan1 = Math.round((pri * n1));
-        const gan2 = Math.round((sec * n2));
-        return "SI"
-    } else return "NO ES POSIBLE LA SURBET";
-}
-
-function surbet3(n1, n2, n3, investment) {
-    const surbet = (100 / n1) + (100 / n2) + (100 / n3);
-    if (surbet < 100) {
-        // Cálculo de proporciones de inversión
-        const import1 = (1 / n1) / (1 / n1 + 1 / n2 + 1 / n3);
-        const import2 = (1 / n2) / (1 / n1 + 1 / n2 + 1 / n3);
-        const import3 = (1 / n3) / (1 / n1 + 1 / n2 + 1 / n3);
-
-        // Inversión ajustada por cuota
-        const i1 = Math.round(investment * import1 * 100) / 100;
-        const i2 = Math.round(investment * import2 * 100) / 100;
-        const i3 = Math.round(investment * import3 * 100) / 100;
-
-        // Ganancias potenciales por cuota
-        const gan1 = i1 * n1;
-        const gan2 = i2 * n2;
-        const gan3 = i3 * n3;
-
-        // Total invertido y total de ganancia
-        const totalInvertido = i1 + i2 + i3;
-        const totalGanancia = (gan1 + gan2 + gan3) / 3;
-
-        const porcentajeDeGanancia = ((totalGanancia - totalInvertido) * 100) / totalInvertido;
-
-        return {
-            esPosibleSurebet: "Sí",
-            inversionCuota1: i1,
-            inversionCuota2: i2,
-            inversionCuota3: i3,
-            gananciaCuota1: gan1.toFixed(2),
-            gananciaCuota2: gan2.toFixed(2),
-            gananciaCuota3: gan3.toFixed(2),
-            porcentajeDeGanancia: porcentajeDeGanancia.toFixed(2) + "%"
-        };
-    } else {
-        return "No es posible la surebet.";
-    }
-}
-
 function obtenerCombinacionesCotizaciones(...listasDeCuotas) {
     // Función auxiliar para calcular el producto cartesiano
     function productoCartesiano(arr) {
@@ -304,7 +234,7 @@ function quitarTildes(cadena) {
 
 function normalizar(palabra) {
     palabra = quitarTildes(palabra);
-    const patrones = /\bAS\b|-RJ|-RS|-SP|CF|FC|F\.C\.|`|FK|CA|SC|-BA|CFC|JPN|OCS|\bSL\b/g;
+    const patrones = /\bam\b|\bfc\b|\bsp\b|\bAS\b|-RJ|-RS|Kan City|-SP|CF|FC|F\.C\.|`|FK|CA|SC|-BA|CFC|JPN|OCS|-AM|\bSL\b/g;
     palabra = palabra
         .replace(patrones, '')
         .replace('da amadora', '')
@@ -322,6 +252,7 @@ function normalizar(palabra) {
         .replace(/\((f|w|fem)\)/gi, 'femenino')
         .replace(/\b(baloncesto)\b/g, '')
         .replace(/\b(90 min)\b/g, '')
+        .replace(/\([a-z]{3}\)/g, '')
         .replace(/[\(\)]/g, '')  // Elimina paréntesis restantes
         .replace(/[-.']/g, ' ')
         .replace(/\b(vs\.|v\.|vs|v)\b/g, ' ')
@@ -640,6 +571,7 @@ function tienenPalabrasEnComunDinamicoT(cadena1, cadena2) {
     }
     let equipo1 = normalizar(cadena1);
     let equipo2 = normalizar(cadena2);
+    console.log(equipo1, equipo2)
     if (equiposIguales(equipo1, equipo2)) {
         return true;
     }
@@ -663,7 +595,6 @@ function tienenPalabrasEnComunDinamicoT(cadena1, cadena2) {
 }
 
 async function tienenPalabrasEnComunDinamico(cadena1, cadena2, porcentajeUmbral = 65) {
-    // console.log(cadena1, cadena2)
     const firts = tienenPalabrasEnComunDinamicoT(cadena1, cadena2);
     if (!firts) return { similarity: '', pass: false };
     cadena1 = normalizar(cadena1);
@@ -893,6 +824,7 @@ async function hasDuplicateEntries(investments, team1, team2) {
 }
 
 function normalizeTeamName(team, team1, team2) {
+    console.log(team)
     if (team == 1 || team == "1") return team1;
     if (team == 2 || team == "2") return team2;
 
@@ -1009,7 +941,7 @@ function generateFormattedDateRange(hoursToAdd) {
 }
 
 function obtenerObjetoPorTipo(types, tipoBuscado) {
-    return types.find(t => t.type === tipoBuscado);
+    return types.find(t => t.type == tipoBuscado);
 }
 
 function dividirArregloEnDosSubarreglos(arreglo) {
@@ -1165,14 +1097,30 @@ function getCategoryByMatch(type) {
     return "Categoría Desconocida";
 }
 
+
+const abbreviateTeamName = (teamName) => {
+    const words = teamName.split(" ");
+    const abbreviation = words.map((word, index) => {
+        if (index === 0) {
+            return word.substring(0, 3); // Tomar los primeros 3 caracteres del primer nombre
+        }
+        return word; // Mantener el segundo nombre completo
+    }).join(" ");
+    return abbreviation;
+};
+
+const transformString = (input) => {
+    const teams = input.split(" - ");
+    const transformedTeams = teams.map(team => abbreviateTeamName(team));
+    return transformedTeams.join(" - ");
+};
+
+
 module.exports = {
     initBrowser,
     createJSON,
-    getEquals,
-    surbetC,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    surbet3,
     calculateSureBet,
     obtenerCombinacionesCotizaciones,
     findSureBets,
@@ -1193,5 +1141,6 @@ module.exports = {
     agruparApuestas,
     categoryActual,
     tienenPalabrasEnComunDinamicoT,
-    generarCombinacionesDeCasas2MoreLess
+    generarCombinacionesDeCasas2MoreLess,
+    transformString
 }

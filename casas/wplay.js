@@ -56,7 +56,9 @@ const permit1 = [
     'Tiros de esquina más/Menos de (9.5)',
     'Equipo con más Tiros de Esquina',
     'Total de Tarjetas (3.5)',
-    'Más de/Menos de Total de Puntos'
+    'Más de/Menos de Total de Puntos',
+    'Ganador del Toss',
+    'Equipo con Mayor Numero de Sixes'
 ];
 
 const permit2 = [
@@ -153,6 +155,11 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
                             });
                             n++;
                         }
+                        if(betType.type == 'Equipo con Mayor Numero de Sixes') {
+                            let temp = betTemp.bets[1];
+                            betTemp.bets[1] = betTemp.bets[2];
+                            betTemp.bets[2] = temp;
+                        }
                         if (permit4.includes(betType.type)) {
                             console.log('////////////////////////////////////////')
                             if (!tienenPalabrasEnComunDinamicoT(betTemp.bets[0].name, team1)) {
@@ -171,7 +178,7 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
                     }
 
                     if (betType.type == 'Total de Rondas') betTemp.bets = ordenarDinamicamenteMasMenos(betTemp.bets);
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     betWplay.bets.push(betTemp);
                     console.log('//////// WPLAY LENGTH', betWplay.bets.length)
                 } catch (error) {

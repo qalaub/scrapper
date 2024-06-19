@@ -8,12 +8,17 @@ const {
     obtenerObjetoPorTipo,
     ordenarDinamicamenteMasMenos,
     matchnames,
-    tienenPalabrasEnComunDinamicoT
+    tienenPalabrasEnComunDinamicoT,
+    transformString,
+    categoryActual
 } = require("./utils");
 
 async function buscarApi(match) {
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
     segmentos = segmentos.flatMap(segmento => segmento.split(' ').filter(seg => !excludes.includes(seg.toLowerCase())));
+    if (categoryActual.current == 'ice_hockey' || categoryActual.current == 'american_football') {
+        match = transformString(match);
+    }
 
     const buscar = async (text) => {
         let fullretoSearch = await initRequest(`https://sb2frontend-altenar2.biahosted.com/api/SportsBook/SearchEvents?timezoneOffset=300&langId=4&skinName=fullreto&configId=12&culture=es-ES&countryCode=CO&deviceType=Desktop&numformat=en&integration=fullreto&str=${text}`);
@@ -178,7 +183,7 @@ async function getFullretoApi(name, types, n, team1) {
                 let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
                 reducedBetsArray = removeDuplicate(reducedBetsArray);
                 console.log('//////////////////// FULLRETO //////////////////')
-                // console.log(reducedBetsArray)
+                console.log(reducedBetsArray)
                 console.log('//////////////////// FULLRETO //////////////////')
                 return {
                     nombre: 'fullreto',

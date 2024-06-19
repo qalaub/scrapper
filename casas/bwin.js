@@ -7,7 +7,8 @@ const {
     tienenPalabrasEnComunDinamico,
     matchnames,
     scrollToBottom,
-    categoryActual
+    categoryActual,
+    transformString
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -16,6 +17,21 @@ const buscarQ = async (page, query) => {
         await search.fill(query.length > 2 ? query : query + " 000");
         await search.press('Enter');
         await page.waitForTimeout(2000);
+        if (categoryActual.current == 'ice_hockey') {
+            const more = await page.locator('//div[@class = "popular-recent-search-suggestion"]//a/span[text() = "Hockey sobre hielo"]');
+            if (await more.isVisible()) await more.isVisible();
+            await page.waitForTimeout(500);
+        }
+        if (categoryActual.current == 'american_football') {
+            const more = await page.locator('//div[@class = "popular-recent-search-suggestion"]//a/span[text() = "Fútbol americano"]');
+            if (await more.isVisible()) await more.isVisible();
+            await page.waitForTimeout(500);
+        }
+        if (categoryActual.current == 'cricket') {
+            const more = await page.locator('//div[@class = "popular-recent-search-suggestion"]//a/span[text() = "Cricket"]');
+            if (await more.isVisible()) await more.isVisible();
+            await page.waitForTimeout(500);
+        }
         const noResult = await page.getByText('SIN RESULTADOS').isVisible({ timeout: 5000 });
         return !noResult;
     } catch (error) {
@@ -71,8 +87,8 @@ let permit1 = [
     'Ambos equipos marcan-1º tiempo',
     'Doble oportunidad-1º tiempo',
     'Resultado del partido-1º tiempo',
-    'Número de córners-1º tiempo'
-    
+    'Número de córners-1º tiempo',
+    'Total'
 ];
 
 let permit2 = [
@@ -83,7 +99,10 @@ let permit2 = [
 ]
 
 async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
-    if(categoryActual.current == 'tennis') return;
+    if (categoryActual.current == 'tennis') return;
+    if (categoryActual.current == 'ice_hockey' || categoryActual.current == 'american_football') {
+        match = transformString(match);
+    }
     const { page, context } = await initBrowser('https://sports.bwin.co/es/sports?popup=betfinder', 'bwin' + n);
     if (page) {
         try {
@@ -94,6 +113,7 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             url = await page.url();
+            await page.waitForTimeout(3000);
             let all = await page.locator('li').filter({ hasText: 'Todo' }).locator('a');
             if (await all.isVisible()) await all.click();
             page.setDefaultTimeout(timeouts.bet);
@@ -105,7 +125,7 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
             }
             const allBets = page.getByText('Todas las apuestas');
             if (await allBets.isVisible()) await allBets.click();
-            await scrollToBottom(page);
+            // await scrollToBottom(page);
             for (const betType of betTypes) {
                 try {
                     if (betType.type == 'Número de córners') {
@@ -198,7 +218,7 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
                                 quote
                             });
                         }
-                        // console.log(betTemp)
+                        console.log(betTemp)
                         bwin.bets.push(betTemp);
                         console.log('//////// BWIN LENGTH', bwin.bets.length)
                     }

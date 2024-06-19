@@ -13,11 +13,11 @@ const {
 
 const buscarQ = async (page, query) => {
     try {
-        const search = await page.locator('//div[@id = "modal"]//input').first();
+        const search = await page.getByPlaceholder('Buscar Eventos...').first();
         await search.fill(query.length > 2 ? query : query + " 000");
         await page.waitForTimeout(1500);
-        const noResult = await page.getByText('No se han encontrado resultados').isVisible({ timeout: 5000 });
-        return !noResult;
+        const noResult = await page.locator('.filtered-matches-popup').isVisible({ timeout: 5000 });
+        return noResult;
     } catch (error) {
         console.log(error)
         return false;
@@ -42,7 +42,7 @@ const categories = [
 
 const intentarEncontrarOpcion = async (page, match) => {
     try {
-        let opciones = await page.locator('//a[contains(@class, "hover:bg-surface-light")]');
+        let opciones = await page.locator('//div[@class = "filtered-matches-popup"]//li');
         if (await opciones.first().isVisible({ timeout: 3000 })) {
             opciones = await opciones.all();
             let optPass = [];
@@ -102,14 +102,13 @@ const permit2 = [
     '1x2',
 ];
 
-async function getResultsGgbet(match, betTypes = ['ganador del partido'], n, team1) {
+async function getResultsMystake(match, betTypes = ['ganador del partido'], n, team1) {
     // if (categoryActual.current == 'tennis') return;
-    const { page, context } = await initBrowser('https://gg.bet/es', 'ggbet' + n);
+    const { page, context } = await initBrowser('https://www.cloudbet.com/es/sports?s=soccer', 'mystake' + n);
     if (page) {
         try {
-            let url = 'https://gg.bet/es';
+            let url = 'https://mystake.bet/es/sportsbook/prematch';
             page.setDefaultTimeout(timeouts.search);
-            await page.getByText('Buscar').click();
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             await page.locator('//*[@data-tab = "All"]').click();
@@ -195,5 +194,5 @@ async function getResultsGgbet(match, betTypes = ['ganador del partido'], n, tea
 
 
 module.exports = {
-    getResultsGgbet
+    getResultsMystake
 }

@@ -7,13 +7,17 @@ const {
     tienenPalabrasEnComunDinamico,
     obtenerObjetoPorTipo,
     ordenarDinamicamenteMasMenos,
-    matchnames
+    matchnames,
+    transformString,
+    categoryActual
 } = require("./utils");
 
 async function buscarApi(match) {
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
     segmentos = segmentos.flatMap(segmento => segmento.split(' ').filter(seg => !excludes.includes(seg.toLowerCase())));
-
+    if (categoryActual.current == 'ice_hockey') {
+        match = transformString(match);
+    }
     const buscar = async (text) => {
         let cashwinSearch = await initRequest(`https://sb2frontend-altenar2.biahosted.com/api/widget/SearchEvents?culture=en-GB&timezoneOffset=300&integration=cashwin&deviceType=1&numFormat=en-GB&countryCode=CO&searchString=${text}`);
         cashwinSearch = cashwinSearch.events?.map(temp => {

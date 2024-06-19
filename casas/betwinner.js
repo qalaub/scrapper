@@ -2,7 +2,7 @@ const { timeouts } = require("../const/timeouts");
 const { groupAndReduceBetsByType } = require("../logic/surebets");
 const { excludes, buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
-const { getType1xbet, getType1xbetBasketball, getType1xbetTennis, getType1xbetVolleyball, getType1xbetBaseball } = require("./1xbet");
+const { getType1xbet, getType1xbetBasketball, getType1xbetTennis, getType1xbetVolleyball, getType1xbetBaseball, getType1xbetIceHockey, getType1xbetAmericanFootball, getType1xbetCricket } = require("./1xbet");
 const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
@@ -42,6 +42,12 @@ const getCategory = c => {
             return 'baseball';
         case 'ufc_mma':
             return 'ufc';
+        case 'ice_hockey':
+            return 'ice-hockey';
+        case 'american_football':
+            return 'american-football';
+        case 'cricket':
+            return 'cricket';
     }
 }
 
@@ -105,6 +111,9 @@ async function processCategory(page, category, typeUpdate) {
         'tennis': ['1 Set', '2 Set'],
         'volleyball': ['1 Set', '2 Set', '3 Set'],
         'baseball': ['1 Entrada'],
+        'ice_hockey': ['1 Periodo', '2 Periodo', '3 Periodo'],
+        'american_football': [],
+        'cricket': []
     };
 
     let previus = 'Tiempo reglamentario';
@@ -151,7 +160,7 @@ async function getResultsBetwinner(match, betTypes = ['1x2'], n, name = 'betwinn
             url = await page.url();
             return await getBetwinnerApi(match, betTypes, ids, name, url, team1);
         } catch (error) {
-           // console.log(error);
+            // console.log(error);
         }
     }
 }
@@ -172,6 +181,9 @@ const permit1 = [
     'Total. 3 Set',
     'Total de sets',
     'Total. 1 Entrada',
+    'Total. 1 Periodo',
+    'Total. 2 Periodo',
+    'Total. 3 Periodo',
 ];
 
 const permit2 = [
@@ -196,30 +208,38 @@ async function getBetwinnerApi(name, types, ids, house, url, team1) {
             if (res.length > 0) {
                 let filter = [];
                 for (const r of res) {
-                    let tiposPermitidos = types.map(t => getType1xbet(t.type, r.type));
-                    if (categoryActual.current == 'basketball')
-                        tiposPermitidos = types.map(t => getType1xbetBasketball(t.type, r.type));
-                    if (categoryActual.current == 'tennis')
-                        tiposPermitidos = types.map(t => getType1xbetTennis(t.type, r.type));
-                    if (categoryActual.current == 'volleyball')
-                        tiposPermitidos = types.map(t => getType1xbetVolleyball(t.type, r.type));
-                    if (categoryActual.current == 'baseball')
-                        tiposPermitidos = types.map(t => getType1xbetBaseball(t.type, r.type));
+                    let getTypeFunctions = {
+                        'basketball': getType1xbetBasketball,
+                        'tennis': getType1xbetTennis,
+                        'volleyball': getType1xbetVolleyball,
+                        'baseball': getType1xbetBaseball,
+                        'ice_hockey': getType1xbetIceHockey,
+                        'american_football': getType1xbetAmericanFootball,
+                        'cricket': getType1xbetCricket,
+                    };
+
+                    let tiposPermitidos;
+                    if (categoryActual.current in getTypeFunctions) {
+                        tiposPermitidos = types.map(t => getTypeFunctions[categoryActual.current](t.type, r.type));
+                    } else {
+                        tiposPermitidos = types.map(t => getType1xbet(t.type, r.type));
+                    }
+                    
                     if (r.res && r.res.Value?.GE) {
-                        let temFilter = r.res.Value.GE.filter(item => tiposPermitidos.includes(item.G));
+                        let temFilter = r.res.Value.GE.filter(item => {
+                            return tiposPermitidos.includes(item.G);
+                        });
                         let team1T = r.res.Value.O1;
                         let team2T = r.res.Value.O2;
                         if (tienenPalabrasEnComunDinamicoT(team1, team1T)) team1T = team1;
                         temFilter = temFilter.map(f => {
-                            let type = getType1xbet(f.G, r.type);
-                            if (categoryActual.current == 'basketball')
-                                type = getType1xbetBasketball(f.G, r.type);
-                            if (categoryActual.current == 'tennis')
-                                type = getType1xbetTennis(f.G, r.type);
-                            if (categoryActual.current == 'volleyball')
-                                type = getType1xbetVolleyball(f.G, r.type);
-                            if (categoryActual.current == 'baseball')
-                                type = getType1xbetBaseball(f.G, r.type);
+                            let type;
+                            if (categoryActual.current in getTypeFunctions) {
+                                type = getTypeFunctions[categoryActual.current](f.G, r.type);
+                            } else {
+                                type = getType1xbet(f.G, r.type);
+                            }
+
                             let bets = [];
                             if (!permit1.includes(type)) {
                                 bets = f.E.map((e, i) => {
@@ -272,7 +292,7 @@ async function getBetwinnerApi(name, types, ids, house, url, team1) {
                     }
                 }
                 const reducedBetsArray = groupAndReduceBetsByType(filter, 'Total', 1);
-                // console.log(reducedBetsArray.map(r => r.bets));
+                console.log(reducedBetsArray);
                 console.log('//////////////////// ' + house.toUpperCase() + ' //////////////////')
                 console.log('//////////////////// ' + house.toUpperCase() + ' //////////////////')
                 if (house == '1xbet') {

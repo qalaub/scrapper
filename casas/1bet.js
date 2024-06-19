@@ -14,11 +14,14 @@ const buscarQ = async (page, query) => {
         const search = await page.getByPlaceholder('Buscar').first();
         await search.fill(query.length > 2 ? query : query + " 000");
         await page.waitForTimeout(1500);
-        if(categoryActual.current == 'volleyball') {
+        if (categoryActual.current == 'volleyball') {
             await page.getByText('Voleibol (').click();
         }
-        if(categoryActual.current == 'baseball') {
+        if (categoryActual.current == 'baseball') {
             await page.getByText('Béisbol (').click();
+        }
+        if (categoryActual.current == 'cricket') {
+            await page.getByText('Críquet (').click();
         }
         const noResult = await page.getByText('No se han encontrado eventos', { timeout: 5000 }).isVisible();
         return !noResult;
@@ -83,7 +86,12 @@ const permit1 = [
     'Aces superior / inferior',
     'Asaltos totales',
     '1.er inning - Total de carreras',
-    'Total de carreras'
+    'Total de carreras',
+    'Más/menos goles (tiempo reglamentario)',
+    '1.er periodo - Más/menos goles',
+    '2.º periodo - Más/menos goles',
+    '3.er periodo - Más/menos goles',
+    'Más/Menos de Córneres primera mitad'
 ];
 
 const permit2 = [
@@ -183,7 +191,8 @@ async function getResults1bet(match, betTypes = ['Resultado Tiempo Completo'], n
                             }
                         }
                     }
-                    // if (type == ' Hándicap 3 opciones') console.log(betTemp)
+                    // if (type == ' Hándicap 3 opciones') 
+                    console.log(betTemp)
                     leon.bets.push(betTemp);
                     console.log('//////// 1BET LENGTH ', leon.bets.length)
                 } catch (error) {

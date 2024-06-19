@@ -1,11 +1,14 @@
 const { timeouts } = require("../const/timeouts");
 const { excludes, selectMoreOption } = require("../logic/utils/buscar");
 const { postFormData, postUrlEncoded, initRequest } = require("../logic/utils/request");
-const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, categoryActual } = require("./utils");
+const { tienenPalabrasEnComunDinamico, quitarTildes, initBrowser, matchnames, categoryActual, transformString } = require("./utils");
 
 async function buscarApi(match) {
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
     segmentos = segmentos.flatMap(segmento => segmento.split(' ').filter(seg => !excludes.includes(seg.toLowerCase())));
+    if (categoryActual.current == 'ice_hockey' || categoryActual.current == 'american_football') {
+        match = transformString(match);
+    }
 
     const buscar = async (text) => {
         let luckiaSearch = await postUrlEncoded('https://www.luckia.co/OfferSearch/EventSearch', {
@@ -51,7 +54,9 @@ async function extractGoalOptions(page, type) {
                 if (text.includes("Cuarto 1 - Total"))
                     return text.includes("Cuarto 1 - Total")
                 return text.includes("Menos/más") ||
-                    text.includes("Menos/Más")
+                    text.includes("Menos/Más") || text.includes("total") ||
+                    text.includes("Total") ||
+                    text.includes("puntos (incl. prórroga)")
             })
             .map(el => el.textContent);
     });
@@ -132,6 +137,18 @@ function buildXPathsFromNumbers(numbers, bet) {
         case 'Menos/Más carreras (incl. extra innings)':
             goalXpath = numbers.map(n => `normalize-space(text()) = 'Menos/Más ${n} carreras (incl. extra innings)'`).join(' or ');
             break;
+        case 'Período 1 - Menos/Más goles':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Período 1 - Menos/Más ${n} goles'`).join(' or ');
+            break;
+        case 'Período 2 - Menos/Más goles':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Período 2 - Menos/Más ${n} goles'`).join(' or ');
+            break;
+        case 'Período 3 - Menos/Más goles':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Período 3 - Menos/Más ${n} goles'`).join(' or ');
+            break;
+        case 'Total puntos (incl. prórroga)':
+            goalXpath = numbers.map(n => `normalize-space(text()) = 'Total ${n} puntos (incl. prórroga)'`).join(' or ');
+            break;
         default:
             // Opcionalmente manejar casos no esperados o un valor por defecto
             console.log('Tipo de apuesta no reconocida.');
@@ -165,7 +182,9 @@ const permit1 = [
     '2.º set - total juegos',
     'Set 1 - Menos/Más juegos',
     'Menos/Más juegos',
-    'Menos/Más carreras (incl. extra innings)'
+    'Menos/Más carreras (incl. extra innings)',
+    'Período 1 - Menos/Más goles',
+    'Total puntos (incl. prórroga)',
 ];
 
 async function getLuckiaApi(name, types, n) {
@@ -254,7 +273,7 @@ async function getLuckiaApi(name, types, n) {
                 }
 
             } catch (error) {
-                // console.log(error)
+                console.log(error)
                 console.log('ERROR AL ENCONTRAR APUESTA')
             }
         }

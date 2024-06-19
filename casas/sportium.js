@@ -115,6 +115,15 @@ const betTypeActions = {
     baseball: {
         'Primer Equipo en Marcar': 'Apuestas de carreras (',
         'Entrada 1 - Resultado': 'Mercados de entradas (',
+    },
+    'ice_hockey': {
+        '1º Periodo - Resultado': '1º Periodo (',
+    },
+    'american_football': {
+        '1º Periodo - Resultado': '1º Periodo (',
+    },
+    'cricket': {
+        'Gana el sorteo inicial': 'Otros Mercados ('
     }
 };
 
@@ -213,7 +222,7 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                         }
                     }
                     betRivalo.bets.push(betTemp);
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     console.log('//////// SPORTIUM LENGTH', betRivalo.bets.length)
                 } catch (error) {
                     // console.log(error)

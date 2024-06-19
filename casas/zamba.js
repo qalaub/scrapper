@@ -74,12 +74,17 @@ const permit1 = [
     '2.º set - total puntos',
     '3.º set - total puntos',
     'Total (incl. extra innings)',
+    '1.º periodo - total',
+    '2.º periodo - total',
+    '3.º periodo - total',
 ];
 
 const permit2 = [
     '1x2',
     'Ganador',
-    'Ganador (incl. extra innings)'
+    'Ganador (incl. extra innings)',
+    'Ganador (incl. prórroga)',
+    'Ganador (incl. super over)'
 ];
 
 async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], n) {
@@ -142,7 +147,7 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
                         }
                     }
                     if (moreless) betTemp.bets = orderBetMoreLess(betTemp.bets);
-                    // console.log(betTemp.bets);
+                    console.log(betTemp.bets);
                     betZamba.bets.push(betTemp);
                     console.log('//////// ZAMBA LENGTH ', betZamba.bets.length)
                 } catch (error) {

@@ -36,6 +36,12 @@ const {
     idsBaseball,
     betTypesMMA,
     idsMMA,
+    idsIceHokey,
+    betTypesIceHockey,
+    betTypesAmericanFootball,
+    idsAmericanFootball,
+    betTypesCricket,
+    idsCricket,
 } = require("../logic/constantes");
 const { QuoteManager } = require("../logic/utils/QuoteManage");
 const { getPinnacleApi } = require("./pinnacle");
@@ -49,6 +55,10 @@ const { getResultsLeon } = require("./leon");
 const { getResultsStake } = require("./stake");
 const { getResults1bet } = require("./1bet");
 const { getResultsBcgame } = require("./bcgame");
+const { getResultsMystake } = require("./mystake");
+const { getResultsCloudbet } = require("./cloudbet");
+const { getResultsBluebet, getResultsSuprabet } = require("./suprabet");
+const { getIvibetApi } = require("./ivibet");
 const types = {
     football: {
         types: betTypesFootball,
@@ -74,6 +84,18 @@ const types = {
         types: betTypesBaseball,
         ids: idsBaseball,
     },
+    cricket: {
+        types: betTypesCricket,
+        ids: idsCricket,
+    },
+    'ice_hockey': {
+        types: betTypesIceHockey,
+        ids: idsIceHokey,
+    },
+    'american_football': {
+        types: betTypesAmericanFootball,
+        ids: idsAmericanFootball,
+    }
 }
 
 async function execute() {
@@ -121,7 +143,7 @@ async function execute() {
                 start: fechaUTC,
                 category
             };
-            // quoteManager.addQuotes([await getResults1bet('Oakland Athletics - Seattle Mariners', betTypes.unobet, n, '','Toronto Blue Jays')], types[category].types, data);
+            // quoteManager.addQuotes([await getIvibetApi('Novorizontino-SP - Amazonas-AM', betTypes.ivibet, n, '', 'Toronto Blue Jays')], types[category].types, data);
             // break;
             console.log('///////////////// ejecucion pair ' + n);
             const urls = ['', '']// await getUrlsTeams(data.team1, data.team2, n); // 
@@ -137,6 +159,7 @@ async function execute() {
                     getResultsBetsson(name, betTypes.betsson, n),
                     getResultsBetwinner(name, betTypes['1xbet'], n, 'betwinner', data.team1),
                     getResultsBetboro(name, betTypes.betboro, n, data.team1),
+                    getResultsCloudbet(name, betTypes.cloudbet, n, data.team1),
                 ]);
 
                 const results3 = await Promise.all([
@@ -151,7 +174,7 @@ async function execute() {
                     getResultsWonder(name, betTypes.wonderbet, n),
                     getResultsMegapuesta(name, betTypes.megapuesta, n),
                     getFullretoApi(name, betTypes.fullreto, n, data.team1),
-                    // getResultsDafabet(name, betTypes.dafabet, n),
+                    getResultsDafabet(name, betTypes.dafabet, n),
                     getResults1bet(name, betTypes.unobet, n, data.team1),
                     getResultsStake(name, betTypes.stake, n, data.team1),
                 ]);
@@ -210,6 +233,11 @@ async function execute() {
         let events = res.events;
         events = events.filter(({ event }) => !event.name.includes('Esports'));
         console.log(events.length);
+        // events = [{
+        //     event : {
+        //         start: ''
+        //     }
+        // }]
         let pairs = dividirArregloEnDosSubarreglos(events, 2);
         await Promise.all([
             calculatePerPair(pairs[0], 1, category),

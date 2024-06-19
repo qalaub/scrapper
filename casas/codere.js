@@ -9,7 +9,8 @@ const {
     tienenPalabrasEnComunDinamico,
     obtenerObjetoPorTipo,
     matchnames,
-    categoryActual
+    categoryActual,
+    transformString
 } = require("./utils");
 
 let page;
@@ -95,6 +96,9 @@ async function getResultsCodere(match, betTypes = ['1X2']) {
 async function buscarApi(match) {
     let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
     segmentos = segmentos.flatMap(segmento => segmento.split(' ').filter(seg => !excludes.includes(seg.toLowerCase())));
+    if (categoryActual.current == 'ice_hockey' || categoryActual.current == 'american_football') {
+        match = transformString(match);
+    }
 
     const buscar = async (text) => {
         let codereSearch = await initRequest(`https://m.codere.com.co/NavigationService/Home/FreeTextSearch?text=${text}`);
@@ -117,6 +121,7 @@ async function buscarApi(match) {
             for (const q of res) {
                 const i = q.name.indexOf('UEFA Champions League');
                 if (i > 0) q.name = q.name.substring(i + 24);
+                // console.log(match, q.name)
                 const p = await tienenPalabrasEnComunDinamico(match, q.name);
                 if (p.pass) optPass.push({ opcion: q, similarity: p.similarity });
             }
@@ -148,6 +153,7 @@ const permit1 = [
     'Más/Menos Puntos Totales',
     'Total de Carreras Más/Menos',
     '1ª Entrada Más/Menos Carreras',
+    'Más/Menos Total de Puntos'
 ]
 
 function agruparApuestas(apuestas, tipoDeseado) {
@@ -241,6 +247,9 @@ async function getCodereApi(name, types) {
                 if (categoryActual.current == 'baseball') {
                     res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=91`);
                 }
+                if (categoryActual.current == 'ice_hockey') {
+                    res2 = await initRequest(`https://m.codere.com.co/NavigationService/Game/GetGamesNoLiveByCategoryInfo?parentid=${link}&categoryInfoId=75`);
+                }
             }
 
             let filter = getBets(res1, tiposPermitidos, types);
@@ -269,7 +278,7 @@ async function getCodereApi(name, types) {
                 });
                 filter = Array.from(new Map(filter.map(item => [item.type, item])).values());
                 console.log('//////////////////// CODERE //////////////////')
-                // console.log(filter)
+                // console.log(filter.map(el => el.bets))
                 console.log('//////////////////// CODERE //////////////////')
             }
             return {

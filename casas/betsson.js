@@ -51,7 +51,7 @@ const intentarEncontrarOpcion = async (page, match) => {
                 const p = await tienenPalabrasEnComunDinamico(match, text);
                 // console.log(text)
                 if (p.pass) pass.push({
-                    similarity: p.similarity, 
+                    similarity: p.similarity,
                     name: text,
                     opcion
                 })
@@ -165,8 +165,15 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                             }
                         }
                     }
+                    if (betType.type.includes('llega a')) {
+                        if (betTemp.bets[2].name == 'Ninguno') {
+                            let tempBet = betTemp.bets[1];
+                            betTemp.bets[1] = betTemp.bets[2];
+                            betTemp.bets[2] = tempBet;
+                        }
+                    }
                     betsson.bets.push(betTemp);
-                    // console.log(betTemp)
+                    console.log(betTemp);
                     await page.mouse.wheel(0, scroll / 2);
                     console.log('//////// BETSON LENGTH', betsson.bets.length)
                 } catch (error) {

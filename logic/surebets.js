@@ -18,7 +18,13 @@ const {
     idsBaseball,
     betDescriptionsBaseball,
     idsMMA,
-    betDescriptionsMMA
+    betDescriptionsMMA,
+    idsIceHokey,
+    betDescriptionsIceHokey,
+    idsAmericanFootball,
+    betDescriptionsAmericanFootball,
+    idsCricket,
+    betDescriptionsCricket
 } = require("./constantes");
 
 const categories = {
@@ -28,6 +34,10 @@ const categories = {
     'ufc_mma': getBetTypeMMA,
     volleyball: getBetTypeVolleyball,
     baseball: getBetTypeBaseball,
+    'ice_hockey': getBetTypeIceHockey,
+    'american_football': getBetTypeAmericanFootball,
+    cricket: getBetTypeCricket,
+
 }
 
 function getBetTypes(bets, category) {
@@ -57,6 +67,10 @@ function getBetTypes(bets, category) {
         leon: [],
         stake: [],
         unobet: [],
+        mystake: [],
+        cloudbet: [],
+        suprabet: [],
+        ivibet: [],
     };
 
     for (const tempBet of tempBets) {
@@ -84,6 +98,10 @@ function getBetTypes(bets, category) {
         newBet.leon.push(tempBet.leon);
         newBet.stake.push(tempBet.stake);
         newBet.unobet.push(tempBet.unobet);
+        newBet.mystake.push(tempBet.mystake);
+        newBet.cloudbet.push(tempBet.cloudbet);
+        newBet.suprabet.push(tempBet.suprabet);
+        newBet.ivibet.push(tempBet.ivibet);
     }
 
     // Función para eliminar elementos undefined
@@ -116,6 +134,10 @@ function getBetTypes(bets, category) {
         leon: newBet.leon,
         stake: newBet.stake,
         unobet: newBet.unobet,
+        cloudbet: newBet.cloudbet,
+        mystake: newBet.mystake,
+        suprabet: newBet.suprabet,
+        ivibet: newBet.ivibet,
     }
     // Eliminar elementos undefined de cada arreglo
     Object.keys(data).forEach(key => {
@@ -151,6 +173,10 @@ function getBetTypeInfo(typeId, description) {
         leon: { [typeId]: description['betplay'], type: description['leon'] },
         stake: { [typeId]: description['betplay'], type: description['stake'] },
         unobet: { [typeId]: description['betplay'], type: description['unobet'] },
+        mystake: { [typeId]: description['betplay'], type: description['mystake'] },
+        cloudbet: { [typeId]: description['betplay'], type: description['cloudbet'] },
+        suprabet: { [typeId]: description['betplay'], type: description['suprabet'] },
+        ivibet: { [typeId]: description['betplay'], type: description['ivibet'] },
     };
 }
 
@@ -190,6 +216,23 @@ function getBetTypeMMA(type) {
     return getBetTypeInfo(typeId, description);
 }
 
+function getBetTypeIceHockey(type) {
+    const typeId = idsIceHokey[type];
+    const description = betDescriptionsIceHokey[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
+function getBetTypeAmericanFootball(type) {
+    const typeId = idsAmericanFootball[type];
+    const description = betDescriptionsAmericanFootball[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
+function getBetTypeCricket(type) {
+    const typeId = idsCricket[type];
+    const description = betDescriptionsCricket[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
 
 function calculateTotalGol(quotes, data, url, type) {
     // Función para extraer todos los números únicos de las cuotas
@@ -213,7 +256,6 @@ function calculateTotalGol(quotes, data, url, type) {
             // console.log(variant)
             const result = getByGol(quote, variant);
             const result2 = getByGolT(quote, variant);
-
             if (result && result.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
                 extract.push(result);
             }
@@ -228,15 +270,15 @@ function calculateTotalGol(quotes, data, url, type) {
                     const maxObjMenos = filter2.reduce((max, el) => extractNumber(el.name) > extractNumber(max.name) ? el : max, filter2[0]);
                     if (categoryActual.current != 'football') {
                         result2.cuotas = [
-                            maxObjMenos,
                             minObjMas,
+                            maxObjMenos,
                         ]
                         extract2.push(result2);
-                    }
-                    result2.cuotas = [
+                    } else result2.cuotas = [
                         minObjMas,
                         maxObjMenos
                     ];
+
                 }
                 extract2.push(result2);
             }

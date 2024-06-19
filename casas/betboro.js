@@ -29,6 +29,7 @@ const intentarEncontrarOpcion = async (page, match) => {
         let text = await opcion.locator('p').nth(1).textContent();
         match = quitarTildes(match.replace(' - ', ' '));
         text = quitarTildes(text.replace(' - ', ' '));
+        console.log(match, text)
         const p = await tienenPalabrasEnComunDinamico(match, text, 75);
         if (p.pass) optPass.push({ opcion, similarity: p.similarity, text });
     }
@@ -68,7 +69,11 @@ const permit1 = [
     '2er Set total de juegos',
     '1ra Set Total de puntos',
     '1ra Inning total de carreras',
-    'Carreras totaless',
+    'Carreras totales',
+    'Total de goles (tiempo regular)',
+    '1ra Periodo total de goles',
+    '2do Periodo total de goles',
+    '3er Periodo total de goles',
 ];
 
 const permit2 = [
@@ -147,7 +152,7 @@ async function getResultsBetboro(match, betTypes = ['Resultado Tiempo Completo']
                             });
                         }
                     }
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     betBoro.bets.push(betTemp);
                     console.log('//////// BETBORO LENGTH ', betBoro.bets.length)
                 } catch (error) {

@@ -368,7 +368,10 @@ async function getResultsBetPlayTemp(match, betTypes = ['Total de goles']) {
 }
 
 // Función para extraer el número de la cadena en el campo 'name'
-const extractNumber = name => parseFloat(name.match(/(\d+(\.\d+)?)$/)[0]);
+const extractNumber = name => {
+    let temp = name.match(/(\d+(\.\d+)?)$/);
+    if(temp && temp?.length > 0) return  parseFloat(temp[0]);
+};
 // Ordenar primero por número y luego agrupar por "Más de" o "Menos de"
 const orderBetMoreLess = bets => {
     return bets.sort((a, b) => {

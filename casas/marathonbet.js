@@ -75,7 +75,10 @@ const permit1 = [
     'Total de dobles faltas',
     'Total de aces',
     'Total de carreras',
-    'Total de carreras en la 1.ª entrada'
+    'Total de carreras en la 1.ª entrada',
+    'Total de goles - 3.er período',
+    'Total de goles - 2.º período',
+    'Total de goles - 1.er período',
 ];
 
 const permit2 = [
@@ -96,7 +99,7 @@ const permit3 = [
 
 async function clickAndWait(page, selector) {
     await page.getByText(selector).click();
-    page.setDefaultTimeout(2000);
+    page.setDefaultTimeout(1100);
     await page.waitForTimeout(1000);
 }
 
@@ -111,6 +114,8 @@ const typeToSelector = {
     'Total de dobles faltas': 'Mercados de dobles faltas',
     'Total de aces': 'Mercados de aces',
     'Más hits': 'Otros',
+    'Resultado - 1.er período': 'Mercados de períodos', 
+    'Primer equipo que marca un gol': 'Mercados de goles', 
 };
 
 
@@ -196,7 +201,7 @@ async function getMarathonApi(name, types, n, team1) {
                             type: type.type,
                             bets: betTemp,
                         })
-                        // console.log(betTemp);
+                        console.log(betTemp);
                         console.log('//////// MARATHONBET LENGTH ', bets.length);
                     } catch (error) {
                         // console.log(error)

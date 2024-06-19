@@ -81,10 +81,9 @@ function translateQuotes(item) {
 }
 
 async function getLsbetApi(name, types) {
-    if(categoryActual.current == 'tennis') return;
     try {
         const link = await buscarApi(name);
-        console.log(link?.id);
+        console.log(link);
         if (link?.id) {
             const res = await initRequest(`https://www.lsbet.com/api/coupons/coupons?eventId=${link.id}`, 2);
             if (res) {
@@ -104,7 +103,7 @@ async function getLsbetApi(name, types) {
                     }
                 });
                 console.log('//////////////////// LSBET //////////////////')
-                // console.log(filter);
+                console.log(filter);
                 console.log('//////////////////// LSBET //////////////////')
                 return {
                     nombre: 'lsbet',

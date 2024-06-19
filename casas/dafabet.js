@@ -26,13 +26,21 @@ const buscarQ = async (page, query) => {
 const getType = c => {
     switch (c) {
         case 'football':
-            return 'Fútbol'; 
+            return 'Fútbol';
         case 'basketball':
-            return 'Baloncesto '; 
+            return 'Baloncesto ';
         case 'tennis':
-            return 'Tenis'; 
+            return 'Tenis';
         case 'volleyball':
-            return 'Voleibol'; 
+            return 'Voleibol';
+        case 'ice_hockey':
+            return 'Hockey sobre hielo';
+        case 'ice_hockey':
+            return 'Hockey sobre hielo';
+        case 'american_football':
+            return 'Fútbol Americano';
+        case 'cricket':
+            return 'Cricket';
     }
 }
 
@@ -47,6 +55,7 @@ const intentarEncontrarOpcion = async (page, match) => {
                 if (!isValid.includes(getType(categoryActual.current))) continue;
                 const text = await opcion.locator('a').first().textContent();
                 match = quitarTildes(match.replace(' - ', ' '));
+                console.log(text)
                 const p = await tienenPalabrasEnComunDinamico(match, text);
                 if (p.pass) optPass.push({
                     name: text,
@@ -86,6 +95,8 @@ let permit1 = [
     'Más/Menos Games - 2º Set',
     'Más/Menos (Puntos) - Partido',
     'Más/Menos (Puntos) - 1er Set',
+    'Total de Goles Más/Menos - Tiempo Regular',
+    'Más/Menos - Partido'
 ];
 
 async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
@@ -143,7 +154,7 @@ async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
                             return decimalRegex.test(bet.name);
                         });
                     }
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     dafabet.bets.push(betTemp);
                     console.log('//////// DAFABET LENGTH', dafabet.bets.length)
                 } catch (error) {
@@ -155,7 +166,7 @@ async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
             console.log('//////////////////// DAFABET //////////////////')
             return dafabet;
         } catch (error) {
-            console.log(error);
+            // console.log(error);
             // await page.close();
         }
     }

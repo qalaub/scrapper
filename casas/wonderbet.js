@@ -118,7 +118,8 @@ const permit1 = [
     '2° Set - Totales',
     '3° Set - Totales',
     'Más/Menos (Con tiempo Extra)',
-    '1° Inning - Más / Menos'
+    '1° Inning - Más / Menos',
+    'Total Puntos - Más / Menos'
 ];
 
 // Función para remover el prefijo de número, comilla y espacio de un string
@@ -207,7 +208,7 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                         }
                     }
                     betWonder.bets.push(betTemp);
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     console.log('//////// WONDER LENGTH', betWonder.bets.length)
                 } catch (error) {
                     // console.log(error)

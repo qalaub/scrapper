@@ -136,6 +136,7 @@ async function getResultsStake(match, betTypes = ['Resultado Tiempo Completo'], 
 
                     const bets = await parent.locator('//div[contains(@id, "event_odd_id_")]').all();
                     if (bets.length > 1) {
+                        let cont = 0;
                         for (const bet of bets) {
                             let name = await bet.locator('.wol-odd__info').first().textContent();
                             const quote = await bet.locator('.wol-odd__value').last().textContent();
@@ -144,9 +145,11 @@ async function getResultsStake(match, betTypes = ['Resultado Tiempo Completo'], 
                                 name,
                                 quote
                             });
+                            cont++;
+                            if(cont == 3 && betType.type == '1X2') break;
                         }
                     }
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     stake.bets.push(betTemp);
                     console.log('//////// STAKE LENGTH ', stake.bets.length)
                 } catch (error) {

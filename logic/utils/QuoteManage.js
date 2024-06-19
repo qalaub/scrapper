@@ -41,6 +41,12 @@ class QuoteManager {
         'Total de puntos - Set 3',
         'Total de asaltos',
         'Total de carreras',
+        'Total de goles - Tiempo reglamentario',
+        'Total de goles - Periodo 1',
+        'Total de goles - Periodo 2',
+        'Total de goles - Periodo 3',
+        'Total de puntos - Prórroga incluida',
+
     ];
 
     doble = [3, 14, 10];
@@ -103,20 +109,26 @@ class QuoteManager {
                         } else {
                             combinations = quotesArray;
                         }
+
                         let calculator = this.defaultCalculate;
-                        if (categoryActual.current == 'football' && !combinate) {
-                            if (betType != 'Hándicap 3-Way') calculator = calculateTotalGol;
-                            if (betType == 'Hándicap 3-Way') { }
-                        } else if (categoryActual.current == 'basketball' && !combinate) {
-                            calculator = calculateTotalGol;
-                        } else if (categoryActual.current == 'tennis' && !combinate) {
-                            calculator = calculateTotalGol;
-                        } else if (categoryActual.current == 'volleyball' && !combinate) {
-                            calculator = calculateTotalGol;
-                        } else if (categoryActual.current == 'baseball' && !combinate) {
-                            calculator = calculateTotalGol;
-                        } else if (categoryActual.current == 'ufc_mma' && !combinate) {
-                            calculator = calculateTotalGol;
+                        const sportsToCalculateTotalGol = [
+                            'football',
+                            'basketball',
+                            'tennis',
+                            'volleyball',
+                            'baseball',
+                            'ufc_mma',
+                            'ice_hockey',
+                            'american_football',
+                            'cricket'
+                        ];
+
+                        if (sportsToCalculateTotalGol.includes(categoryActual.current) && !combinate) {
+                            if (categoryActual.current == 'football' && betType != 'Hándicap 3-Way') {
+                                calculator = calculateTotalGol;
+                            } else if (categoryActual.current != 'football') {
+                                calculator = calculateTotalGol;
+                            }
                         }
 
                         const surebetResults = calculator(combinations, data, url, betType);
@@ -197,6 +209,12 @@ class QuoteManager {
                         break;
                     case 181:
                         name = 'No'
+                        break;
+                    case 402:
+                        name = 'G2'
+                        break;
+                    case 401:
+                        name = 'G1'
                         break;
                 }
                 return name;  // Retorna el número sin cambios

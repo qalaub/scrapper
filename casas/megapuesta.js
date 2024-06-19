@@ -61,7 +61,7 @@ const permit1 = [
     'Total Puntos Cuarto 4',
     'Total de Juegos',
     'Total de Juegos Set 1',
-    'Total Puntos'
+    'Total Puntos',
 ];
 
 const permit2 = [
@@ -126,7 +126,7 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
                         await page.waitForTimeout(1000);
                         let types = await page.locator(locatorBet).all();
                         for (const type of types) {
-                            const regexPattern = `^(${betType.type}) \\d+\\.\\d+$`;
+                            const regexPattern = `^(${betType.type.replace(/[\(\)\.\+\?\[\]\{\}\\]/g, '\\$&')}) \\d+\\.\\d+$`;
                             const regex = new RegExp(regexPattern);
                             const text = await type.textContent();
                             if (regex.test(text)) {
@@ -184,7 +184,7 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
                     }
 
                     betMegapuesta.bets.push(betTemp);
-                    // console.log(betTemp)
+                    console.log(betTemp)
                     console.log('//////// MEGAPUESTA LENGTH ', betMegapuesta.bets.length)
                 } catch (error) {
                     // console.log(error)

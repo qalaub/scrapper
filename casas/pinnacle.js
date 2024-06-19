@@ -1,15 +1,12 @@
 const { timeouts } = require("../const/timeouts");
-const { groupAndReduceBetsByType } = require("../logic/surebets");
-const { buscar, excludes, selectMoreOption } = require("../logic/utils/buscar");
+const { excludes, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
 const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    obtenerObjetoPorTipo,
     matchnames,
     initBrowser,
     scrollToBottom,
-    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
 async function buscarApi(match) {
@@ -73,7 +70,11 @@ const permit1 = [
     'Total (Puntos) – 1.º set',
     'Total (Puntos) – 2.º set',
     'Total (Puntos) – 3.º set',
-    'Total – Partido',
+    'Total – Tiempo reglamentario',
+    'Total – 3.er periodo',
+    'Total – 2.º periodo',
+    'Total – 1.er periodo',
+    'Total – Partido'
 ];
 
 const permit2 = [
@@ -156,7 +157,7 @@ async function getPinnacleApi(name, types, n, team1) {
                         bets: betTemp,
                     })
                     console.log('//////// PINNACLE LENGTH ', bets.length)
-                    // console.log(betTemp)
+                    console.log(betTemp)
                 } catch (error) {
                     // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')

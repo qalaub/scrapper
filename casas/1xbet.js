@@ -314,11 +314,89 @@ function getType1xbetBaseball(input, type) {
     if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
 }
 
+function getType1xbetIceHockey(input, type) {
+    const typeMappings = {
+        '1x2': 1,
+        1: '1x2',
+        'Total': 17,
+        17: 'Total',
+        'Ambos equipos anotarán': 19,
+        19: 'Ambos equipos anotarán',
+        'Victoria con portería a cero': 852,
+        852: 'Victoria con portería a cero',
+        'llega a 2 goles': 60,
+        60: 'llega a 2 goles',
+        'llega a 3 goles': 61,
+        61: 'llega a 3 goles',
+        'llega a 4 goles': 62,
+        62: 'llega a 4 goles',
+        'llega a 5 goles': 63,
+        63: 'llega a 5 goles',
+    }
+
+    const periodo1 = {
+        '1x2. 1 Periodo': 1,
+        1: '1x2. 1 Periodo',
+        'Total. 1 Periodo': 17,
+        17: 'Total. 1 Periodo',
+        'Ambos equipos anotarán. 1 Periodo': 19,
+        19: 'Ambos equipos anotarán. 1 Periodo',
+    }
+
+    const periodo2 = {
+        '1x2. 2 Periodo': 1,
+        1: '1x2. 2 Periodo',
+        'Total. 2 Periodo': 17,
+        17: 'Total. 2 Periodo',
+        'Ambos equipos anotarán. 2 Periodo': 19,
+        19: 'Ambos equipos anotarán. 2 Periodo',
+    }
+
+    const periodo3 = {
+        '1x2. 3 Periodo': 1,
+        1: '1x2. 3 Periodo',
+        'Total. 3 Periodo': 17,
+        17: 'Total. 3 Periodo',
+        'Ambos equipos anotarán. 3 Periodo': 19,
+        19: 'Ambos equipos anotarán. 3 Periodo',
+    }
+
+    if (type == '1 Periodo') return periodo1[input] || null;
+    if (type == '2 Periodo') return periodo2[input] || null;
+    if (type == '3 Periodo') return periodo3[input] || null;
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
+function getType1xbetAmericanFootball(input, type) {
+    const typeMappings = {
+        '1x2': 1,
+        1: '1x2',
+        'Total': 17,
+        17: 'Total',
+    }
+
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
+function getType1xbetCricket(input, type) {
+    const typeMappings = {
+        'Quién ganará el sorteo': 2804,
+        2804: 'Quién ganará el sorteo',
+        'Victoria del equipo': 101,
+        101: 'Victoria del equipo',
+    }
+
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
 module.exports = {
     get1xBetApi,
     getType1xbet,
     getType1xbetBasketball,
     getType1xbetTennis,
     getType1xbetVolleyball,
-    getType1xbetBaseball
+    getType1xbetBaseball,
+    getType1xbetIceHockey,
+    getType1xbetAmericanFootball,
+    getType1xbetCricket
 }
