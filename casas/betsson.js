@@ -10,6 +10,7 @@ const {
 
 const buscarQ = async (page, query) => {
     try {
+        query = query.replace(',', '')
         const ignore = await page.getByText('Ignore');
         if (await ignore.first().isVisible()) await ignore.first().click();
         const close = page.locator('(//span[@obg-icon="close-gen2"])[1]');
@@ -17,7 +18,7 @@ const buscarQ = async (page, query) => {
         const searchB = await page.locator('xpath=//button[@test-id ="sportsbook-search.button"]').first();
         await searchB.click();
         const search = await page.locator('xpath=//*[@id="mat-input-0"]').first();
-        await search.fill(query.length > 2 ? query : query + " 000");
+        await search.fill(query.length > 2 ? query : query + "  ");
         await search.press('Space');
         await page.waitForTimeout(2000);
         const noResultLocator = await page.getByText('No se encontraron resultados coincidentes para');
@@ -49,7 +50,7 @@ const intentarEncontrarOpcion = async (page, match) => {
                 match = quitarTildes(match.replace(' - ', ' '));
                 let text = quitarTildes(local + ' ' + away);
                 const p = await tienenPalabrasEnComunDinamico(match, text);
-                // console.log(text)
+                console.log(text)
                 if (p.pass) pass.push({
                     similarity: p.similarity,
                     name: text,
@@ -173,12 +174,12 @@ async function getResultsBetsson(match, betTypes = ['ganador del partido'], n) {
                         }
                     }
                     betsson.bets.push(betTemp);
-                    console.log(betTemp);
+                    // console.log(betTemp);
                     await page.mouse.wheel(0, scroll / 2);
                     console.log('//////// BETSON LENGTH', betsson.bets.length)
                 } catch (error) {
                     // console.log(error)
-                    console.log('ERRO AL ENCONTRAR APUESTA')
+                    console.log('ERROR AL ENCONTRAR APUESTA')
                 }
                 cont++;
             }

@@ -116,6 +116,7 @@ const typeToSelector = {
     'Más hits': 'Otros',
     'Resultado - 1.er período': 'Mercados de períodos', 
     'Primer equipo que marca un gol': 'Mercados de goles', 
+    'Break más alto - jugador': 'Mercados de breaks'
 };
 
 
@@ -201,7 +202,7 @@ async function getMarathonApi(name, types, n, team1) {
                             type: type.type,
                             bets: betTemp,
                         })
-                        console.log(betTemp);
+                        // console.log(betTemp);
                         console.log('//////// MARATHONBET LENGTH ', bets.length);
                     } catch (error) {
                         // console.log(error)

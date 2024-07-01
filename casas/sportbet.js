@@ -39,7 +39,7 @@ const intentarEncontrarOpcion = async (page, match) => {
             text2: opt.text,
             etiqueta: 1
         });
-        console.log('BETBORO: ', match, opt.text);
+        console.log('SPORTBET: ', match, opt.text);
         await opt.opcion.waitFor({ state: 'visible' });
         await opt.opcion.click();
         return true;
@@ -156,18 +156,18 @@ async function getResultsSportbet(match, betTypes = ['Resultado Tiempo Completo'
                     // if (type == ' Hándicap 3 opciones') console.log(betTemp)
                     // console.log(betTemp)
                     betBoro.bets.push(betTemp);
-                    console.log('//////// BETBORO LENGTH ', betBoro.bets.length)
+                    console.log('//////// SPOERTBET LENGTH ', betBoro.bets.length)
                 } catch (error) {
                     // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
 
             }
-            console.log('//////////////////// BETBORO //////////////////')
-            console.log('//////////////////// BETBORO //////////////////')
+            console.log('//////////////////// SPOERTBET //////////////////')
+            console.log('//////////////////// SPOERTBET //////////////////')
             return betBoro;
         } catch (error) {
-            console.log('ERRPR BETBORO BETBORO BETBORO BETBORO ERRPR');
+            console.log('ERROR SPOERTBET SPOERTBET SPOERTBET SPOERTBET ERROR');
             console.log(error);
             // await page.close();
         }

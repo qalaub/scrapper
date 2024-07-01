@@ -4,7 +4,6 @@ const { getResultsBetsson } = require("./betsson");
 const { getResultsBetwinner } = require("./betwinner");
 const { getCodereApi } = require("./codere");
 const { getFullretoApi } = require("./fullreto");
-const { getUnibetApi } = require("./unibet");
 const { getLuckiaApi } = require("./luckia");
 const { getResultsMegapuesta } = require("./megapuesta");
 const { getResultsSportium } = require("./sportium");
@@ -14,9 +13,7 @@ const {
     closeBrowser,
     dividirArregloEnDosSubarreglos,
     matchnames,
-    categoryActual,
-    tienenPalabrasEnComunDinamicoT,
-    tienenPalabrasEnComunDinamico } = require("./utils");
+    categoryActual, } = require("./utils");
 const { getResultsWonder } = require("./wonderbet");
 const { getResultsWPlay } = require("./wplay");
 const { getResultsYaJuegos } = require("./yajuegos");
@@ -42,6 +39,10 @@ const {
     idsAmericanFootball,
     betTypesCricket,
     idsCricket,
+    betTypesSnooker,
+    idsSnooker,
+    betTypesTableTennis,
+    idsTableTennis,
 } = require("../logic/constantes");
 const { QuoteManager } = require("../logic/utils/QuoteManage");
 const { getPinnacleApi } = require("./pinnacle");
@@ -51,14 +52,12 @@ const { getResultsBwin } = require("./bwin");
 const { getLsbetApi } = require("./lsbet");
 const { getResultsGgbet } = require("./ggbet");
 const { getMarathonApi } = require("./marathonbet");
-const { getResultsLeon } = require("./leon");
 const { getResultsStake } = require("./stake");
 const { getResults1bet } = require("./1bet");
-const { getResultsBcgame } = require("./bcgame");
-const { getResultsMystake } = require("./mystake");
 const { getResultsCloudbet } = require("./cloudbet");
-const { getResultsBluebet, getResultsSuprabet } = require("./suprabet");
-const { getIvibetApi } = require("./ivibet");
+const { getResultsSuprabet } = require("./suprabet");
+const { getResultsIvibet } = require("./ivibet");
+const { getMostbetApi } = require("./mostbet");
 const types = {
     football: {
         types: betTypesFootball,
@@ -95,8 +94,31 @@ const types = {
     'american_football': {
         types: betTypesAmericanFootball,
         ids: idsAmericanFootball,
-    }
+    },
+    snooker: {
+        types: betTypesSnooker,
+        ids: idsSnooker,
+    },
+    'table_tennis': {
+        types: betTypesTableTennis,
+        ids: idsTableTennis,
+    },
 }
+
+const timeMargins = {
+    'snooker': { duration: 120, lessThan: 30, betweenStart: 90, betweenEnd: 120 },
+    'ufc_mma': { duration: 15, lessThan: 5, betweenStart: 10, betweenEnd: 15 },
+    'table_tennis': { duration: 30, lessThan: 10, betweenStart: 20, betweenEnd: 30 },
+    'american_football': { duration: 60, lessThan: 20, betweenStart: 45, betweenEnd: 60 },
+    'cricket': { duration: 300, lessThan: 60, betweenStart: 240, betweenEnd: 300 },
+    'volleyball': { duration: 60, lessThan: 20, betweenStart: 45, betweenEnd: 60 },
+    'ice_hockey': { duration: 60, lessThan: 20, betweenStart: 45, betweenEnd: 60 },
+    'basketball': { duration: 48, lessThan: 15, betweenStart: 35, betweenEnd: 48 },
+    'tennis': { duration: 180, lessThan: 60, betweenStart: 120, betweenEnd: 180 },
+    'baseball': { duration: 180, lessThan: 60, betweenStart: 120, betweenEnd: 180 },
+    'football': { duration: 90, lessThan: 30, betweenStart: 50, betweenEnd: 75 } // 'football' se refiere al fútbol/soccer
+};
+
 
 async function execute() {
     categoryActual.isLive = false;
@@ -113,8 +135,8 @@ async function execute() {
         const quoteManager = new QuoteManager();
         let surebets = [];
         let cont = 0;
-        // eventOdd = eventOdd.filter(e => e.event.name.includes('Uzbekistan'));
-        // console.log(eventOdd.length)
+        // eventOdd = eventOdd.filter(e => e.event.name.includes('Gilbert, David - Xu Si'));
+        console.log(eventOdd.length)
         for (const event of eventOdd) {
             // Fecha y hora en formato UTC
             const fechaUTC = new Date(event.event.start);
@@ -123,18 +145,33 @@ async function execute() {
                 const differenceInMilliseconds = Math.abs(inicio - fechaUTC);
                 // Convertir la diferencia a minutos
                 const differenceInMinutes = differenceInMilliseconds / (1000 * 60);
-                // Comprobar si la diferencia es de 70 minutos o menos
-                const isDifference70MinutesOrLess = differenceInMinutes <= 70;
-
-                // Añadir condiciones para los rangos específicos
-                const isLessThan30Minutes = differenceInMinutes < 30;
-                const isBetween50And70Minutes = differenceInMinutes > 50 && differenceInMinutes <= 70;
-
-                console.log(isDifference70MinutesOrLess);  // Devolverá true o false
-
+            
+                // Obtener los márgenes y rangos de tiempo para la categoría actual
+                const { duration = 0, lessThan = 0, betweenStart = 0, betweenEnd = 0 } = timeMargins[category] || {};
+            
+                // Comprobar si la diferencia es menor o igual a la duración total del deporte
+                const isDifferenceWithinDuration = differenceInMinutes <= duration;
+            
+                // Añadir condiciones para los rangos específicos según la categoría
+                const isLessThanTime = differenceInMinutes < lessThan;
+                const isBetweenTimes = differenceInMinutes >= betweenStart && differenceInMinutes <= betweenEnd;
+            
+                // Depuración para verificar valores
+                console.log(`differenceInMinutes: ${differenceInMinutes}`);
+                console.log(`isLessThanTime: ${isLessThanTime}`);
+                console.log(`isBetweenTimes: ${isBetweenTimes}`);
+                console.log(`isDifferenceWithinDuration: ${isDifferenceWithinDuration}`);
+                console.log(`Márgenes para ${category}: lessThan=${lessThan}, betweenStart=${betweenStart}, betweenEnd=${betweenEnd}`);
+            
                 // Verificar si cumple cualquiera de las condiciones
-                if (!(isDifference70MinutesOrLess && (isLessThan30Minutes || isBetween50And70Minutes))) continue;
+                if (isDifferenceWithinDuration && (isLessThanTime || isBetweenTimes)) {
+                    console.log("Partido considerado");
+                } else {
+                    console.log("Partido no considerado");
+                    continue;
+                }
             }
+            
 
             fechaUTC.setHours(fechaUTC.getHours() - 5);
             const data = {
@@ -143,7 +180,7 @@ async function execute() {
                 start: fechaUTC,
                 category
             };
-            // quoteManager.addQuotes([await getIvibetApi('Novorizontino-SP - Amazonas-AM', betTypes.ivibet, n, '', 'Toronto Blue Jays')], types[category].types, data);
+            // quoteManager.addQuotes([await getBetPlayApi('1021103523', betTypes.betplay, n, '', 'Toronto Blue Jays')], types[category].types, data);
             // break;
             console.log('///////////////// ejecucion pair ' + n);
             const urls = ['', '']// await getUrlsTeams(data.team1, data.team2, n); // 
@@ -159,7 +196,6 @@ async function execute() {
                     getResultsBetsson(name, betTypes.betsson, n),
                     getResultsBetwinner(name, betTypes['1xbet'], n, 'betwinner', data.team1),
                     getResultsBetboro(name, betTypes.betboro, n, data.team1),
-                    getResultsCloudbet(name, betTypes.cloudbet, n, data.team1),
                 ]);
 
                 const results3 = await Promise.all([
@@ -168,6 +204,7 @@ async function execute() {
                     getLuckiaApi(name, betTypes.luckia, n),
                     getResultsSportium(name, betTypes.sportium, n, data.team1),
                     getResultsZamba(name, betTypes.zamba, n),
+                    getResultsSuprabet(name, betTypes.suprabet, n),
                 ]);
 
                 const results2 = await Promise.all([
@@ -176,7 +213,6 @@ async function execute() {
                     getFullretoApi(name, betTypes.fullreto, n, data.team1),
                     getResultsDafabet(name, betTypes.dafabet, n),
                     getResults1bet(name, betTypes.unobet, n, data.team1),
-                    getResultsStake(name, betTypes.stake, n, data.team1),
                 ]);
 
                 const results4 = await Promise.all([
@@ -184,15 +220,23 @@ async function execute() {
                     getCashwinApi(name, betTypes.cashwin, n),
                     getResultsBwin(name, betTypes.bwin, n),
                     getLsbetApi(name, betTypes.lsbet, n),
-                    getResultsGgbet(name, betTypes.ggbet, n),
                     getMarathonApi(name, betTypes.marathon, n, data.team1),
                 ]);
 
-                for (let i = 0; i < 1; i++) {
+                const results5 = await Promise.all([
+                    getResultsStake(name, betTypes.stake, n, data.team1),
+                    // getResultsCloudbet(name, betTypes.cloudbet, n, data.team1),
+                    getResultsIvibet(name, betTypes.ivibet, n),
+                    getResultsGgbet(name, betTypes.ggbet, n),
+                    getMostbetApi(name, betTypes.mostbet, n),
+                ]);
+
+                for (let i = 0; i < 3; i++) {
                     quoteManager.addQuotes(results1, types[category].types, data);
                     quoteManager.addQuotes(results2, types[category].types, data);
                     quoteManager.addQuotes(results3, types[category].types, data);
                     quoteManager.addQuotes(results4, types[category].types, data);
+                    quoteManager.addQuotes(results5, types[category].types, data);
                 }
             } else {
                 const results1 = await Promise.all([
@@ -213,7 +257,6 @@ async function execute() {
 
             const surebet = await quoteManager.processSurebets(data, url, types[category].ids);
             surebets.push(surebet);
-            // console.log(surebet)
             quoteManager.clearQuotes();
             if (cont % 20 == 0 && cont != 0) {
                 await createJSON('surebet_' + category + n + '_' + cont, surebets);

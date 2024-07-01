@@ -103,7 +103,7 @@ async function getLsbetApi(name, types) {
                     }
                 });
                 console.log('//////////////////// LSBET //////////////////')
-                console.log(filter);
+                // console.log(filter);
                 console.log('//////////////////// LSBET //////////////////')
                 return {
                     nombre: 'lsbet',

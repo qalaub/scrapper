@@ -1,17 +1,18 @@
 
 const categories = [
-    'football',
-    'cricket',
+    'snooker',
     'ufc_mma',
-    'basketball',
+    'table_tennis',
+    'american_football',
+    'cricket',
     'volleyball',
+    'ice_hockey',
+    'football',
+    'basketball',
     'tennis',
     'baseball',
-    'ice_hockey',
-    'american_football',
     /*/ 
-      
- /*/
+    /*/
 ];
 
 const betTypesFootball = [
@@ -158,6 +159,23 @@ const betTypesCricket = [
     'Wicket - Over 1',
 ];
 
+const betTypesSnooker = [
+    'Cuotas del partido',
+    'Total de Partidas',
+    'Total Century breaks',
+    'Break más elevado',
+    'Set 1',
+    'Total de puntos - Partida 1',
+    'Tacada +50 en el set 1',
+    'Tacada +100 en el set 1',
+];
+
+const betTypesTableTennis = [
+    'Cuotas del partido',
+    'Total de juegos'
+];
+
+
 const idsFootball = {};
 for (let i = 0; i < betTypesFootball.length; i++) {
     idsFootball[betTypesFootball[i]] = i + 1;
@@ -203,6 +221,16 @@ for (let i = 0; i < betTypesCricket.length; i++) {
     idsCricket[betTypesCricket[i]] = i + 1;
 }
 
+const idsSnooker = {};
+for (let i = 0; i < betTypesSnooker.length; i++) {
+    idsSnooker[betTypesSnooker[i]] = i + 1;
+}
+
+const idsTableTennis = {};
+for (let i = 0; i < betTypesTableTennis.length; i++) {
+    idsTableTennis[betTypesTableTennis[i]] = i + 1;
+}
+
 const betDescriptionsFootball = {
     'Total de goles': {
         betplay: 'Total de goles',
@@ -230,7 +258,8 @@ const betDescriptionsFootball = {
         unobet: 'Goles Más/Menos de',
         cloudbet: 'Total',
         suprabet: 'Total de goles',
-        ivibet: '882'
+        ivibet: 'Total',
+        mostbet: 'Total'
     },
     'Tiempo reglamentario': {
         betplay: 'Tiempo reglamentario',
@@ -258,7 +287,8 @@ const betDescriptionsFootball = {
         unobet: 'Resultado del encuentro',
         cloudbet: 'Resultado a tiempo completo',
         suprabet: 'Resultado del Partido',
-        ivibet: '1'
+        ivibet: '1x2',
+        mostbet: '1x2. Resultado final',
     },
     'Doble Oportunidad': {
         betplay: 'Doble Oportunidad',
@@ -283,7 +313,9 @@ const betDescriptionsFootball = {
         leon: 'Doble oportunidad',
         stake: 'Doble Oportunidad',
         unobet: 'Doble oportunidad',
-        suprabet: 'Doble Oportunidad'
+        suprabet: 'Doble Oportunidad',
+        ivibet: 'Doble oportunidad',
+        mostbet: 'Doble oportunidad'
     },
     'Se clasifica para la siguiente ronda': {
         betplay: 'Se clasifica para la siguiente ronda',
@@ -327,7 +359,9 @@ const betDescriptionsFootball = {
         stake: 'Ambos equipos para anotar',
         unobet: 'Los dos equipos marcan',
         cloudbet: 'Ambos equipos marcan',
-        suprabet: 'Ambos equipos marcan'
+        suprabet: 'Ambos equipos marcan',
+        ivibet: 'Ambos equipos marcan',
+        mostbet: 'Ambos equipos anotarán'
     },
     'Gol en ambas mitades': {
         betplay: 'Gol en ambas mitades',
@@ -347,6 +381,7 @@ const betDescriptionsFootball = {
         bwin: 'Goles que se marcan en ambas partes',
         leon: 'Inicio para anotar en ambas mitades',
         suprabet: 'Goles en ambas mitades',
+        mostbet: 'Gol en los dos tiempos'
     },
     'Total de goles - 2.ª parte': {
         betplay: 'Total de goles - 2.ª parte',
@@ -368,7 +403,9 @@ const betDescriptionsFootball = {
         leon: '2do tiempo: Más/Menos',
         stake: 'Total 2da mitad',
         cloudbet: '2ª mitad - total de goles',
-        suprabet: '2da mitad Total de goles'
+        suprabet: '2da mitad Total de goles',
+        ivibet: '2º Mitad - total',
+        mostbet: 'Total. Segundo Tiempo'
     },
     'Ambos Equipos Marcarán - 2.ª parte': {
         betplay: 'Ambos Equipos Marcarán - 2.ª parte',
@@ -385,10 +422,11 @@ const betDescriptionsFootball = {
         cashwin: '2nd half - both teams to score',
         bwin: 'Ambos equipos marcan-2º tiempo',
         ggbet: '2º Mitad - ambos equipos marcan',
-        // leon: '',
         stake: 'Ambos equipos a anotar en 2da mitad',
         unobet: 'Los dos equipos marcan en la segunda mitad',
         suprabet: '2da mitad Ambos equipos anotarán',
+        ivibet: '2º Mitad - ambos equipos marcan',
+        mostbet: 'Los dos equipos anotan. Segundo Tiempo'
     },
     'Doble Oportunidad - 2.ª parte': {
         betplay: 'Doble Oportunidad - 2.ª parte',
@@ -397,7 +435,6 @@ const betDescriptionsFootball = {
         luckia: '2ª mitad - Doble oportunidad',
         zamba: '2º Mitad - doble oportunidad',
         wonderbet: '2° Tiempo - Doble Oportunidad',
-        // megapuesta: '2ª M Total Goles 0.5',
         fullreto: '2ª Mitad - doble oportunidad',
         betboro: '2da Mitad Doble Oportunidad',
         cashwin: '2nd half - total',
@@ -405,7 +442,9 @@ const betDescriptionsFootball = {
         ggbet: '2nd half  - Double chance',
         leon: '2do tiempo: Doble Oportunidads',
         unobet: 'Doble oportunidad, segunda mitad',
-        suprabet: '2da Mitad Doble Oportunidad'
+        suprabet: '2da Mitad Doble Oportunidad',
+        ivibet: '2º Mitad - hándicap',
+        mostbet: 'Oportunidad doble  (1X – 12 – X2). Segundo Tiempo',
     },
     '2.ª parte': {
         betplay: '2.ª parte',
@@ -431,6 +470,8 @@ const betDescriptionsFootball = {
         unobet: 'Resultado de la segunda mitad',
         cloudbet: '2ª mitad - 1x2',
         suprabet: 'Resultado de la Segunda Mitad',
+        ivibet: '2º Mitad - 1x2',
+        mostbet: '1x2. Resultado del 2 º tiempo',
     },
     '1.ª parte': {
         betplay: '1.ª parte',
@@ -455,7 +496,9 @@ const betDescriptionsFootball = {
         stake: 'Resultado 1er mitad',
         unobet: 'Resultado en el descanso',
         cloudbet: 'Resultado al descanso',
-        suprabet: 'Resultado de la 1ra mitad'
+        suprabet: 'Resultado de la 1ra mitad',
+        ivibet: '1º Mitad - 1x2',
+        mostbet: '1x2. Resultado del 1.er tiempo'
     },
     'Total de goles - 1.ª parte': {
         betplay: 'Total de goles - 1.ª parte',
@@ -481,6 +524,8 @@ const betDescriptionsFootball = {
         unobet: 'Goles Más/Menos de, primera mitad',
         cloudbet: '1ª mitad - total de goles',
         suprabet: 'Total de Goles de la 1ra mitad',
+        ivibet: '1º Mitad - total',
+        mostbet: 'Total - Primer Tiempo'
     },
     'Ambos Equipos Marcarán - 1.ª parte': {
         betplay: 'Ambos Equipos Marcarán - 1.ª parte',
@@ -505,6 +550,8 @@ const betDescriptionsFootball = {
         unobet: 'Los dos equipos marcan en la primera mitad',
         cloudbet: '1ª mitad- ambos equipos marcan',
         suprabet: '1ra mitad: Ambos Equipos Anotarán',
+        ivibet: '1º Mitad - ambos equipos marcan',
+        mostbet: 'Primer tiempo - Los dos equipos anotan'
     },
     'Doble Oportunidad - 1.ª parte': {
         betplay: 'Doble Oportunidad - 1.ª parte',
@@ -527,7 +574,9 @@ const betDescriptionsFootball = {
         leon: '1.er tiempo: Doble Oportunidad',
         unobet: 'Doble oportunidad, primera mitad',
         cloudbet: '1ª mitad - Doble oportunidad',
-        suprabet: '1ra mitad: Doble Oportunidad'
+        suprabet: '1ra mitad: Doble Oportunidad',
+        ivibet: '1º Mitad - doble oportunidad',
+        mostbet: 'Oportunidad Doble (1X – 12 – X2) - Primer Tiempo'
     },
     'Total de Tiros de Esquina': {
         betplay: 'Total de Tiros de Esquina',
@@ -553,6 +602,8 @@ const betDescriptionsFootball = {
         stake: 'Total de esquinas',
         cloudbet: 'Total de córneres',
         suprabet: 'Córneres: Total',
+        ivibet: 'Total córneres',
+        mostbet: 'Total. Saques de esquina'
     },
     'Más Tiros de Esquina': {
         betplay: 'Más Tiros de Esquina',
@@ -578,6 +629,8 @@ const betDescriptionsFootball = {
         unobet: 'Apuesta de córneres del partido',
         cloudbet: 'Córner 1x2',
         suprabet: 'Córneres: Resultado',
+        ivibet: 'Córner 1x2',
+        mostbet: '1x2 . Saques de esquina'
     },
     'Total de tarjetas': {
         betplay: 'Total de tarjetas',
@@ -602,6 +655,7 @@ const betDescriptionsFootball = {
         unobet: 'Total de tarjetas',
         cloudbet: 'Total de tarjetas',
         suprabet: 'Tarjetas Amarillas: Total',
+        mostbet: 'Tarjetas Amarillas - Total'
     },
     'Tarjeta Roja mostrada': {
         betplay: 'Tarjeta Roja mostrada',
@@ -640,6 +694,7 @@ const betDescriptionsFootball = {
         stake: 'Linea de tarjetas amarillas',
         unobet: 'Equipo con más tarjetas',
         cloudbet: 'Tarjeta 1x2',
+        mostbet: 'Tarjetas Amarillas - 1x2'
     },
     'Total de Tiros de Esquina - 1.ª parte': {
         betplay: 'Total de Tiros de Esquina - 1.ª parte',
@@ -712,7 +767,9 @@ const betDescriptionsBasketball = {
         stake: '1X2',
         unobet: 'A ganar',
         cloudbet: 'Líneas de juego',
-        suprabet: 'Ganador del Partido'
+        suprabet: 'Ganador del Partido',
+        ivibet: 'Ganador (incl. prórroga)',
+        mostbet: 'Ganador (Incluido tiempo adicional)'
     },
     'Total de puntos - Prórroga incluida': {
         betplay: 'Total de puntos - Prórroga incluida',
@@ -738,7 +795,9 @@ const betDescriptionsBasketball = {
         stake: 'Total',
         unobet: 'Total',
         cloudbet: 'Total (incluye prórroga) - Líneas alternativas',
-        suprabet: 'Total de puntos'
+        suprabet: 'Total de puntos',
+        ivibet: 'Total (incl. prórroga)',
+        mostbet: 'Total (incluido tiempo adicional)'
     },
     'Cuarto 1': {
         betplay: 'Cuarto 1',
@@ -760,7 +819,9 @@ const betDescriptionsBasketball = {
         stake: 'Resultado 1er cuarto',
         unobet: 'Línea de dinero, 1.er cuarto, 3 opciones',
         cloudbet: 'Cuarto 1 - 1x2',
-        suprabet: '1ra Cuarto Resultado (3 opciones)'
+        suprabet: '1ra Cuarto Resultado (3 opciones)',
+        ivibet: '1º cuarto - 1x2',
+        mostbet: '1 Cuarto - 1x2',
     },
     'Apuesta sin empate - Cuarto 1': {
         betplay: 'Apuesta sin empate - Cuarto 1',
@@ -779,7 +840,8 @@ const betDescriptionsBasketball = {
         ggbet: '1st quarter - Draw no bet',
         leon: '1er Cuarto: Medio tiempo',
         unobet: 'Línea de dinero, 1.er cuarto',
-        suprabet: '1ra Cuarto Ganador (2 opciones)'
+        suprabet: '1ra Cuarto Ganador (2 opciones)',
+        ivibet: '1º cuarto - apuesta sin empate',
     },
     'Total de puntos - Cuarto 1': {
         betplay: 'Total de puntos - Cuarto 1',
@@ -805,7 +867,9 @@ const betDescriptionsBasketball = {
         stake: 'Total 1er cuarto',
         unobet: 'Total del 1.er cuarto',
         cloudbet: 'Cuarto 1 - total',
-        suprabet: '1ra Cuarto Total de puntos'
+        suprabet: '1ra Cuarto Total de puntos',
+        ivibet: '1º cuarto - total',
+        mostbet: '1 cuarto - Total',
     },
     'Cuarto 2': {
         betplay: 'Cuarto 2',
@@ -826,6 +890,8 @@ const betDescriptionsBasketball = {
         leon: '2do Trimestre: Resultado',
         unobet: 'Línea de dinero, 2.º cuarto, 3 opciones',
         cloudbet: 'Cuarto 2 - 1x2',
+        ivibet: '2º cuarto - 1x2',
+        mostbet: '2 Cuarto - 1x2',
     },
     'Apuesta sin empate - Cuarto 2': {
         betplay: 'Apuesta sin empate - Cuarto 2',
@@ -840,7 +906,8 @@ const betDescriptionsBasketball = {
         dafabet: 'Ganador - 2º Cuarto',
         cashwin: 'Second quarter - draw no bet',
         ggbet: '2nd quarter - Draw no bet',
-        unobet: 'Línea de dinero, 2.º cuarto'
+        unobet: 'Línea de dinero, 2.º cuarto',
+        ivibet: '2º cuarto - apuesta sin empate',
     },
     'Total de puntos - Cuarto 2': {
         betplay: 'Total de puntos - Cuarto 2',
@@ -861,6 +928,8 @@ const betDescriptionsBasketball = {
         leon: '2do Cuarto: Más/Menos',
         unobet: 'Total del 2.º cuarto',
         cloudbet: 'Cuarto 2 - total',
+        ivibet: '2º cuarto - total',
+        mostbet: '2 cuarto - Total',
     },
     '1.ª parte': {
         betplay: '1.ª parte',
@@ -881,7 +950,9 @@ const betDescriptionsBasketball = {
         stake: 'Resultado 1er mitad',
         unobet: 'Línea de dinero, 1.ª mitad, 3 opciones',
         cloudbet: '1ª mitad - 1x2',
-        suprabet: '1ra Mitad: Resultado (3 opciones)'
+        suprabet: '1ra Mitad: Resultado (3 opciones)',
+        ivibet: '1º Mitad - 1x2',
+        mostbet: '1 ª mitad - 1x2',
     },
     'Apuesta sin empate - 1.ª parte': {
         betplay: 'Apuesta sin empate - 1.ª parte',
@@ -900,7 +971,8 @@ const betDescriptionsBasketball = {
         leon: '1era mitad: línea de dinero',
         unobet: 'Línea de dinero, 1.ª mitad',
         cloudbet: '1ª mitad - Empate anula apuesta',
-        suprabet: '1ra Mitad: Ganador (2 opciones)'
+        suprabet: '1ra Mitad: Ganador (2 opciones)',
+        ivibet: '1º Mitad - Apuesta sin empate'
     },
     'Total de puntos - 1.ª parte': {
         betplay: 'Total de puntos - 1.ª parte',
@@ -923,7 +995,9 @@ const betDescriptionsBasketball = {
         stake: 'Total 1er mitad',
         unobet: 'Total de la 1.ª mitad',
         cloudbet: '1ª mitad - total',
-        suprabet: '1ra Mitad Total de Puntos'
+        suprabet: '1ra Mitad Total de Puntos',
+        ivibet: '1º Mitad - total',
+        mostbet: '1 ª mitad - total',
     },
     'Cuarto 3': {
         betplay: 'Cuarto 3',
@@ -944,6 +1018,8 @@ const betDescriptionsBasketball = {
         leon: '3er Trimestre: Resultado',
         unobet: 'Línea de dinero, 3.er cuarto, 3 opciones',
         cloudbet: 'Cuarto 3 - 1x2',
+        ivibet: '3º cuarto - 1x2',
+        mostbet: '3 Cuarto - 1x2',
     },
     'Apuesta sin empate - Cuarto 3': {
         betplay: 'Apuesta sin empate - Cuarto 3',
@@ -958,7 +1034,8 @@ const betDescriptionsBasketball = {
         dafabet: 'Ganador - 3º Cuarto',
         cashwin: 'Third quarter - draw no bet',
         ggbet: '3rd quarter - Draw no bet',
-        unobet: 'Línea de dinero, 3.er cuarto'
+        unobet: 'Línea de dinero, 3.er cuarto',
+        ivibet: '3º cuarto - apuesta sin empate',
     },
     'Total de puntos - Cuarto 3': {
         betplay: 'Total de puntos - Cuarto 3',
@@ -978,6 +1055,8 @@ const betDescriptionsBasketball = {
         leon: '3er Cuarto: Más/Menos',
         unobet: 'Total del 3.er cuarto',
         cloudbet: 'Cuarto 3 - total',
+        ivibet: '3º cuarto - total',
+        mostbet: '3 cuarto - Total',
     },
     'Cuarto 4': {
         betplay: 'Cuarto 4',
@@ -996,6 +1075,8 @@ const betDescriptionsBasketball = {
         ggbet: '4th cuarto - 1x2',
         unobet: 'Línea de dinero, 4.º cuarto, 3 opciones',
         cloudbet: 'Cuarto 4 - 1x2',
+        ivibet: '4º cuarto - 1x2',
+        mostbet: '4 Cuarto - 1x2',
     },
     'Apuesta sin empate - Cuarto 4': {
         betplay: 'Apuesta sin empate - Cuarto 4',
@@ -1011,6 +1092,7 @@ const betDescriptionsBasketball = {
         cashwin: 'Fourth quarter - draw no bet',
         ggbet: '4th quarter - Draw no bet',
         unobet: 'Línea de dinero, 4.º cuarto',
+        ivibet: '4º cuarto - apuesta sin empate',
     },
     'Total de puntos - Cuarto 4': {
         betplay: 'Total de puntos - Cuarto 4',
@@ -1030,6 +1112,8 @@ const betDescriptionsBasketball = {
         leon: '4to Cuarto: Más/Menos (Tiempo regular)',
         unobet: 'Total del 4.º cuarto',
         cloudbet: 'Cuarto 4 - total',
+        ivibet: '4º cuarto - total',
+        mostbet: '4 cuarto - Total',
     },
     'Apuesta sin empate - 2.ª parte': {
         betplay: '2.ª parte',
@@ -1045,6 +1129,7 @@ const betDescriptionsBasketball = {
         cashwin: '2nd half - draw no bet',
         ggbet: '2º Mitad - Apuesta sin empate',
         unobet: 'Línea de dinero, 2.ª mitad',
+        ivibet: '2º mitad - apuesta sin empate (incl. prórroga)'
     },
     'Total de puntos - 2.ª parte': {
         betplay: 'Total de puntos - 2.ª parte',
@@ -1063,7 +1148,9 @@ const betDescriptionsBasketball = {
         marathon: 'Total de puntos - 2.ª mitad',
         ggbet: '2º Mitad - total',
         unobet: 'Total de la 2.ª mitad',
-        cloudbet: '2ª mitad - total (no incluye prórroga)'
+        cloudbet: '2ª mitad - total (no incluye prórroga)',
+        ivibet: '2º mitad - total (incl. prórroga)',
+        mostbet: '2 ª mitad - total',
     },
     '2.ª parte': {
         betplay: '2.ª parte',
@@ -1079,7 +1166,9 @@ const betDescriptionsBasketball = {
         ggbet: '2º Mitad - 1x2',
         leon: '2° Tiempo: Resultado (Tiempo reglamentario)',
         unobet: 'Línea de dinero, 2.ª mitad, 3 opciones',
-        cloudbet: '2ª mitad - 1x2'
+        cloudbet: '2ª mitad - 1x2',
+        ivibet: '2º Mitad - 1x2',
+        mostbet: '2 ª mitad - 1x2',
     },
 };
 
@@ -1108,7 +1197,9 @@ const betDescriptionsTennis = {
         stake: '1X2',
         unobet: 'A ganar',
         cloudbet: 'Ganador',
-        suprabet: 'Ganador del Partido'
+        suprabet: 'Ganador del Partido',
+        ivibet: 'Ganador',
+        mostbet: '1x2. Resultado final'
     },
     'Total de juegos': {
         betplay: 'Total de juegos',
@@ -1134,7 +1225,9 @@ const betDescriptionsTennis = {
         stake: 'Total',
         unobet: 'Total de partidos',
         cloudbet: 'Total de juegos (el Super Tie Break cuenta como 1 juego)',
-        suprabet: 'Total de Juegos'
+        suprabet: 'Total de Juegos',
+        ivibet: 'Total juegos',
+        mostbet: 'Total'
     },
     'Total de sets': {
         betplay: 'Total de sets',
@@ -1173,7 +1266,9 @@ const betDescriptionsTennis = {
         stake: 'Ganador 1er sets',
         unobet: 'Ganador del primer set',
         cloudbet: '1 set - ganador',
-        suprabet: '1er set Ganador'
+        suprabet: '1er set Ganador',
+        ivibet: '1º set - ganador',
+        mostbet: '1 set - 1x2',
     },
     'Set 2': {
         betplay: 'Set 2',
@@ -1196,7 +1291,9 @@ const betDescriptionsTennis = {
         leon: 'Conjunto 2 - Ganador',
         unobet: 'Ganador del segundo set',
         cloudbet: '2 set - ganador',
-        suprabet: '2er set Ganador'
+        suprabet: '2er set Ganador',
+        ivibet: '2º set - ganador',
+        mostbet: '2 set - 1x2',
     },
     'Total de juegos - Set 1': {
         betplay: 'Total de juegos - Set 1',
@@ -1217,7 +1314,9 @@ const betDescriptionsTennis = {
         leon: 'Set 1 - Total de juegos Más/Menos',
         unobet: 'Juegos, total del 1.er set',
         cloudbet: 'Total de juegos en el 1 set',
-        suprabet: '1er Set total de juegos'
+        suprabet: '1er Set total de juegos',
+        ivibet: '1º set - total juegos',
+        mostbet: '1 set - total',
     },
     'Total de juegos - Set 2': {
         betplay: 'Total de juegos - Set 2',
@@ -1231,6 +1330,8 @@ const betDescriptionsTennis = {
         ggbet: '2nd set - total games',
         unobet: 'Juegos, total del 2.º set',
         cloudbet: 'Total de juegos en el 2 set',
+        ivibet: '2º set - total juegos',
+        mostbet: '2 set - total',
     },
     'Total de Doble Faltas': {
         betplay: 'Total de Doble Faltas',
@@ -1239,7 +1340,8 @@ const betDescriptionsTennis = {
         betboro: 'Total de Faltas Dobles',
         bwin: '¿Cuántas dobles faltas se producirán en el partido?',
         marathon: 'Total de dobles faltas',
-        unobet: 'Dobles faltas superior / inferior'
+        unobet: 'Dobles faltas superior / inferior',
+        mostbet: 'Double faults - Total'
     },
     'Número total de juegos con quiebre': {
         betplay: 'Número total de juegos con quiebre',
@@ -1256,7 +1358,8 @@ const betDescriptionsTennis = {
         betboro: 'Total de Aces',
         bwin: '¿Cuántos puntos de saque directos (aces) se anotarán en el partido?',
         marathon: 'Total de aces',
-        unobet: 'Aces superior / inferior'
+        unobet: 'Aces superior / inferior',
+        mostbet: 'Aces - Total'
     },
 }
 
@@ -1284,7 +1387,9 @@ const betDescriptionsVolleyball = {
         stake: '1X2',
         unobet: 'Ganar el partido',
         cloudbet: 'Ganador',
-        suprabet: 'Ganador del Partido'
+        suprabet: 'Ganador del Partido',
+        ivibet: 'Ganador',
+        mostbet: '1x2. Resultado final'
     },
     'Total de puntos': {
         betplay: 'Total de puntos',
@@ -1309,6 +1414,8 @@ const betDescriptionsVolleyball = {
         unobet: 'Puntos Más/Menos de',
         cloudbet: 'Total de puntos',
         suprabet: 'Total de puntos',
+        ivibet: 'Total puntos',
+        mostbet: 'Total'
     },
     'Total de sets': {
         betplay: 'Total de sets',
@@ -1321,7 +1428,8 @@ const betDescriptionsVolleyball = {
         stake: 'Total de Sets',
         unobet: 'Total de sets del partido',
         cloudbet: 'Total de sets',
-        suprabet: 'Total de Sets'
+        suprabet: 'Total de Sets',
+        mostbet: 'Numero de sets'
     },
     'Set 1': {
         betplay: 'Set 1',
@@ -1343,7 +1451,9 @@ const betDescriptionsVolleyball = {
         marathon: 'Gana el 1.er set',
         stake: 'Ganador 1er set',
         unobet: '1.er set - A ganar',
-        suprabet: '1er set Ganador'
+        suprabet: '1er set Ganador',
+        ivibet: '1º set - ganador',
+        mostbet: '1 ° set - Ganador',
     },
     'Total de puntos - Set 1': {
         betplay: 'Total de puntos - Set 1',
@@ -1365,7 +1475,9 @@ const betDescriptionsVolleyball = {
         marathon: 'Total de puntos del 1.er set',
         stake: 'Total 1er set',
         unobet: 'Puntos Más/Menos de, 1.er set',
-        suprabet: '1ra Set Total de puntos'
+        suprabet: '1ra Set Total de puntos',
+        ivibet: '1º set - total puntos',
+        mostbet: '1 set - total ',
     },
     'Set 2': {
         betplay: 'Set 2',
@@ -1384,6 +1496,8 @@ const betDescriptionsVolleyball = {
         marathon: 'Gana el 2.º set',
         stake: 'Ganador 2do set',
         unobet: '2.º set - A ganar',
+        ivibet: '2º set - ganador',
+        mostbet: '2 ° set - Ganador',
     },
     'Total de puntos - Set 2': {
         betplay: 'Total de puntos - Set 2',
@@ -1398,6 +1512,8 @@ const betDescriptionsVolleyball = {
         lsbet: '2do Set Puntos Totales Más de / Menos de',
         ggbet: '2nd set - total points',
         marathon: 'Total de puntos del 2.º set',
+        ivibet: '2º set - total puntos',
+        mostbet: '2 set - total ',
     },
     'Set 3': {
         betplay: 'Set 3',
@@ -1416,6 +1532,8 @@ const betDescriptionsVolleyball = {
         marathon: 'Gana el 3.er set',
         stake: 'Ganardor 3er set',
         unobet: '3.er set - A ganar',
+        ivibet: '3º set - ganador',
+        mostbet: '3 ° set - Ganador',
     },
     'Total de puntos - Set 3': {
         betplay: 'Total de puntos - Set 3',
@@ -1430,6 +1548,8 @@ const betDescriptionsVolleyball = {
         lsbet: '3er Set Puntos Totales Más de / Menos de',
         ggbet: '3rd set - total points',
         marathon: 'Total de puntos del 3.er set',
+        ivibet: '3º set - total puntos',
+        mostbet: '3 set - total ',
     },
 }
 
@@ -1455,7 +1575,9 @@ const betDescriptionsBaseball = {
         stake: '1X2',
         unobet: 'A ganar',
         cloudbet: 'Líneas de juego',
-        suprabet: 'Ganador'
+        suprabet: 'Ganador',
+        ivibet: 'Ganador (incl. extra innings)',
+        mostbet: 'Winner '
     },
     'Total de carreras': {
         betplay: 'Total de carreras',
@@ -1478,7 +1600,9 @@ const betDescriptionsBaseball = {
         stake: 'Total',
         unobet: 'Total de carreras',
         cloudbet: 'Total (incluye prórroga) - Líneas alternativas',
-        suprabet: 'Carreras totales'
+        suprabet: 'Carreras totales',
+        ivibet: 'Total (incl. extra innings)',
+        mostbet: 'Total (incluye entradas extra)'
     },
     'Total de carreras - Entrada 1': {
         betplay: 'Total de carreras - Entrada 1',
@@ -1506,6 +1630,7 @@ const betDescriptionsBaseball = {
         pinnacle: 'Team To Score 1st Run',
         lsbet: 'First Team To Scores',
         suprabet: 'Primer equipo en anotar',
+        mostbet: 'Primera carrera'
     },
     'Primeros con 3 Carreras (Empate: Ningún equipo llegará a 3)': {
         betplay: 'Primeros con 3 Carreras (Empate: Ningún equipo llegará a 3)',
@@ -1533,7 +1658,9 @@ const betDescriptionsBaseball = {
         marathon: 'Resultado de la 1.ª entrada',
         unobet: '1.er inning - Línea de dinero, 3 opciones',
         cloudbet: '1 inning - 1x2',
-        suprabet: '1ra Inning resultado'
+        suprabet: '1ra Inning resultado',
+        ivibet: '1º inning - 1x2',
+        mostbet: '1 entrada - 1x2'
     },
     'Ganara después de 3 entradas': {
         betplay: 'Ganara después de 3 entradas',
@@ -1568,7 +1695,9 @@ const betDescriptionsMMA = {
         stake: '1X2',
         unobet: 'Ganar un combate',
         cloudbet: 'Ganador de pelea',
-        suprabet: 'Ganador'
+        suprabet: 'Ganador',
+        ivibet: 'Ganador',
+        mostbet: 'Ganador'
     },
     'Total de asaltos': {
         betplay: 'Total de asaltos',
@@ -1586,6 +1715,7 @@ const betDescriptionsMMA = {
         stake: 'Total de rondas',
         unobet: 'Asaltos totales',
         cloudbet: 'Total',
+        ivibet: 'Total'
     },
     'Todos los asaltos completados': {
         betplay: 'Todos los asaltos completados',
@@ -1595,10 +1725,10 @@ const betDescriptionsMMA = {
         zamba: 'La Pelea Se Durará Hastas',
         fullreto: 'Se completarán todos los asaltos',
         betboro: 'La pelea durará hasta al final',
-        pinnacle: '',
         cashwin: 'Will the fight go the distance',
         bwin: 'El combate se decide a los puntos',
         unobet: 'Luchar y completar todos los asaltos',
+        ivibet: 'La pelea se durará hasta'
     },
 }
 
@@ -1627,7 +1757,9 @@ const betDescriptionsIceHokey = {
         "stake": "1X2",
         "unobet": "Resultado del partido 3 periodos (tiempo reglamentario)",
         cloudbet: '1x2 (no incluye prórroga)',
-        suprabet: 'Resultado del partido (tiempo regular)'
+        suprabet: 'Resultado del partido (tiempo regular)',
+        ivibet: '1x2',
+        mostbet: '1x2. Resultado final'
     },
     "Total de goles - Tiempo reglamentario": {
         "betplay": "Total de goles - Tiempo reglamentario",
@@ -1646,7 +1778,9 @@ const betDescriptionsIceHokey = {
         "marathon": "Total de goles",
         "stake": "Total",
         "unobet": "Más/menos goles (tiempo reglamentario)",
-        suprabet: 'Total de goles (tiempo regular)'
+        suprabet: 'Total de goles (tiempo regular)',
+        ivibet: 'Total',
+        mostbet: 'Total'
     },
     "Ambos Equipos Marcarán - Tiempo reglamentario": {
         "betplay": "Ambos Equipos Marcarán - Tiempo reglamentario",
@@ -1660,7 +1794,9 @@ const betDescriptionsIceHokey = {
         "cashwin": "Both Teams To Score",
         "ggbet": "Ambos equipos marcan",
         "stake": "Ambos equipos para anotar",
-        suprabet: 'Ambos equipos marcarán (tiempo regular)'
+        suprabet: 'Ambos equipos marcarán (tiempo regular)',
+        ivibet: 'Ambos equipos marcan',
+        mostbet: 'Ambos equipos anotarán'
     },
     "Apuesta sin empate - Tiempo reglamentario": {
         "betplay": "Apuesta sin empate - Tiempo reglamentario",
@@ -1669,11 +1805,14 @@ const betDescriptionsIceHokey = {
         "sportium": "Apuesta sin empate",
         "unobet": "Ganador sin empate (tiempo reglamentario)",
         cloudbet: 'Líneas de juego',
+        ivibet: 'Apuesta sin empate',
+        mostbet: 'Victorias del equipo'
     },
     "Cualquier equipo ganará sin conceder goles - Tiempo reglamentario": {
         "betplay": "Cualquier equipo ganará sin conceder goles - Tiempo reglamentario",
         "1xbet": "Victoria con portería a cero",
         "stake": "Any Team To Win Without Conceding A Goal - Regular Time",
+        mostbet: 'Gana con la portería a cero'
     },
     "Primero en alcanzar 1 goles (Empate: Ningún equipo llegará a 1) - Tiempo reglamentario": {
         "betplay": "Primero en alcanzar 1 goles (Empate: Ningún equipo llegará a 1) - Tiempo reglamentario",
@@ -1730,7 +1869,9 @@ const betDescriptionsIceHokey = {
         "stake": "Ganador 1er periodo",
         "unobet": "1.er periodo - Línea de dinero, 3 opciones",
         cloudbet: '1 período - 1x2',
-        suprabet: '1ra Periodo resultado'
+        suprabet: '1ra Periodo resultado',
+        ivibet: '1 periodo - 1x2',
+        mostbet: '1 período - 1x2',
     },
     "Apuesta sin empate - Periodo 1": {
         "betplay": "Apuesta sin empate - Periodo 1",
@@ -1744,6 +1885,7 @@ const betDescriptionsIceHokey = {
         "ggbet": "1st periodo - apuesta sin empate",
         "unobet": "1.er periodo - A ganar",
         cloudbet: '1 periodo - Ganador',
+        ivibet: '1 periodo - apuesta sin empate',
     },
     "Total de goles - Periodo 1": {
         "betplay": "Total de goles - Periodo 1",
@@ -1761,7 +1903,9 @@ const betDescriptionsIceHokey = {
         "stake": "Total 1er periodo",
         "unobet": "1.er periodo - Más/menos goles",
         cloudbet: '1 periodo - total',
-        suprabet: '1ra Periodo total de goles'
+        suprabet: '1ra Periodo total de goles',
+        ivibet: '1 periodo - total',
+        mostbet: '1 período - total',
     },
     "Ambos equipos marcarán - Periodo 1": {
         "betplay": "Ambos equipos marcarán - Periodo 1",
@@ -1774,7 +1918,9 @@ const betDescriptionsIceHokey = {
         "dafabet": "Ambos equipos marcan - 1er período",
         "unobet": "1.er periodo - Los dos equipos marcan",
         cloudbet: '1 periodo - ambos equipos a marcar',
-        suprabet: '1ra Periodo Ambos Equipos Anotarán'
+        suprabet: '1ra Periodo Ambos Equipos Anotarán',
+        ivibet: '1 periodo - ambos equipos marcan',
+        mostbet: '1 período - ambos equipos marcarán',
     },
     "Periodo 2": {
         "betplay": "Periodo 2",
@@ -1793,7 +1939,9 @@ const betDescriptionsIceHokey = {
         "stake": "Ganador 2do periodo",
         "unobet": "2.º periodo - Línea de dinero, 3 opciones",
         cloudbet: '2 período - 1x2',
-        suprabet: '2do Periodo resultado'
+        suprabet: '2do Periodo resultado',
+        ivibet: '2 periodo - 1x2',
+        mostbet: '2 período - 1x2',
     },
     "Apuesta sin empate - Periodo 2": {
         "betplay": "Apuesta sin empate - Periodo 2",
@@ -1807,6 +1955,7 @@ const betDescriptionsIceHokey = {
         "ggbet": "2nd periodo - apuesta sin empate",
         "unobet": "2.º periodo - A ganar",
         cloudbet: '2 periodo - Ganador',
+        ivibet: '2 periodo - apuesta sin empate',
     },
     "Total de goles - Periodo 2": {
         "betplay": "Total de goles - Periodo 2",
@@ -1823,7 +1972,9 @@ const betDescriptionsIceHokey = {
         "stake": "Total 2do periodo",
         "unobet": "2.º periodo - Más/menos goles",
         cloudbet: '2 periodo - total',
-        suprabet: '2do Periodo total de goles'
+        suprabet: '2do Periodo total de goles',
+        ivibet: '2 periodo - total',
+        mostbet: '2 período - total',
     },
     "Ambos equipos marcarán - Periodo 2": {
         "betplay": "Ambos equipos marcarán - Periodo 2",
@@ -1835,7 +1986,9 @@ const betDescriptionsIceHokey = {
         "betboro": "2do Periodo Ambos Equipos Anotarán",
         "dafabet": "Ambos equipos marcan - 2º Período",
         cloudbet: '2 periodo - ambos equipos a marcar',
-        suprabet: '2do Periodo Ambos Equipos Anotarán'
+        suprabet: '2do Periodo Ambos Equipos Anotarán',
+        ivibet: '2 periodo - ambos equipos marcan',
+        mostbet: '2 período - ambos equipos marcarán',
     },
     "Periodo 3": {
         "betplay": "Periodo 3",
@@ -1854,7 +2007,9 @@ const betDescriptionsIceHokey = {
         "stake": "Ganador 3er periodo",
         "unobet": "3.er periodo - Línea de dinero, 3 opciones",
         cloudbet: '3 período - 1x2',
-        suprabet: '3er Periodo resultado'
+        suprabet: '3er Periodo resultado',
+        ivibet: '3 periodo - 1x2',
+        mostbet: '3 período - 1x2',
     },
     "Apuesta sin empate - Periodo 3": {
         "betplay": "Apuesta sin empate - Periodo 3",
@@ -1868,6 +2023,7 @@ const betDescriptionsIceHokey = {
         "ggbet": "3rd periodo - apuesta sin empate",
         "unobet": "3.er periodo - A ganar",
         cloudbet: '3 periodo - Ganador',
+        ivibet: '3 periodo - apuesta sin empate',
     },
     "Total de goles - Periodo 3": {
         "betplay": "Total de goles - Periodo 3",
@@ -1884,7 +2040,9 @@ const betDescriptionsIceHokey = {
         "stake": "Total 3er periodo",
         "unobet": "3.er periodo - Más/menos goles",
         cloudbet: '3 periodo - total',
-        suprabet: '3er Periodo total de goles'
+        suprabet: '3er Periodo total de goles',
+        ivibet: '3 periodo - total',
+        mostbet: '3 período - total',
     },
     "Ambos equipos marcarán - Periodo 3": {
         "betplay": "Ambos equipos marcarán - Periodo 3",
@@ -1897,6 +2055,8 @@ const betDescriptionsIceHokey = {
         "dafabet": "Ambos equipos marcan - 3rd Period",
         cloudbet: '3 periodo - ambos equipos a marcar',
         suprabet: '3er Periodo Ambos Equipos Anotarán',
+        ivibet: '3 periodo - ambos equipos marcan',
+        mostbet: '3 período - ambos equipos marcarán',
     },
 }
 
@@ -1922,7 +2082,9 @@ const betDescriptionsAmericanFootball = {
         stake: '1X2',
         unobet: 'A ganar',
         cloudbet: 'Líneas de juego',
-        suprabet: 'Ganador'
+        suprabet: 'Ganador',
+        ivibet: 'Ganador (incl. prórroga)',
+        mostbet: 'Ganador (incluido TE)'
     },
     'Total de puntos - Prórroga incluida': {
         betplay: 'Total de puntos - Prórroga incluida',
@@ -1944,7 +2106,9 @@ const betDescriptionsAmericanFootball = {
         stake: 'Total',
         unobet: 'Total',
         cloudbet: 'Total',
-        suprabet: 'Total de puntos'
+        suprabet: 'Total de puntos',
+        ivibet: 'Total (incl. prórroga)',
+        mostbet: 'Total (incl. TE)'
     },
 }
 
@@ -1969,7 +2133,9 @@ const betDescriptionsCricket = {
         stake: '1X2',
         unobet: 'Ganar',
         cloudbet: 'Ganador (incluye súper overs)',
-        suprabet: 'Ganador del partido'
+        suprabet: 'Ganador del partido',
+        ivibet: 'Ganador (incl. super over)',
+        mostbet: 'Ganador (incluido super over)'
     },
     'Ganador del sorteo': {
         betplay: 'Ganador del sorteo',
@@ -1979,7 +2145,8 @@ const betDescriptionsCricket = {
         betboro: 'Ganará el lanzamiento',
         dafabet: 'Who will win the toss? (Toss is Boss) - Partido',
         unobet: 'A ganar el sorteo',
-        suprabet: 'Ganará el lanzamiento'
+        suprabet: 'Ganará el lanzamiento',
+        ivibet: 'Qué equipo gana el sorteo'
     },
     'Mayor número de puntuaciones 6': {
         betplay: 'Mayor número de puntuaciones 6',
@@ -1989,28 +2156,140 @@ const betDescriptionsCricket = {
         betboro: 'Más seises',
         dafabet: 'Most sixes - Partido',
         stake: 'Mayor anotador de sixes (seises)',
-        unobet: 'Más seises'
+        unobet: 'Más seises',
+        ivibet: 'Más seises'
     },
     'Más 4s': {
         betplay: 'Más 4s',
         betsson: 'más cuatros del partido',
         sportium: 'Mayor número de cuatros',
         dafabet: 'Most fours - Partido',
-        stake: 'Mayor anotador de fours (cuatros)'
+        stake: 'Mayor anotador de fours (cuatros)',
+        ivibet: 'Más cuatros'
     },
     'Half Century marcado': {
         betplay: 'Half Century marcado',
         betboro: 'Un cincuenta será anotado en el Partido',
-        suprabet: 'Un cincuenta será anotado en el Partido'
+        suprabet: 'Un cincuenta será anotado en el Partido',
+        ivibet: 'Cualquier jugador marca 50'
     },
     'Centena marcado': {
         betplay: 'Centena marcado',
         betboro: 'Un cien será anotado en el Partido',
         bwin: '¿Habrá un century en la partida?',
-        suprabet: 'Un cien será anotado en el Partido'
+        suprabet: 'Un cien será anotado en el Partido',
+        ivibet: 'Cualquier jugador marca 100'
     },
 }
 
+const betDescriptionsTableTennis = {
+    'Cuotas del partido': {
+        "betplay": "Cuotas del partido",
+        "wplay": "Ganador del partido",
+        "betsson": "ganador del partido",
+        "1xbet": "1x2",
+        "codere": "Ganador del Partido",
+        "yaJuegos": "",
+        "luckia": "Ganador del partido",
+        "sportium": "Ganador del partido",
+        "zamba": "Ganador",
+        "wonderbet": "Ganador del Encuentro",
+        "megapuesta": "Ganador",
+        "fullreto": "Ganador",
+        "betboro": "Ganador del Partido",
+        "dafabet": "Ganador - Partido ",
+        "cashwin": "Ganador",
+        "bwin": "1 2 - ¿Quién ganará?",
+        "ggbet": "Ganador",
+        "marathon": "Gana el partido",
+        "stake": "1X2",
+        "unobet": "A ganar",
+        "cloudbet": "Ganador",
+        "suprabet": "Ganador del Partido",
+        "ivibet": "Ganador",
+        "mostbet": "1X2. RESULTADO FINAL"
+    },
+    'Total de juegos': {
+        betplay: 'Total de juegos'
+    }
+}
+
+const betDescriptionsSnooker = {
+    "Cuotas del partido": {
+        "betplay": "Cuotas del partido",
+        "wplay": "Partida - Ganador (Frame 4)",
+        "betsson": "Match Winner",
+        "1xbet": "1x2",
+        "codere": "1X2 Resultado del Partido",
+        "sportium": "1X2",
+        "zamba": "1x2",
+        "megapuesta": "Ganador",
+        "fullreto": "1x2",
+        "betboro": "Resultado del Partido",
+        "dafabet": "Resultado - Partido",
+        "cashwin": "1x2",
+        "bwin": "1 X 2",
+        "ggbet": "1x2",
+        "marathon": "Gana la partida",
+        "stake": "1X2",
+        "suprabet": "Resultado del Partido",
+        "ivibet": "1x2",
+        "mostbet": "1x2"
+    },
+    'Total de Partidas': {
+        "betplay": 'Total de Partidas',
+        "1xbet": "Total",
+        "codere": "Más/Menos Total de Frames",
+        "betboro": "Total de partidas",
+        "marathon": "Total de frames",
+        "stake": "Total de partidas",
+        "unobet": "Total de partidas",
+        "suprabet": "Total de partidas"
+    },
+    'Total Century breaks': {
+        "betplay": 'Total Century breaks',
+        "suprabet": "Total de centuries"
+    },
+    'Break más elevado': {
+        "betplay": 'Break más elevado',
+        "marathon": "Break más alto - jugador",
+        "suprabet": "Quiebre más alto en la partida"
+    },
+    'Set 1': {
+        "betplay": 'Set 1',
+        "1xbet": "1x2. 1 frame",
+        "codere": "Ganador del 1er Frame",
+        "sportium": "Tanda 1 - Ganador",
+        "fullreto": "Primer frame - ganador",
+        "betboro": "1ra Partida ganador",
+        "cashwin": "Primer frame - ganador",
+        "bwin": "¿Quién ganará el primer frame?",
+        "ggbet": "1st frame - winner",
+        "marathon": "Resultado - 1.er frame",
+        "suprabet": "1ra Partida ganador",
+        "ivibet": "1 frame - ganador",
+        "mostbet": "1 tanda - quién ganará la tanda"
+    },
+    'Total de puntos - Partida 1': {
+        "betplay": 'Total de puntos - Partida 1',
+        "1xbet": "Total. 1 frame",
+        "sportium": "Tanda 1 - Total de puntos",
+        "betboro": "1ra Partida total de puntos",
+        "suprabet": "1ra Partida total de puntos"
+    },
+    'Tacada +50 en el set 1': {
+        "betplay": 'Tacada +50 en el set 1',
+        "wplay": "50 Break? (Frame 4)",
+        "1xbet": "Break de 50 o más puntos. 1 frame",
+        "sportium": "50 Break en tanda 1"
+    },
+    'Tacada +100 en el set 1': {
+        "betplay": 'Tacada +100 en el set 1',
+        "wplay": "100 Break? (Frame 4)",
+        "1xbet": "Break de 100 o más puntos. 1 frame",
+        "sportium": "100 Break en tanda 1"
+    }
+}
 
 const groupByType = {
     total: 1,
@@ -2061,4 +2340,10 @@ module.exports = {
     betDescriptionsCricket,
     idsCricket,
     betTypesCricket,
+    idsSnooker,
+    betDescriptionsSnooker,
+    betTypesSnooker,
+    idsTableTennis,
+    betDescriptionsTableTennis,
+    betTypesTableTennis,
 }

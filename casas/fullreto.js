@@ -183,7 +183,7 @@ async function getFullretoApi(name, types, n, team1) {
                 let reducedBetsArray = groupAndReduceBetsByType(filter, types[1].type, 1);
                 reducedBetsArray = removeDuplicate(reducedBetsArray);
                 console.log('//////////////////// FULLRETO //////////////////')
-                console.log(reducedBetsArray)
+                // console.log(reducedBetsArray)
                 console.log('//////////////////// FULLRETO //////////////////')
                 return {
                     nombre: 'fullreto',

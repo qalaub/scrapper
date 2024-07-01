@@ -157,7 +157,7 @@ async function getPinnacleApi(name, types, n, team1) {
                         bets: betTemp,
                     })
                     console.log('//////// PINNACLE LENGTH ', bets.length)
-                    console.log(betTemp)
+                    //  console.log(betTemp)
                 } catch (error) {
                     // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')

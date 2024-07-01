@@ -257,7 +257,7 @@ async function getCodereApi(name, types) {
             filter = filter.concat(getBets(res3, tiposPermitidos, types));
             filter = filter.concat(getBets(res4, tiposPermitidos, types));
             if (filter.length > 0) {
-                filter = agruparApuestas(filter, types[groupByType.total].type || '');
+                filter = agruparApuestas(filter, types[groupByType.total]?.type || '');
                 if (categoryActual.current == 'football') {
                     filter = agruparApuestas(filter, types[groupByType.total2]?.type || '');
                     filter = agruparApuestas(filter, types[groupByType.total1]?.type || '');

@@ -1,12 +1,10 @@
 const { timeouts } = require("../const/timeouts");
 const { buscar, selectMoreOption } = require("../logic/utils/buscar");
-const { initRequest } = require("../logic/utils/request");
 const {
     initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     matchnames,
-    scrollToBottom,
     categoryActual,
     transformString
 } = require("./utils");
@@ -218,7 +216,7 @@ async function getResultsBwin(match, betTypes = ['ganador del partido'], n) {
                                 quote
                             });
                         }
-                        console.log(betTemp)
+                        // console.log(betTemp)
                         bwin.bets.push(betTemp);
                         console.log('//////// BWIN LENGTH', bwin.bets.length)
                     }

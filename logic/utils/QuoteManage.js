@@ -46,7 +46,8 @@ class QuoteManager {
         'Total de goles - Periodo 2',
         'Total de goles - Periodo 3',
         'Total de puntos - Prórroga incluida',
-
+        'Total de puntos - Partida 1',
+        'Total de Partidas'
     ];
 
     doble = [3, 14, 10];
@@ -120,7 +121,9 @@ class QuoteManager {
                             'ufc_mma',
                             'ice_hockey',
                             'american_football',
-                            'cricket'
+                            'cricket',
+                            'snooker',
+                            'table_tennis',
                         ];
 
                         if (sportsToCalculateTotalGol.includes(categoryActual.current) && !combinate) {
@@ -208,6 +211,8 @@ class QuoteManager {
                         name = 'Si'
                         break;
                     case 181:
+                        name = 'No'
+                    case 1361:
                         name = 'No'
                         break;
                     case 402:

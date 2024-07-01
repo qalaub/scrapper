@@ -178,7 +178,7 @@ async function getResultsWPlay(match, betTypes = ['Resultado Tiempo Completo'], 
                     }
 
                     if (betType.type == 'Total de Rondas') betTemp.bets = ordenarDinamicamenteMasMenos(betTemp.bets);
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     betWplay.bets.push(betTemp);
                     console.log('//////// WPLAY LENGTH', betWplay.bets.length)
                 } catch (error) {

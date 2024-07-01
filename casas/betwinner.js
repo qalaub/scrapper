@@ -2,7 +2,7 @@ const { timeouts } = require("../const/timeouts");
 const { groupAndReduceBetsByType } = require("../logic/surebets");
 const { excludes, buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
-const { getType1xbet, getType1xbetBasketball, getType1xbetTennis, getType1xbetVolleyball, getType1xbetBaseball, getType1xbetIceHockey, getType1xbetAmericanFootball, getType1xbetCricket } = require("./1xbet");
+const { getType1xbet, getType1xbetBasketball, getType1xbetTennis, getType1xbetVolleyball, getType1xbetBaseball, getType1xbetIceHockey, getType1xbetAmericanFootball, getType1xbetCricket, getType1xbetTableTennis, getType1xbetSnooker } = require("./1xbet");
 const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
@@ -48,6 +48,10 @@ const getCategory = c => {
             return 'american-football';
         case 'cricket':
             return 'cricket';
+        case 'table_tennis':
+            return 'table-tennis';
+        case 'snooker':
+            return 'snooker';
     }
 }
 
@@ -113,7 +117,9 @@ async function processCategory(page, category, typeUpdate) {
         'baseball': ['1 Entrada'],
         'ice_hockey': ['1 Periodo', '2 Periodo', '3 Periodo'],
         'american_football': [],
-        'cricket': []
+        'cricket': [],
+        'table_tennis': [],
+        'snooker': ['1 frame'],
     };
 
     let previus = 'Tiempo reglamentario';
@@ -184,6 +190,7 @@ const permit1 = [
     'Total. 1 Periodo',
     'Total. 2 Periodo',
     'Total. 3 Periodo',
+    'Total. 1 frame',
 ];
 
 const permit2 = [
@@ -216,6 +223,8 @@ async function getBetwinnerApi(name, types, ids, house, url, team1) {
                         'ice_hockey': getType1xbetIceHockey,
                         'american_football': getType1xbetAmericanFootball,
                         'cricket': getType1xbetCricket,
+                        'table_tennis': getType1xbetTableTennis,
+                        'snooker': getType1xbetSnooker,
                     };
 
                     let tiposPermitidos;
@@ -292,7 +301,7 @@ async function getBetwinnerApi(name, types, ids, house, url, team1) {
                     }
                 }
                 const reducedBetsArray = groupAndReduceBetsByType(filter, 'Total', 1);
-                console.log(reducedBetsArray);
+                // console.log(reducedBetsArray);
                 console.log('//////////////////// ' + house.toUpperCase() + ' //////////////////')
                 console.log('//////////////////// ' + house.toUpperCase() + ' //////////////////')
                 if (house == '1xbet') {

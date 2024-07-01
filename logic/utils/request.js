@@ -35,23 +35,24 @@ async function initRequest(url, n, headers = {}) {
 }
 
 async function postFormData(url, formData, type = 'application/x-www-form-urlencoded') {
-    const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
-    // Create a context that will issue http requests.
-    const context = await request.newContext();
-    // Create a repository and set the method to POST
-    const res = await context.post(url, {
-        headers: {
-            'User-Agent': randomUserAgent,
-            'Content-Type': type
-        },
-        data: formData
-    });
+
 
     try {
+        const randomUserAgent = userAgents[Math.floor(Math.random() * userAgents.length)];
+        // Create a context that will issue http requests.
+        const context = await request.newContext();
+        // Create a repository and set the method to POST
+        const res = await context.post(url, {
+            headers: {
+                'User-Agent': randomUserAgent,
+                'Content-Type': type
+            },
+            data: formData
+        });
         const result = await res.json();
         return result;
     } catch (error) {
-        console.log(await res.text());
+        // console.log(await res.text());
     }
 }
 

@@ -273,7 +273,7 @@ async function getLuckiaApi(name, types, n) {
                 }
 
             } catch (error) {
-                console.log(error)
+                // console.log(error)
                 console.log('ERROR AL ENCONTRAR APUESTA')
             }
         }

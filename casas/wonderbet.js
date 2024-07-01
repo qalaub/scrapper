@@ -156,6 +156,8 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
             await scrollToBottom(page);
             await page.waitForTimeout(1000);
             page.setDefaultTimeout(timeouts.bet);
+            let teams = await page.locator('.bto-sb-widget-title-dropdown').textContent();
+            teams = teams.split('VS');
             for (const betType of betTypes) {
                 try {
                     const locatorBet = 'xpath=(//h4[text() = "' + betType.type + '"])[1]';
@@ -172,6 +174,8 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                         for (const bet of bets) {
                             let name = await bet.locator('i').first().textContent();
                             const quote = await bet.locator('i').last().textContent();
+                            if(name == '1') name = teams[0];
+                            if(name == '2') name = teams[1];
                             betTemp.bets.push({
                                 name,
                                 quote
@@ -208,7 +212,7 @@ async function getResultsWonder(match, betTypes = ['Resultado Tiempo Completo'],
                         }
                     }
                     betWonder.bets.push(betTemp);
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     console.log('//////// WONDER LENGTH', betWonder.bets.length)
                 } catch (error) {
                     // console.log(error)

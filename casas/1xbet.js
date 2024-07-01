@@ -389,6 +389,38 @@ function getType1xbetCricket(input, type) {
     if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
 }
 
+function getType1xbetTableTennis(input, type) {
+    const typeMappings = {
+        '1x2': 1,
+        1: '1x2',
+        'Total': 17,
+        17: 'Total',
+    }
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
+function getType1xbetSnooker(input, type) {
+    const typeMappings = {
+        '1x2': 1,
+        1: '1x2',
+        'Total': 876,
+        876: 'Total',
+    }
+    const frame1 = {
+        '1x2. 1 frame': 1,
+        1: '1x2. 1 frame',
+        'Total. 1 frame': 92,
+        92: 'Total. 1 frame',
+        'Break de 100 o más puntos. 1 frame': 397,
+        397: 'Break de 100 o más puntos. 1 frame',
+        'Break de 50 o más puntos. 1 frame': 401,
+        401: 'Break de 50 o más puntos. 1 frame',
+    }
+
+    if (type == '1 frame') return frame1[input] || null;
+    if (type == 'Tiempo reglamentario') return typeMappings[input] || null;
+}
+
 module.exports = {
     get1xBetApi,
     getType1xbet,
@@ -398,5 +430,7 @@ module.exports = {
     getType1xbetBaseball,
     getType1xbetIceHockey,
     getType1xbetAmericanFootball,
-    getType1xbetCricket
+    getType1xbetCricket,
+    getType1xbetTableTennis,
+    getType1xbetSnooker
 }

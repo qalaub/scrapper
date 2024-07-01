@@ -1,165 +1,183 @@
-const { groupAndReduceBetsByType } = require("../logic/surebets");
-const { buscar, excludes, selectMoreOption } = require("../logic/utils/buscar");
+const { timeouts } = require("../const/timeouts");
+const { buscar, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
+const { orderBetMoreLess } = require("./betplay");
 const {
     initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    obtenerObjetoPorTipo,
-    ordenarDinamicamenteMasMenos,
     matchnames,
-    tienenPalabrasEnComunDinamicoT,
-    transformString,
-    categoryActual
+    categoryActual,
+    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
-async function buscarApi(match) {
-    let segmentos = match.includes(' - ') ? match.split(' - ').map(segmento => quitarTildes(segmento.trim().replace('-', ' '))) : [quitarTildes(match.replace('-', ' '))];
-    segmentos = segmentos.flatMap(segmento => segmento.split(' ').filter(seg => !excludes.includes(seg.toLowerCase())));
-    if (categoryActual.current == 'ice_hockey' || categoryActual.current == 'american_football') {
-        match = transformString(match);
+const getCategory = t => {
+    switch (categoryActual.current) {
+        case 'basketball': return t.includes('Basket');
+        case 'football': return t.includes('Fútbol');
+        case 'volleyball': return t.includes('Voleibol');
+        case 'baseball': return t.includes('Béisbol');
+        case 'ice_hockey': return t.includes('Hockey sobre hielo');
+        case 'ufc_mma': return t.includes('Artes Marciales Mixtas');
+        case 'american_football': return t.includes('Fútbol americano');
+        case 'tennis': return t.includes('Tenis');
+        case 'cricket': return t.includes('Críquet');
     }
+}
 
-    const buscar = async (text) => {
-        let ivibetSearch = await initRequest(`https://platform.ivibet.com/api/v4/v1/search/?search=${text}&status_in%5B%5D=2&status_in%5B%5D=0&status_in%5B%5D=1&relations%5B%5D=odds&relations%5B%5D=league&relations%5B%5D=result&relations%5B%5D=competitors&relations%5B%5D=sportCategories&relations%5B%5D=broadcasts&relations%5B%5D=statistics&relations%5B%5D=additionalInfo&relations%5B%5D=withMarketsCount&relations%5B%5D=tips&relations%5B%5D=players&lang=es`);
-        ivibetSearch = ivibetSearch.data.items?.events?.map(temp => {
-            return {
-                name: temp.translationSlug,
-                link: temp.id,
-            }
-        });
-        return ivibetSearch;
+const buscarQ = async (page, query) => {
+    try {
+        const search = await page.locator('.search-modal_searchInput__IbdoN').first();
+        await search.fill(query.length > 2 ? query : query + " 000");
+        await page.waitForTimeout(5000);
+        const noResult = await page.getByText("No results").isVisible({ timeout: 5000 });
+        return !noResult;
+    } catch (error) {
+        console.log(error)
+        return false;
     }
+};
 
-    for (const cad of segmentos) {
-        const res = await buscar(cad);
-        if (res) {
+const intentarEncontrarOpcion = async (page, match) => {
+    try {
+        let opciones = await page.locator('//div[contains(@class, "search-results_searchEventsContainer")]//div[contains(@class, "event-teams_teams")]');
+        if (await opciones.first().isVisible({ timeout: 3000 })) {
+            opciones = await opciones.all();
             let optPass = [];
-            for (const q of res) {
-                let text = q.name.replace(/[-]/g, ' ');
+            for (const opcion of opciones) {
+                let away = await opcion.locator('//div[contains(@data-test, "teamName")]').first().textContent();
+                let home = await opcion.locator('//div[contains(@data-test, "teamName")]').last().textContent();
+                match = quitarTildes(match.replace(' - ', ' '));
+                text = away + " " + home;
                 const p = await tienenPalabrasEnComunDinamico(match, text);
-                console.log(p, text, match)
-                if (p.pass) optPass.push({ opcion: q, similarity: p.similarity });
+                if (p.pass) optPass.push({
+                    name: text,
+                    opcion
+                })
             }
             const opt = await selectMoreOption(optPass);
             if (opt) {
                 matchnames.push({
                     text1: match,
-                    text2: opt.opcion.name,
+                    text2: opt.text,
                     etiqueta: 1
                 });
-                return opt.opcion;
+                console.log('IVIBET: ', quitarTildes(match), opt.name.trim());
+                await opt.opcion.waitFor({ state: 'visible' });
+                await opt.opcion.click();
+                return true;
             }
-        }
-    }
-}
-
-const permit1 = [
-    'Total de goles',
-    'Totales (incl. prórroga)',
-    'Total tarjetas',
-    'Total Tiros De Esquina',
-    '2ª Mitad - total',
-    '1ª Mitad - total',
-    'Cuarto segundo - total',
-    'Cuarto primer - total',
-    'Cuarto tercer - total',
-    'Cuarto cuarto - total',
-    'Total juegos',
-    'Primer set - total juegos',
-
-];
-
-const permit2 = [
-    'Principal',
-    '2ª mitad',
-    '1ª mitad',
-    'Tiros esquina',
-    'Tarjetas',
-    '1er Cuarto',
-    '2do Cuarto',
-    '3er Cuarto',
-    '4to Cuarto',
-    'Mercados por Set',
-    'Innings',
-    'Pitcher Lines'
-];
-
-const permit3 = [
-    '1x2',
-    'Doble oportunidad',
-    'Se clasifica',
-    'Tarjetas 1x2',
-    'Córner 1x2',
-    '1ª Mitad - doble oportunidad',
-    '1ª Mitad - 1x2',
-    '2ª Mitad - 1x2',
-    '2ª Mitad - doble oportunidad',
-    'Se clasifica',
-];
-
-function groupByVendorMarketId(data) {
-    return data.reduce((acc, item) => {
-        const { vendorMarketId, outcomes } = item;
-        if (!acc[vendorMarketId]) {
-            acc[vendorMarketId] = { vendorMarketId, outcomes: [] };
-        }
-        acc[vendorMarketId].outcomes = acc[vendorMarketId].outcomes.concat(outcomes);
-        return acc;
-    }, {});
-}
-
-let url = 'https://ivibet.com/es';
-
-async function getIvibetApi(name, types, n, team1) {
-    try {
-        const link = await buscarApi(name);
-        console.log(link)
-        if (link) {
-            const res = await initRequest(`https://platform.ivibet.com/api/event/list?relations%5B%5D=odds&relations%5B%5D=league&relations%5B%5D=result&relations%5B%5D=competitors&relations%5B%5D=sportCategories&relations%5B%5D=broadcasts&relations%5B%5D=additionalInfo&relations%5B%5D=withMarketsCount&relations%5B%5D=tips&relations%5B%5D=players&lang=es&eventId_eq=${link.link}&main=0&relations%5B%5D=sport`, 2);
-            if (res) {
-                const principal = res.data.relations;
-                let reducedBetsArray = principal.odds[link.link];
-                let groupedData = groupByVendorMarketId(reducedBetsArray);
-                let array = [];
-                for (const type of types) {
-                    array.push(groupedData[type.type]);
-                }
-                for (const a of array) {
-                    const bets = a.outcomes.map(el => {
-                        return {
-                            name: el.vendorOutcomeId,
-                            quote: el.odds,
-                        }
-                    });
-
-                    console.log({
-                        id: Object.keys(obtenerObjetoPorTipo(types, a.vendorMarketId))[0],
-                        type: a.vendorMarketId,
-                        bets
-                    })
-                }
-                // console.log(array)
-                console.log('//////////////////// IVIBEt //////////////////')
-                //console.log(reducedBetsArray)
-                console.log('//////////////////// IVIBEt //////////////////')
-                return {
-                    nombre: 'ivibet',
-                    title: name,
-                    bets: reducedBetsArray,
-                    url
-                }
-            }
+            return false;
         }
     } catch (error) {
         console.log(error);
     }
+    return false;
+};
+
+const permit1 = [
+    '2º Mitad - total',
+    '1º Mitad - 1x2',
+    'Total córneres',
+    '2º Mitad - 1x2',
+    '1º cuarto - 1x2',
+    '1º set - ganador',
+    '2º set - total puntos',
+    '1º inning - 1x2',
+    'La pelea se durará hasta',
+    '1 periodo - 1x2',
+    'Ambos equipos marcan',
+    'Más seises'
+];
+
+const getTypes = el => {
+    let loca = {
+        '2º Mitad - total': '2ª mitad',
+        '1º Mitad - 1x2': '1ª mitad',
+        'Total córneres': 'saques de esquina',
+        '2º Mitad - 1x2': '2ª mitad',
+        '1º cuarto - 1x2': 'Cuartos',
+        '1º set - ganador': 'Sets',
+        '2º set - total puntos': 'Sets',
+        '1º inning - 1x2': 'Entrada',
+        'La pelea se durará hasta': 'Otros',
+        'Más seises': 'Otros',
+        '1 frame - ganador': 'Frames'
+    }
+    if(categoryActual.current == 'ice_hockey') {
+        loca['Ambos equipos marcan'] = 'Goles';
+        loca['1 periodo - 1x2'] = 'Periodos';
+    }
+    return `//button[text() = "${loca[el]}"]`;
 }
 
-function truncatePrice(price) {
-    return Math.floor(price * 100) / 100;
+
+async function getResultsIvibet(match, betTypes = ['ganador del partido'], n, team1) {
+    // if (categoryActual.current == 'tennis') return;
+    const { page, context } = await initBrowser('https://ivibet.com/es', 'ivibet' + n, 7000);
+    if (page) {
+        try {
+            let url = 'https://ivibet.com/es';
+            page.setDefaultTimeout(timeouts.search);
+            const search = await page.getByPlaceholder('Buscar').first();
+            await search.click();
+            const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
+            if (encontrado == 'no hay resultados') return;
+            url = await page.url();
+            await page.waitForTimeout(3000);
+            page.setDefaultTimeout(timeouts.bet);
+            let ivibet = {
+                nombre: 'ivibet',
+                title: match,
+                bets: [],
+                url
+            }
+            for (const betType of betTypes) {
+                try {
+                    if (permit1.includes(betType.type)) {
+                        page.setDefaultTimeout(2000);
+                        const opt = await page.locator(getTypes(betType.type))
+                        if(await opt.isVisible()) await opt.click();
+                        page.setDefaultTimeout(timeouts.bet);
+                    }
+                    let type = await page.locator('//span[text() = "' + betType.type + '"]').first();
+                    await type.waitFor({ state: 'visible' });
+                    let betTemp = {
+                        id: Object.keys(betType)[0],
+                        type: betType.type,
+                        bets: [],
+                    }
+                    const parent = await page.locator('//span[text() = "' + betType.type + '"]/parent::*/parent::*/parent::*');
+                    const bets = await parent.locator('//span[text() = "' + betType.type + '"]/parent::*/parent::*/parent::div//div[contains(@data-test, "sport-event-table-additional-market")]').all();
+                    if (bets.length > 1) {
+                        for (const bet of bets) {
+                            let name = await bet.locator('//div/div').first().textContent();
+                            let quote = await bet.locator('//div/span').last().textContent();
+                            betTemp.bets.push({
+                                name,
+                                quote
+                            });
+                        }
+                    }
+                    // console.log(betType.type, betTemp)
+                    ivibet.bets.push(betTemp);
+                    console.log('//////// SUPARBET LENGTH', ivibet.bets.length)
+                } catch (error) {
+                    console.log(error)
+                    console.log('ERROR AL ENCONTRAR APUESTA')
+                }
+            }
+            console.log('//////////////////// SUPARBET //////////////////')
+            console.log('//////////////////// SUPARBET //////////////////')
+            return ivibet;
+        } catch (error) {
+            // console.log(error);
+            // await page.close();
+        }
+    }
 }
+
 
 module.exports = {
-    getIvibetApi
+    getResultsIvibet
 }

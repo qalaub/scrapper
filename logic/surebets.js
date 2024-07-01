@@ -24,7 +24,11 @@ const {
     idsAmericanFootball,
     betDescriptionsAmericanFootball,
     idsCricket,
-    betDescriptionsCricket
+    betDescriptionsCricket,
+    idsSnooker,
+    betDescriptionsSnooker,
+    idsTableTennis,
+    betDescriptionsTableTennis
 } = require("./constantes");
 
 const categories = {
@@ -37,7 +41,8 @@ const categories = {
     'ice_hockey': getBetTypeIceHockey,
     'american_football': getBetTypeAmericanFootball,
     cricket: getBetTypeCricket,
-
+    snooker: getBetTypeSnooker,
+    'table_tennis': getBetTypeTableTennis,
 }
 
 function getBetTypes(bets, category) {
@@ -71,6 +76,8 @@ function getBetTypes(bets, category) {
         cloudbet: [],
         suprabet: [],
         ivibet: [],
+        mostbet: [],
+        sol: [],
     };
 
     for (const tempBet of tempBets) {
@@ -102,6 +109,8 @@ function getBetTypes(bets, category) {
         newBet.cloudbet.push(tempBet.cloudbet);
         newBet.suprabet.push(tempBet.suprabet);
         newBet.ivibet.push(tempBet.ivibet);
+        newBet.mostbet.push(tempBet.mostbet);
+        newBet.sol.push(tempBet.sol);
     }
 
     // Función para eliminar elementos undefined
@@ -138,6 +147,8 @@ function getBetTypes(bets, category) {
         mystake: newBet.mystake,
         suprabet: newBet.suprabet,
         ivibet: newBet.ivibet,
+        mostbet: newBet.mostbet,
+        sol: newBet.sol,
     }
     // Eliminar elementos undefined de cada arreglo
     Object.keys(data).forEach(key => {
@@ -177,6 +188,8 @@ function getBetTypeInfo(typeId, description) {
         cloudbet: { [typeId]: description['betplay'], type: description['cloudbet'] },
         suprabet: { [typeId]: description['betplay'], type: description['suprabet'] },
         ivibet: { [typeId]: description['betplay'], type: description['ivibet'] },
+        mostbet: { [typeId]: description['betplay'], type: description['mostbet'] },
+        sol: { [typeId]: description['betplay'], type: description['sol'] },
     };
 }
 
@@ -234,6 +247,18 @@ function getBetTypeCricket(type) {
     return getBetTypeInfo(typeId, description);
 }
 
+function getBetTypeSnooker(type) {
+    const typeId = idsSnooker[type];
+    const description = betDescriptionsSnooker[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
+function getBetTypeTableTennis(type) {
+    const typeId = idsTableTennis[type];
+    const description = betDescriptionsTableTennis[type] || type; // Default a usar el propio tipo si no está definida una descripción
+    return getBetTypeInfo(typeId, description);
+}
+
 function calculateTotalGol(quotes, data, url, type) {
     // Función para extraer todos los números únicos de las cuotas
     const uniqueVariants = new Set();
@@ -262,7 +287,7 @@ function calculateTotalGol(quotes, data, url, type) {
             if (result2 && result2.cuotas.length > 0) { // Asegúrate de solo añadir resultados con cuotas
                 if (result2.cuotas.length == 4) {
                     const filter1 = result2.cuotas.filter(el => el.name.includes('más') || el.name.includes('mas'));
-                    const filter2 = result2.cuotas.filter(el => el.name.includes('menos'));
+                    const filter2 = result2.cuotas.filter(el => el.name.includes('menos') || el.name.includes('Menos'));
 
                     const extractNumber = name => parseFloat(name.match(/[\d\.]+/)[0]);
 

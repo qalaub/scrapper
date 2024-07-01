@@ -242,11 +242,11 @@ async function getResultsCloudbet(match, betTypes = ['ganador del partido'], n, 
                             }
                         }
                     }
-                    console.log(betType.type, betTemp)
+                    // console.log(betType.type, betTemp)
                     cloudbet.bets.push(betTemp);
                     console.log('//////// CLOUDBET LENGTH', cloudbet.bets.length)
                 } catch (error) {
-                    console.log(error)
+                    //  console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
             }

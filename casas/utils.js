@@ -59,7 +59,7 @@ async function initBrowser(url, name, timeout = 5000) {
         if (!browserInstance) {
             // Si no existe una instancia del navegador, crea una nueva
             const browser = await chromium.launch({
-                headless: false,
+                headless: true,
                 viewport: { width: 550, height: 680 },
                 args: [
                     '--no-sandbox',
@@ -571,13 +571,14 @@ function tienenPalabrasEnComunDinamicoT(cadena1, cadena2) {
     }
     let equipo1 = normalizar(cadena1);
     let equipo2 = normalizar(cadena2);
-    console.log(equipo1, equipo2)
     if (equiposIguales(equipo1, equipo2)) {
         return true;
     }
     if (equipo1 == 'real sociedad atletico madrid' && equipo2 == 'real sociedad real madrid') return false;
     if (equipo1 == 'bahrein corea del sur' && equipo2 == 'singapur corea del sur') return false;
-
+    if (equipo1.includes('la dodgers') && equipo2.includes('los angeles dodgers')) {
+        equipo1 = equipo1.replace('la dodgers', 'los angeles dodgers');
+    }
     // Verificar si uno de los equipos contiene "femenino" y el otro no
     const contieneFemenino1 = equipo1.includes('femenino');
     const contieneFemenino2 = equipo2.includes('femenino');
@@ -696,7 +697,16 @@ function generarCombinacionesDeCasas2MoreLess(casas) {
 
     casas.forEach(casa => {
         casa.cuotas.forEach(cuota => {
-            const valor = cuota.name.match(/[\d\.]+/)[0];
+            if (!cuota?.name) {
+                return; // Saltar si cuota o cuota.name es undefined
+            }
+
+            const match = cuota.name.match(/[\d\.]+/);
+            if (!match) {
+                return; // Saltar si no hay coincidencias en cuota.name
+            }
+
+            const valor = match[0];
             const tipo = cuota.name.includes('más') || cuota.name.includes('mas') ? 'mas' : 'menos';
             if (!cuotasPorValor[valor]) {
                 cuotasPorValor[valor] = { mas: [], menos: [] };
@@ -754,25 +764,37 @@ function evaluateSurebets(combinations, totalInvestment, data, url, type) {
         console.log(results.length);
         if (results.length < 20) {
             results.forEach(async result => {
-                const pass = await hasDuplicateEntries(result.investments, data.team1, data.team2);
-                if (!pass) {
-                    postFormData('https://lafija.qalaub.com/v1/api/surebet/', {
-                        surebet: JSON.stringify(
-                            {
-                                surebet: result.investments,
-                                ...data,
-                                type,
-                                event: category,
-                            }
-                        ),
-                        team1: url.team1.toString(),
-                        team2: url.team2.toString(),
-                        matches: fechaISO,
-                        live: categoryActual.isLive,
-                    }, 'application/json');
-                } else {
-                    console.log('Entrada duplicada encontrada en surebet, no se enviará.');
+                if (result.potentialProfit >= 10000 && result.potentialProfit <= 1000000) {
+                    const pass = await hasDuplicateEntries(result.investments, data.team1, data.team2);
+                    if (!pass) {
+                        let tempOdd = '';
+                        for (const s of result.investments) {
+                            tempOdd += s.odd + '' + s.casa
+                        }
+                        const id = data.team1 + data.team2 + data.start + tempOdd;
+                        let idSin = id.replace(/\s/g, '');
+                        idSin = idSin.replace('(horaestándardeColombia)', '');
+                        console.log(idSin)
+                        postFormData('https://lafija.qalaub.com/v1/api/surebet/', {
+                            surebet: JSON.stringify(
+                                {
+                                    surebet: result.investments,
+                                    ...data,
+                                    type,
+                                    event: category,
+                                }
+                            ),
+                            team1: url.team1.toString(),
+                            team2: url.team2.toString(),
+                            matches: fechaISO,
+                            live: categoryActual.isLive,
+                            eventId: idSin,
+                        }, 'application/json');
+                    } else {
+                        console.log('Entrada duplicada encontrada en surebet, no se enviará.');
+                    }
                 }
+
             });
         }
 
@@ -803,6 +825,15 @@ async function hasDuplicateEntries(investments, team1, team2) {
 
         let normalizedTeam = normalizeTeamName(investment.team, team1, team2);
 
+        /* 
+                const res1 = tienenPalabrasEnComunDinamicoT(normalizedTeam, team1)
+        const res2 = tienenPalabrasEnComunDinamicoT(normalizedTeam, team2)
+
+        if (res1) team1Count++;
+        if (res2) team2Count++;
+
+                
+        */
         const res1 = await postFormData('https://compare.qalaub.com/comparar', {
             sentences: [normalizedTeam, team1]
         }, 'application/json');
@@ -816,6 +847,7 @@ async function hasDuplicateEntries(investments, team1, team2) {
         if (similarity1 > 0.70) team1Count++;
         if (similarity2 > 0.70) team2Count++;
 
+
         if (team1Count > 1 || team2Count > 1) return true;
     }
 
@@ -824,14 +856,16 @@ async function hasDuplicateEntries(investments, team1, team2) {
 }
 
 function normalizeTeamName(team, team1, team2) {
-    console.log(team)
     if (team == 1 || team == "1") return team1;
     if (team == 2 || team == "2") return team2;
 
-    if (team.includes(team1)) return team1;
-    if (team.includes(team2)) return team2;
+    if (typeof team === 'string') {
+        if (team.includes(team1)) return team1;
+        if (team.includes(team2)) return team2;
+    }
     return team;
 }
+
 
 function removeDuplicateHouseEntries(data) {
     const uniqueEntries = [];

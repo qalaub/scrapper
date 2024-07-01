@@ -1,12 +1,8 @@
-const { groupAndReduceBetsByType } = require("../logic/surebets");
-const { buscar, excludes, selectMoreOption } = require("../logic/utils/buscar");
+const { excludes, selectMoreOption } = require("../logic/utils/buscar");
 const { initRequest } = require("../logic/utils/request");
 const {
-    initBrowser,
     quitarTildes,
     tienenPalabrasEnComunDinamico,
-    obtenerObjetoPorTipo,
-    ordenarDinamicamenteMasMenos,
     matchnames,
     transformString,
     categoryActual

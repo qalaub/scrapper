@@ -41,6 +41,8 @@ const getType = c => {
             return 'Fútbol Americano';
         case 'cricket':
             return 'Cricket';
+        case 'table_tennis':
+            return 'Tenis de mesa';
     }
 }
 
@@ -154,7 +156,7 @@ async function getResultsDafabet(match, betTypes = ['ganador del partido'], n) {
                             return decimalRegex.test(bet.name);
                         });
                     }
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     dafabet.bets.push(betTemp);
                     console.log('//////// DAFABET LENGTH', dafabet.bets.length)
                 } catch (error) {

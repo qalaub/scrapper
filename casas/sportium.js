@@ -6,7 +6,6 @@ const {
     tienenPalabrasEnComunDinamico,
     matchnames,
     categoryActual,
-    tienenPalabrasEnComunDinamicoT
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -124,7 +123,11 @@ const betTypeActions = {
     },
     'cricket': {
         'Gana el sorteo inicial': 'Otros Mercados ('
-    }
+    },
+    'snooker': {
+        'Tanda 1 - Total de puntos': 'Mercados de frames ('
+    },
+    
 };
 
 const permit1 = [
@@ -222,7 +225,7 @@ async function getResultsSportium(match, betTypes = ['Resultado Tiempo Completo'
                         }
                     }
                     betRivalo.bets.push(betTemp);
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     console.log('//////// SPORTIUM LENGTH', betRivalo.bets.length)
                 } catch (error) {
                     // console.log(error)

@@ -69,6 +69,7 @@ const permit2 = [
 ];
 
 async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Completo'], n) {
+    if(categoryActual.current == 'table_tennis') return;
     const { page, context } = await initBrowser(categoryActual.isLive
         ? 'https://megapuesta.co/es/live'
         : 'https://megapuesta.co/es/sport', 'megapuesta' + n);
@@ -184,7 +185,7 @@ async function getResultsMegapuesta(match, betTypes = ['Resultado Tiempo Complet
                     }
 
                     betMegapuesta.bets.push(betTemp);
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     console.log('//////// MEGAPUESTA LENGTH ', betMegapuesta.bets.length)
                 } catch (error) {
                     // console.log(error)

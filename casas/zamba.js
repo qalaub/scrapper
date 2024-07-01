@@ -110,6 +110,8 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
             }
             await iframe.locator('//button[contains( @data-test-id, "markets-filter-tab-All")]').click();
             await page.waitForTimeout(2000);
+            let teams = await iframe.locator('//div[contains(@class, "styled__BreadcrumbsInfo")]/h2').textContent();
+            teams = teams.split(' - ');
             page.setDefaultTimeout(timeouts.bet);
             await scrollToBottom(page);
             for (const betType of betTypes) {
@@ -137,8 +139,11 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
 
                     if (bets.length > 1 && names.length > 1) {
                         for (let i = 0; i < bets.length; i++) {
-                            const name = await names[i].textContent();
+                            let name = await names[i].textContent();
                             const quote = await bets[i].textContent();
+                            name = name.replace('under', 'menos');
+                            if(name == 'Local') name = teams[0];
+                            if(name == 'Visitante') name = teams[1];
                             betTemp.bets.push({
                                 name,
                                 quote
@@ -147,7 +152,7 @@ async function getResultsZamba(match, betTypes = ['Resultado Tiempo Completo'], 
                         }
                     }
                     if (moreless) betTemp.bets = orderBetMoreLess(betTemp.bets);
-                    console.log(betTemp.bets);
+                    // console.log(betTemp.bets);
                     betZamba.bets.push(betTemp);
                     console.log('//////// ZAMBA LENGTH ', betZamba.bets.length)
                 } catch (error) {

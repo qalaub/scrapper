@@ -22,6 +22,8 @@ const getCategory = t => {
         case 'american_football': return t.includes('Fútbol americano');
         case 'tennis': return t.includes('Tenis');
         case 'cricket': return t.includes('Críquet');
+        case 'table_tennis': return t.includes('Tenis de Mesa');
+        case 'snooker': return t.includes('Snooker');
     }
 }
 
@@ -39,15 +41,14 @@ const buscarQ = async (page, query) => {
                     await page.waitForTimeout(1000);
                     const t = await all.textContent();
                     const c = getCategory(t);
-                    console.log(c, t)
-                    if(c) return c;
+                    if (c) return c;
                 }
             }
         }
         const noResult = await page.getByText("results have been found").isVisible({ timeout: 5000 });
         return !noResult;
     } catch (error) {
-        console.log(error)
+        // console.log(error)
         return false;
     }
 };
@@ -62,6 +63,7 @@ const intentarEncontrarOpcion = async (page, match) => {
                 let text = await opcion.textContent();
                 match = quitarTildes(match.replace(' - ', ' '));
                 text = match.replace(' VS ', ' ');
+                console.log(text, match)
                 const p = await tienenPalabrasEnComunDinamico(match, text);
                 if (p.pass) optPass.push({
                     name: text,
@@ -78,12 +80,21 @@ const intentarEncontrarOpcion = async (page, match) => {
                 console.log('SUPARBET: ', quitarTildes(match), opt.name.trim());
                 await opt.opcion.waitFor({ state: 'visible' });
                 await opt.opcion.click();
+                let keywords = opt.name.replace(/,/g, '').split(/\s+/).map(keyword => keyword.trim());
+
+                // Crear la parte dinámica del XPath
+                let dynamicXpathPart = keywords.map(keyword => `contains(., '${keyword}')`).join(' and ');
+            
+                // Construir el XPath completo
+                let xpath = `//div[contains(@class, "match-card__container")]//*[${dynamicXpathPart}]`;
+                // console.log(xpath)
+                await page.locator(xpath).click();
                 return true;
             }
             return false;
         }
     } catch (error) {
-        console.log(error);
+        // console.log(error);
     }
     return false;
 };
@@ -111,7 +122,7 @@ const getTypes = el => {
 
 async function getResultsSuprabet(match, betTypes = ['ganador del partido'], n, team1) {
     // if (categoryActual.current == 'tennis') return;
-    const { page, context } = await initBrowser('https://www.suprabets.com/es/classic-sports/match/', 'mystake' + n);
+    const { page, context } = await initBrowser('https://www.suprabets.com/es/classic-sports/match/', 'suprabet' + n);
     if (page) {
         try {
             let url = 'https://www.suprabets.com/es/classic-sports/match/';
@@ -119,7 +130,7 @@ async function getResultsSuprabet(match, betTypes = ['ganador del partido'], n, 
             const encontrado = await buscar(page, match, buscarQ, intentarEncontrarOpcion);
             if (encontrado == 'no hay resultados') return;
             url = await page.url();
-            await page.waitForTimeout(3000);
+            await page.waitForTimeout(5000);
             page.setDefaultTimeout(timeouts.bet);
             let suprabet = {
                 nombre: 'suprabet',
@@ -159,11 +170,11 @@ async function getResultsSuprabet(match, betTypes = ['ganador del partido'], n, 
                             });
                         }
                     }
-                    console.log(betType.type, betTemp)
-                    suprabet.bets.push(betTemp);
+                    // console.log(betType.type, betTemp)
+                    suprabet.bets.push(betTemp.bets);
                     console.log('//////// SUPARBET LENGTH', suprabet.bets.length)
                 } catch (error) {
-                    console.log(error)
+                    // console.log(error)
                     console.log('ERROR AL ENCONTRAR APUESTA')
                 }
             }

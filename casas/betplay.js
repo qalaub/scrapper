@@ -370,7 +370,7 @@ async function getResultsBetPlayTemp(match, betTypes = ['Total de goles']) {
 // Función para extraer el número de la cadena en el campo 'name'
 const extractNumber = name => {
     let temp = name.match(/(\d+(\.\d+)?)$/);
-    if(temp && temp?.length > 0) return  parseFloat(temp[0]);
+    if (temp && temp?.length > 0) return parseFloat(temp[0]);
 };
 // Ordenar primero por número y luego agrupar por "Más de" o "Menos de"
 const orderBetMoreLess = bets => {
@@ -392,10 +392,44 @@ const orderBetMoreLess = bets => {
 
 const permit1 = [
     'Total de goles',
-    'Total de Tiros de Esquina',
-    'Total de goles - 1.ª parte',
+    'Total de Tiros',
+    'Total de tarjetas',
     'Total de goles - 2.ª parte',
-    'Total de tarjetas'
+    'Total de goles - 1.ª parte',
+    'Total de Tiros de Esquina',
+    'Hándicap 3-Way',
+    'Total de puntos - Cuarto 1',
+    'Total de puntos - Cuarto 2',
+    'Total de puntos - Cuarto 3',
+    'Total de puntos - Cuarto 4',
+    'Total de puntos - 1.ª parte',
+    'Total de puntos - 2.ª parte',
+    'Total de puntos - Prórroga incluida',
+    'Total de Tiros de Esquina - 1.ª parte',
+    'Total de juegos - Set 1',
+    'Total de juegos - Set 2',
+    'Total de juegos',
+    'Total de sets',
+    'Total de puntos - Set 1',
+    'Total de puntos - Set 2',
+    'Total de puntos - Set 3',
+    'Total de puntos',
+    'Total de sets',
+    'Número total de Aces',
+    'Número total de juegos con quiebre',
+    'Total de Doble Faltas',
+    'Total de carreras',
+    'Total de carreras - Entrada 1',
+    'Total de puntos - Set 3',
+    'Total de asaltos',
+    'Total de carreras',
+    'Total de goles - Tiempo reglamentario',
+    'Total de goles - Periodo 1',
+    'Total de goles - Periodo 2',
+    'Total de goles - Periodo 3',
+    'Total de puntos - Prórroga incluida',
+    'Total de puntos - Partida 1',
+    'Total de Partidas'
 ]
 
 const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
@@ -443,7 +477,6 @@ const getBetForBetplay = (betOffers, type, name = 'BETPLAY') => {
         reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto3]?.type || '');
         reducedBetsArray = agruparApuestas(reducedBetsArray, type[groupByTypeBasketball.totalCuarto4]?.type || '');
     }
-    // console.log(reducedBetsArray)
     console.log(`//////////////////// ${name} //////////////////`)
     console.log(`//////////////////// ${name} //////////////////`)
     return reducedBetsArray;

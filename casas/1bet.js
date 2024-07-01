@@ -5,7 +5,6 @@ const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     matchnames,
-    tienenPalabrasEnComunDinamicoT,
     categoryActual
 } = require("./utils");
 
@@ -22,6 +21,9 @@ const buscarQ = async (page, query) => {
         }
         if (categoryActual.current == 'cricket') {
             await page.getByText('Críquet (').click();
+        }
+        if (categoryActual.current == 'snooker') {
+            await page.getByText('Billar inglés (').click();
         }
         const noResult = await page.getByText('No se han encontrado eventos', { timeout: 5000 }).isVisible();
         return !noResult;
@@ -91,7 +93,8 @@ const permit1 = [
     '1.er periodo - Más/menos goles',
     '2.º periodo - Más/menos goles',
     '3.er periodo - Más/menos goles',
-    'Más/Menos de Córneres primera mitad'
+    'Más/Menos de Córneres primera mitad',
+    'Total de partidas'
 ];
 
 const permit2 = [
@@ -192,7 +195,7 @@ async function getResults1bet(match, betTypes = ['Resultado Tiempo Completo'], n
                         }
                     }
                     // if (type == ' Hándicap 3 opciones') 
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     leon.bets.push(betTemp);
                     console.log('//////// 1BET LENGTH ', leon.bets.length)
                 } catch (error) {

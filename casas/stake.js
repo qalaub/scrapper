@@ -5,7 +5,6 @@ const {
     quitarTildes,
     tienenPalabrasEnComunDinamico,
     matchnames,
-    tienenPalabrasEnComunDinamicoT,
 } = require("./utils");
 
 const buscarQ = async (page, query) => {
@@ -149,7 +148,7 @@ async function getResultsStake(match, betTypes = ['Resultado Tiempo Completo'], 
                             if(cont == 3 && betType.type == '1X2') break;
                         }
                     }
-                    console.log(betTemp)
+                    // console.log(betTemp)
                     stake.bets.push(betTemp);
                     console.log('//////// STAKE LENGTH ', stake.bets.length)
                 } catch (error) {
@@ -163,7 +162,6 @@ async function getResultsStake(match, betTypes = ['Resultado Tiempo Completo'], 
             return stake;
         } catch (error) {
             console.log('ERRPR STAKE STAKE STAKE STAKE ERRPR');
-            console.log(error);
         }
     }
 }

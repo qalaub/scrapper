@@ -174,7 +174,7 @@ async function getResultsGgbet(match, betTypes = ['ganador del partido'], n, tea
                     if (permit1.includes(betType.type)) {
                         betTemp.bets = orderBetMoreLess(betTemp.bets);
                     }
-                    console.log(betType.type, betTemp)
+                    // console.log(betType.type, betTemp)
                     ggbet.bets.push(betTemp);
                     await page.mouse.wheel(0, scroll / 2);
                     console.log('//////// GGBET LENGTH', ggbet.bets.length)
